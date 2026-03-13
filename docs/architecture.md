@@ -136,9 +136,8 @@ api/
 │       ├── hub.go                   ← Hub インターフェース定義
 │       └── local_hub.go             ← シングルサーバー実装（初期実装）
 ├── db/
-│   ├── migrations/                  ← golang-migrate 管理（up/down ペア）
-│   │   ├── 000001_init.up.sql
-│   │   └── 000001_init.down.sql
+│   ├── schema.sql                   ← 理想スキーマ（手動編集・single source of truth）
+│   ├── migrations/                  ← atlas が自動生成（手動編集不要）
 │   └── queries/                     ← sqlc に渡す SQL クエリ
 ├── sqlc.yaml                        ← sqlc 設定
 ├── go.mod
@@ -149,7 +148,7 @@ api/
 
 ```
 task-manager/
-├── .mise.toml               ← ローカル CLI ツール管理（go・pnpm・ogen・sqlc・air・migrate）
+├── .mise.toml               ← ローカル CLI ツール管理（go・pnpm・ogen・sqlc・air・atlas）
 ├── pnpm-workspace.yaml      ← pnpm ワークスペース設定
 ├── spec/                    ← TypeSpec パッケージ（pnpm workspace メンバー）
 │   ├── package.json         ← @typespec/compiler 等の依存
@@ -395,6 +394,6 @@ class TaskFilter {
 |---|---|
 | 新しいフィルタ条件 | `TaskFilter` にフィールド追加 → Go API のクエリパラメータ対応 → `FilterNotifier` にメソッド追加 |
 | 新しい画面 | `pages/` に追加し、`app.dart` でルーティング設定 |
-| DBスキーマ変更 | `api/db/migrations/` に新しいマイグレーションファイルを追加 |
+| DBスキーマ変更 | `api/db/schema.sql` を編集 → `atlas migrate diff` でマイグレーションファイルを自動生成 |
 | 新しい WebSocket イベント | Go `hub.go` にイベント種別追加 → Flutter `websocket_provider.dart` に処理追加 |
 | マルチサーバー対応 | `websocket/redis_hub.go` を実装し `main.go` で `LocalHub` と差し替え |

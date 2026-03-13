@@ -22,7 +22,7 @@ Phase 5: 動作確認・調整
 - ローカル CLI ツールのセットアップ（mise）
   - リポジトリルートに `.mise.toml` を作成
     - `go`・`node`・`pnpm` を記載
-    - `go:` プレフィックスで ogen・sqlc・air・golang-migrate を記載
+    - `go:` プレフィックスで ogen・sqlc・air・atlas を記載
   - `mise install` を実行（全ツールを一括インストール）
 - TypeSpec パッケージのセットアップ（pnpm workspace）
   - リポジトリルートに `pnpm-workspace.yaml` を作成（`spec` を記載）
@@ -37,18 +37,36 @@ Phase 5: 動作確認・調整
 
 ### 1-2. PostgreSQL スキーマ・sqlc セットアップ
 
-- golang-migrate をインストール（`brew install golang-migrate` または バイナリ取得）
-- `api/db/migrations/` に up/down ペアで SQL ファイルを作成
-  - `000001_init.up.sql`: テーブル定義（users / priorities / statuses / tags / tasks / task_tags）+ インデックス
-  - `000001_init.down.sql`: `DROP TABLE` によるロールバック
+- `api/db/schema.sql` に理想スキーマを記述（single source of truth）
+  - テーブル定義（users / priorities / statuses / tags / tasks / task_tags）+ インデックス
+- atlas で初回マイグレーションファイルを生成
+  ```bash
+  # schema.sql の内容から初回マイグレーションファイルを生成
+  atlas migrate diff init \
+    --to "file://db/schema.sql" \
+    --dev-url "docker://postgres/16/dev?search_path=public"
+  # → db/migrations/20240101000000_init.sql と atlas.sum が生成される
+  ```
 - マイグレーション実行コマンド
   ```bash
-  migrate -path ./db/migrations -database $DATABASE_URL up
-  migrate -path ./db/migrations -database $DATABASE_URL down 1  # 1つ戻す
+  # 未適用のマイグレーションを適用
+  atlas migrate apply --url "$DATABASE_URL" --dir "file://db/migrations"
+  # ロールバック（1つ戻す）
+  atlas migrate down --url "$DATABASE_URL" --dir "file://db/migrations" --amount 1
+  ```
+- スキーマ変更時のワークフロー
+  ```bash
+  # 1. schema.sql を直接編集（理想状態を更新）
+  # 2. 差分からマイグレーションファイルを生成
+  atlas migrate diff add_description_to_tasks \
+    --to "file://db/schema.sql" \
+    --dev-url "docker://postgres/16/dev?search_path=public"
+  # 3. 生成されたファイルをコミット
+  # 4. atlas migrate apply で適用
   ```
 - `api/db/queries/` に各テーブルの SQL クエリファイルを作成
   - `tasks.sql`, `priorities.sql`, `statuses.sql`, `tags.sql`, `users.sql`
-- `api/sqlc.yaml` に sqlc 設定を記述
+- `api/sqlc.yaml` に sqlc 設定を記述（`schema: "db/schema.sql"` で理想スキーマを参照）
 - `sqlc generate` で `internal/repository/` 配下に Go コードを自動生成
   - 生成されたファイルは手動編集不要（`db.go`, `models.go`, `*.sql.go`）
 
