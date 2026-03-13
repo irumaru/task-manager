@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: taskmanager
+      POSTGRES_PASSWORD: taskmanager
+      POSTGRES_DB: taskmanager
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./local/db/data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taskmanager"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile.dev
+    environment:
+      DATABASE_URL: "postgres://taskmanager:taskmanager@db:5432/taskmanager?sslmode=disable"
+      JWT_SECRET: "change-me-in-production"
+      PORT: "8080"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./api:/app
+    depends_on:
+      db:
+        condition: service_healthy

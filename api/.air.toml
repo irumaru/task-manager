@@ -1,0 +1,21 @@
+[build]
+  cmd        = "go build -o ./tmp/server ./cmd/server"
+  bin        = "./tmp/server"
+  delay      = 1000
+  include_ext = ["go"]
+  exclude_dir = [
+    "tmp",
+    "internal/api",      # ogen generated
+    "internal/repository", # sqlc generated
+  ]
+  kill_delay  = "0s"
+  rerun       = false
+
+[log]
+  main_only = true
+
+[color]
+  main = "magenta"
+
+[misc]
+  clean_on_exit = true
