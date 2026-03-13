@@ -8,11 +8,10 @@ import (
 
 	"task-manager/api/internal/api"
 	"task-manager/api/internal/auth"
+	"task-manager/api/internal/bootstrap"
 	"task-manager/api/internal/handler"
 	"task-manager/api/internal/repository"
 	ws "task-manager/api/internal/websocket"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func main() {
@@ -28,16 +27,11 @@ func main() {
 	// -----------------------------------------------------------------------
 	// Database
 	// -----------------------------------------------------------------------
-	pool, err := pgxpool.New(ctx, dbURL)
+	pool, err := bootstrap.SetupDatabase(ctx, dbURL)
 	if err != nil {
-		log.Fatalf("db: connect: %v", err)
+		log.Fatalf("db: bootstrap: %v", err)
 	}
 	defer pool.Close()
-
-	if err := pool.Ping(ctx); err != nil {
-		log.Fatalf("db: ping: %v", err)
-	}
-	log.Println("db: connected")
 
 	q := repository.New(pool)
 
