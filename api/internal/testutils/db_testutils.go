@@ -15,14 +15,14 @@ func SetupTestDB(t *testing.T) *pgxpool.Pool {
 	t.Helper()
 
 	// テスト用DBを生成
-	dbName := "blastcord_test_" + randomAlphabet(8)
+	dbName := "taskmanager_test_" + randomAlphabet(8)
 	err := createTestDB(context.Background(), dbName)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// 作成したテスト用DBに接続
-	dsn := "postgres://postgres:example@127.0.0.1:5432/" + dbName + "?search_path=blastcord&sslmode=disable"
+	dsn := "postgres://postgres:example@db:5432/" + dbName + "?search_path=taskmanager&sslmode=disable"
 	db, err := bootstrap.SetupDatabase(t.Context(), dsn)
 	if err != nil {
 		t.Fatal(err)
@@ -42,7 +42,7 @@ func SetupTestDB(t *testing.T) *pgxpool.Pool {
 
 func createTestDB(ctx context.Context, dbName string) error {
 	// データベース接続
-	dsn := "postgres://postgres:example@127.0.0.1:5432/?sslmode=disable"
+	dsn := "postgres://postgres:example@db:5432/?sslmode=disable"
 	db, err := bootstrap.SetupDatabase(ctx, dsn)
 	if err != nil {
 		return fmt.Errorf("failed to connect db: %w", err)
@@ -50,7 +50,7 @@ func createTestDB(ctx context.Context, dbName string) error {
 	defer db.Close()
 
 	// テスト用DBの作成
-	_, err = db.Exec(ctx, `CREATE DATABASE `+dbName+` WITH TEMPLATE blastcord_template;`)
+	_, err = db.Exec(ctx, `CREATE DATABASE `+dbName+` WITH TEMPLATE taskmanager_template;`)
 	if err != nil {
 		return fmt.Errorf("failed to create test db: %w", err)
 	}
@@ -60,7 +60,7 @@ func createTestDB(ctx context.Context, dbName string) error {
 
 func deleteDB(ctx context.Context, dbName string) error {
 	// データベース接続
-	dsn := "postgres://postgres:example@127.0.0.1:5432/?sslmode=disable"
+	dsn := "postgres://postgres:example@db:5432/?sslmode=disable"
 	db, err := bootstrap.SetupDatabase(ctx, dsn)
 	if err != nil {
 		return fmt.Errorf("failed to connect db: %w", err)

@@ -7,3 +7,7 @@ pnpm = "10.32.1"
 "go:github.com/ogen-go/ogen/cmd/ogen"  = "latest"
 "go:github.com/sqlc-dev/sqlc/cmd/sqlc" = "latest"
 "go:github.com/air-verse/air"          = "latest"
+
+[tasks."db:migrate"]
+description = "データベースのマイグレーションを実行します。"
+run = "docker compose exec -T db psql -U postgres -d taskmanager < schema.sql && docker compose exec -T db psql -U postgres -d taskmanager_template < schema.sql"

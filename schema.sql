@@ -1,6 +1,9 @@
 -- Task Manager database schema
 -- This file is the single source of truth. Use atlas to generate migrations.
 
+CREATE SCHEMA IF NOT EXISTS taskmanager;
+SET search_path TO taskmanager;
+
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 CREATE TABLE users (

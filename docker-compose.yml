@@ -2,15 +2,15 @@ services:
   db:
     image: postgres:18
     environment:
-      POSTGRES_USER: taskmanager
-      POSTGRES_PASSWORD: taskmanager
-      POSTGRES_DB: taskmanager
+      POSTGRES_PASSWORD: example
     ports:
       - "5432:5432"
     volumes:
       - ./local/db/data:/var/lib/postgresql
+      - ./schema.sql:/schema.sql:ro
+      - ./local/db/init.sh:/docker-entrypoint-initdb.d/init.sh:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U taskmanager"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -20,7 +20,7 @@ services:
       context: ./api
       dockerfile: Dockerfile.dev
     environment:
-      DATABASE_URL: "postgres://taskmanager:taskmanager@db:5432/taskmanager?sslmode=disable"
+      DATABASE_URL: "postgres://postgres:example@db:5432/taskmanager?search_path=taskmanager&sslmode=disable"
       JWT_SECRET: "change-me-in-production"
       PORT: "8080"
     ports:
