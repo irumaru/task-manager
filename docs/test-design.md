@@ -6,6 +6,7 @@
 
 - **DBクエリテスト**: `repository` パッケージのSQLクエリをDBに接続して実行する統合テスト
 - **E2Eテスト**: `runn` を用いてAPIサーバーに対してHTTPリクエストを送るシナリオテスト
+- **WebSocketテスト**: handlerへのbroadcast実装後に追加予定
 
 ---
 
@@ -471,3 +472,24 @@ go test ./internal/repository/... -v
 cd api
 go test ./e2e/... -v
 ```
+
+---
+
+## WebSocketテスト（未実装・追加予定）
+
+### 前提
+
+現時点では handler から `hub.Broadcast()` が呼ばれていないため、WebSocketテストは対象外。
+broadcast がハンドラに実装された時点でこのセクションを具体化する。
+
+### テスト対象
+
+| テスト内容 | 確認内容 |
+|---|---|
+| `/ws?token=...` への接続 | 有効なJWTで接続できる |
+| 無効トークンは拒否 | tokenなし/不正tokenで401が返る |
+| タスク操作時のイベント受信 | 作成・更新・削除時に接続中クライアントへイベントが届く |
+
+### テスト手段
+
+`gorilla/websocket` のクライアントをGoテストコード内で立て、`httptest.NewServer` で起動したサーバーに接続してイベントを受信確認する。runnはWebSocketに対応していないため、Goのテストコードで実装する。
