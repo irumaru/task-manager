@@ -1,0 +1,3 @@
+packages:
+  - 'spec'
+  # - 'web'  # 将来追加
