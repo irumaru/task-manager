@@ -22,7 +22,7 @@ func SetupTestDB(t *testing.T) *pgxpool.Pool {
 	}
 
 	// 作成したテスト用DBに接続
-	dsn := "postgres://postgres:example@db:5432/" + dbName + "?search_path=taskmanager&sslmode=disable"
+	dsn := "postgres://postgres:example@127.0.0.1:5432/" + dbName + "?search_path=taskmanager&sslmode=disable"
 	db, err := bootstrap.SetupDatabase(t.Context(), dsn)
 	if err != nil {
 		t.Fatal(err)
@@ -42,7 +42,7 @@ func SetupTestDB(t *testing.T) *pgxpool.Pool {
 
 func createTestDB(ctx context.Context, dbName string) error {
 	// データベース接続
-	dsn := "postgres://postgres:example@db:5432/?sslmode=disable"
+	dsn := "postgres://postgres:example@127.0.0.1:5432/?sslmode=disable"
 	db, err := bootstrap.SetupDatabase(ctx, dsn)
 	if err != nil {
 		return fmt.Errorf("failed to connect db: %w", err)
@@ -60,7 +60,7 @@ func createTestDB(ctx context.Context, dbName string) error {
 
 func deleteDB(ctx context.Context, dbName string) error {
 	// データベース接続
-	dsn := "postgres://postgres:example@db:5432/?sslmode=disable"
+	dsn := "postgres://postgres:example@127.0.0.1:5432/?sslmode=disable"
 	db, err := bootstrap.SetupDatabase(ctx, dsn)
 	if err != nil {
 		return fmt.Errorf("failed to connect db: %w", err)
