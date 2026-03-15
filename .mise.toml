@@ -4,6 +4,8 @@ atlas = '1.1.0'
 node = "24.14.0"
 pnpm = "10.32.1"
 
+"aqua:k1LoW/runn" = "1.6.0"
+
 "go:github.com/ogen-go/ogen/cmd/ogen"  = "latest"
 "go:github.com/sqlc-dev/sqlc/cmd/sqlc" = "latest"
 "go:github.com/air-verse/air"          = "latest"

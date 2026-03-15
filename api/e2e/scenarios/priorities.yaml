@@ -1,0 +1,46 @@
+desc: 優先度 CRUD
+runners:
+  req: http://localhost:8080
+steps:
+  create_priority:
+    desc: POST /priorities - 優先度作成
+    req:
+      /priorities:
+        post:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+          body:
+            application/json:
+              name: "e2e-priority"
+              displayOrder: 1
+    test: current.res.status == 200 && current.res.body.name == "e2e-priority"
+
+  list_priorities:
+    desc: GET /priorities - 優先度一覧取得
+    req:
+      /priorities:
+        get:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+    test: current.res.status == 200 && len(current.res.body.items) >= 1
+
+  update_priority:
+    desc: PATCH /priorities/{id} - 優先度更新
+    req:
+      /priorities/{{ steps.create_priority.res.body.id }}:
+        patch:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+          body:
+            application/json:
+              name: "e2e-priority-updated"
+    test: current.res.status == 200 && current.res.body.name == "e2e-priority-updated"
+
+  delete_priority:
+    desc: DELETE /priorities/{id} - 優先度削除
+    req:
+      /priorities/{{ steps.create_priority.res.body.id }}:
+        delete:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+    test: current.res.status == 204

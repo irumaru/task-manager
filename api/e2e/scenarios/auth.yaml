@@ -1,0 +1,12 @@
+desc: Auth API
+runners:
+  req: http://localhost:8080
+steps:
+  get_me:
+    desc: GET /auth/me - 認証済みユーザー情報を取得
+    req:
+      /auth/me:
+        get:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+    test: current.res.status == 200 && current.res.body.email == "e2e-test@example.com"
