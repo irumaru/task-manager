@@ -21,11 +21,12 @@ class TaskFormPage extends ConsumerStatefulWidget {
 class _TaskFormPageState extends ConsumerState<TaskFormPage> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _titleController;
+  late final TextEditingController _memoController;
   late final TextEditingController _tagInputController;
 
   DateTime? _dueDate;
-  int? _priorityId;
-  int? _statusId;
+  String? _priorityId;
+  String? _statusId;
   final List<Tag> _selectedTags = [];
   bool _isSaving = false;
 
@@ -36,10 +37,11 @@ class _TaskFormPageState extends ConsumerState<TaskFormPage> {
     super.initState();
     final task = widget.task;
     _titleController = TextEditingController(text: task?.title ?? '');
+    _memoController = TextEditingController(text: task?.memo ?? '');
     _tagInputController = TextEditingController();
     _dueDate = task?.dueDate;
-    _priorityId = task?.priority?.id;
-    _statusId = task?.status?.id;
+    _priorityId = task?.priority?.id ?? task?.priorityId;
+    _statusId = task?.status?.id ?? task?.statusId;
     if (task != null) {
       _selectedTags.addAll(task.tags);
     }
@@ -48,35 +50,45 @@ class _TaskFormPageState extends ConsumerState<TaskFormPage> {
   @override
   void dispose() {
     _titleController.dispose();
+    _memoController.dispose();
     _tagInputController.dispose();
     super.dispose();
   }
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_statusId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ステータスを選択してください')),
+      );
+      return;
+    }
     setState(() => _isSaving = true);
 
     final tagIds = _selectedTags.map((t) => t.id).toList();
     final notifier = ref.read(taskNotifierProvider.notifier);
+    final memo = _memoController.text.trim();
 
     if (_isEditing) {
       await notifier.updateTask(
         id: widget.task!.id,
         title: _titleController.text.trim(),
+        memo: memo.isEmpty ? null : memo,
+        clearMemo: memo.isEmpty,
         dueDate: _dueDate,
         clearDueDate: _dueDate == null,
         priorityId: _priorityId,
         clearPriority: _priorityId == null,
         statusId: _statusId,
-        clearStatus: _statusId == null,
         tagIds: tagIds,
       );
     } else {
       await notifier.addTask(
         title: _titleController.text.trim(),
+        memo: memo.isEmpty ? null : memo,
         dueDate: _dueDate,
+        statusId: _statusId!,
         priorityId: _priorityId,
-        statusId: _statusId,
         tagIds: tagIds,
       );
     }
@@ -109,8 +121,8 @@ class _TaskFormPageState extends ConsumerState<TaskFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final priorities = ref.watch(priorityNotifierProvider).valueOrNull ?? [];
-    final statuses = ref.watch(statusNotifierProvider).valueOrNull ?? [];
+    final priorities = ref.watch(priorityNotifierProvider).value ?? [];
+    final statuses = ref.watch(statusNotifierProvider).value ?? [];
 
     return Scaffold(
       appBar: AppBar(
@@ -142,6 +154,17 @@ class _TaskFormPageState extends ConsumerState<TaskFormPage> {
             ),
             const SizedBox(height: 16),
 
+            // メモ
+            TextFormField(
+              controller: _memoController,
+              decoration: const InputDecoration(
+                labelText: 'メモ',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 3,
+            ),
+            const SizedBox(height: 16),
+
             // 期限日
             ListTile(
               contentPadding: EdgeInsets.zero,
@@ -169,7 +192,7 @@ class _TaskFormPageState extends ConsumerState<TaskFormPage> {
             const SizedBox(height: 8),
 
             // 優先度
-            DropdownButtonFormField<int?>(
+            DropdownButtonFormField<String?>(
               initialValue: _priorityId,
               decoration: const InputDecoration(
                 labelText: '優先度',
@@ -185,10 +208,10 @@ class _TaskFormPageState extends ConsumerState<TaskFormPage> {
             const SizedBox(height: 16),
 
             // ステータス
-            DropdownButtonFormField<int?>(
+            DropdownButtonFormField<String?>(
               initialValue: _statusId,
               decoration: const InputDecoration(
-                labelText: 'ステータス',
+                labelText: 'ステータス *',
                 border: OutlineInputBorder(),
               ),
               items: [

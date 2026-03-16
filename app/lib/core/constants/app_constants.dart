@@ -1,6 +1,18 @@
 class AppConstants {
   static const String appName = 'タスクマネージャー';
 
+  // API ベース URL（--dart-define=API_BASE_URL=https://... で上書き可能）
+  static const String apiBaseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://localhost:8080',
+  );
+
+  // Google Sign-In のサーバークライアント ID
+  static const String googleServerClientId = String.fromEnvironment(
+    'GOOGLE_SERVER_CLIENT_ID',
+    defaultValue: '',
+  );
+
   // デフォルト優先度
   static const List<Map<String, dynamic>> defaultPriorities = [
     {'name': '絶対やる', 'sortOrder': 0},

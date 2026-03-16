@@ -1,46 +1,38 @@
-import 'package:drift/drift.dart';
-
-import '../database/app_database.dart';
+import '../../data/api/api_client.dart';
 import '../../domain/models/tag.dart';
 import '../../domain/repositories/tag_repository.dart';
 
 class TagRepositoryImpl implements TagRepository {
-  final AppDatabase _db;
+  final ApiClient _api;
 
-  TagRepositoryImpl(this._db);
+  TagRepositoryImpl(this._api);
 
-  Tag _toDomain(TagData d) => Tag(id: d.id, name: d.name);
+  Tag _toDomain(Map<String, dynamic> json) => Tag(
+        id: json['id'] as String,
+        name: json['name'] as String,
+      );
 
   @override
   Future<List<Tag>> getTags() async {
-    final rows = await (_db.select(_db.tags)
-          ..orderBy([(t) => OrderingTerm.asc(t.name)]))
-        .get();
-    return rows.map(_toDomain).toList();
+    final items = await _api.getTags();
+    final list = items.map((json) => _toDomain(json as Map<String, dynamic>)).toList();
+    list.sort((a, b) => a.name.compareTo(b.name));
+    return list;
   }
 
   @override
-  Future<Tag?> getTagByName(String name) async {
-    final row = await (_db.select(_db.tags)
-          ..where((t) => t.name.equals(name)))
-        .getSingleOrNull();
-    return row == null ? null : _toDomain(row);
+  Future<Tag> addTag({required String name}) async {
+    final json = await _api.createTag({'name': name});
+    return _toDomain(json);
   }
 
   @override
-  Future<int> addTag({required String name}) async {
-    return _db.into(_db.tags).insert(TagsCompanion.insert(name: name));
+  Future<void> updateTag({required String id, required String name}) async {
+    await _api.updateTag(id, {'name': name});
   }
 
   @override
-  Future<void> updateTag({required int id, required String name}) async {
-    await (_db.update(_db.tags)..where((t) => t.id.equals(id)))
-        .write(TagsCompanion(name: Value(name)));
-  }
-
-  @override
-  Future<void> deleteTag(int id) async {
-    await (_db.delete(_db.taskTags)..where((t) => t.tagId.equals(id))).go();
-    await (_db.delete(_db.tags)..where((t) => t.id.equals(id))).go();
+  Future<void> deleteTag(String id) async {
+    await _api.deleteTag(id);
   }
 }

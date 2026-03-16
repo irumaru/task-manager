@@ -37,15 +37,15 @@ class FilterNotifier extends Notifier<FilterState> {
     state = state.copyWith(filter: state.filter.copyWith(searchQuery: query));
   }
 
-  void setTagIds(List<int> ids) {
+  void setTagIds(List<String> ids) {
     state = state.copyWith(filter: state.filter.copyWith(tagIds: ids));
   }
 
-  void setPriorityIds(List<int> ids) {
+  void setPriorityIds(List<String> ids) {
     state = state.copyWith(filter: state.filter.copyWith(priorityIds: ids));
   }
 
-  void setStatusIds(List<int> ids) {
+  void setStatusIds(List<String> ids) {
     state = state.copyWith(filter: state.filter.copyWith(statusIds: ids));
   }
 

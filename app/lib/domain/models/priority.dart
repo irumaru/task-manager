@@ -1,5 +1,5 @@
 class Priority {
-  final int id;
+  final String id;
   final String name;
   final int sortOrder;
   final bool isDefault;
@@ -12,7 +12,7 @@ class Priority {
   });
 
   Priority copyWith({
-    int? id,
+    String? id,
     String? name,
     int? sortOrder,
     bool? isDefault,

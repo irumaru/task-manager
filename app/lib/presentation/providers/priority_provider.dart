@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/models/priority.dart';
-import 'database_provider.dart';
+import 'api_provider.dart';
 
 final prioritiesProvider = FutureProvider<List<Priority>>((ref) {
   return ref.watch(priorityRepositoryProvider).getPriorities();
@@ -17,17 +17,17 @@ class PriorityNotifier extends AsyncNotifier<List<Priority>> {
     ref.invalidateSelf();
   }
 
-  Future<void> edit(int id, String name) async {
+  Future<void> edit(String id, String name) async {
     await ref.read(priorityRepositoryProvider).updatePriority(id: id, name: name);
     ref.invalidateSelf();
   }
 
-  Future<void> delete(int id) async {
+  Future<void> delete(String id) async {
     await ref.read(priorityRepositoryProvider).deletePriority(id);
     ref.invalidateSelf();
   }
 
-  Future<void> reorder(List<int> orderedIds) async {
+  Future<void> reorder(List<String> orderedIds) async {
     await ref.read(priorityRepositoryProvider).reorderPriorities(orderedIds);
     ref.invalidateSelf();
   }

@@ -75,6 +75,9 @@ flutter run -d android
 
 # 特定デバイスを指定して起動（デバイスIDを使う場合）
 flutter run -d <device-id>
+
+# 環境変数を指定して実行
+flutter run --dart-define=API_BASE_URL=http://127.0.0.1:8080 --dart-define=GOOGLE_SERVER_CLIENT_ID=729359629726-qopen10jrnk7q2apggrnfavd5kkob829.apps.googleusercontent.com -d Chrome
 ```
 
 ### コード生成

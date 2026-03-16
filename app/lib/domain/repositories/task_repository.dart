@@ -5,10 +5,10 @@ enum SortField { createdAt, updatedAt, dueDate, priority, title }
 enum SortOrder { asc, desc }
 
 class TaskFilter {
-  final List<int> tagIds;
-  final List<int> priorityIds;
-  final List<int> statusIds;
-  final List<int> excludeStatusIds;
+  final List<String> tagIds;
+  final List<String> priorityIds;
+  final List<String> statusIds;
+  final List<String> excludeStatusIds;
   final bool? isOverdue;
   final String searchQuery;
 
@@ -22,10 +22,10 @@ class TaskFilter {
   });
 
   TaskFilter copyWith({
-    List<int>? tagIds,
-    List<int>? priorityIds,
-    List<int>? statusIds,
-    List<int>? excludeStatusIds,
+    List<String>? tagIds,
+    List<String>? priorityIds,
+    List<String>? statusIds,
+    List<String>? excludeStatusIds,
     bool? isOverdue,
     String? searchQuery,
   }) {
@@ -47,27 +47,30 @@ abstract class TaskRepository {
     SortOrder sortOrder,
   });
 
-  Future<Task?> getTaskById(int id);
+  Future<Task?> getTaskById(String id);
 
-  Future<int> addTask({
+  Future<Task> addTask({
     required String title,
+    String? memo,
     DateTime? dueDate,
-    int? priorityId,
-    int? statusId,
-    List<int> tagIds,
+    required String statusId,
+    String? priorityId,
+    List<String> tagIds,
   });
 
-  Future<void> updateTask({
-    required int id,
-    required String title,
+  Future<Task> updateTask({
+    required String id,
+    String? title,
+    String? memo,
+    bool clearMemo,
     DateTime? dueDate,
     bool clearDueDate,
-    int? priorityId,
+    String? priorityId,
     bool clearPriority,
-    int? statusId,
+    String? statusId,
     bool clearStatus,
-    List<int> tagIds,
+    List<String> tagIds,
   });
 
-  Future<void> deleteTask(int id);
+  Future<void> deleteTask(String id);
 }

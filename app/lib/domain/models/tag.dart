@@ -1,5 +1,5 @@
 class Tag {
-  final int id;
+  final String id;
   final String name;
 
   const Tag({
@@ -7,7 +7,7 @@ class Tag {
     required this.name,
   });
 
-  Tag copyWith({int? id, String? name}) {
+  Tag copyWith({String? id, String? name}) {
     return Tag(id: id ?? this.id, name: name ?? this.name);
   }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/models/status.dart';
-import 'database_provider.dart';
+import 'api_provider.dart';
 
 final statusesProvider = FutureProvider<List<Status>>((ref) {
   return ref.watch(statusRepositoryProvider).getStatuses();
@@ -17,17 +17,17 @@ class StatusNotifier extends AsyncNotifier<List<Status>> {
     ref.invalidateSelf();
   }
 
-  Future<void> edit(int id, String name) async {
+  Future<void> edit(String id, String name) async {
     await ref.read(statusRepositoryProvider).updateStatus(id: id, name: name);
     ref.invalidateSelf();
   }
 
-  Future<void> delete(int id) async {
+  Future<void> delete(String id) async {
     await ref.read(statusRepositoryProvider).deleteStatus(id);
     ref.invalidateSelf();
   }
 
-  Future<void> reorder(List<int> orderedIds) async {
+  Future<void> reorder(List<String> orderedIds) async {
     await ref.read(statusRepositoryProvider).reorderStatuses(orderedIds);
     ref.invalidateSelf();
   }
