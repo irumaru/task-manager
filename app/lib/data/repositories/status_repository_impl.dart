@@ -10,8 +10,8 @@ class StatusRepositoryImpl implements StatusRepository {
   Status _toDomain(Map<String, dynamic> json) => Status(
         id: json['id'] as String,
         name: json['name'] as String,
-        sortOrder: json['sortOrder'] as int,
-        isDefault: json['isDefault'] as bool? ?? false,
+        sortOrder: json['displayOrder'] as int,
+        isDefault: false,
       );
 
   @override
@@ -23,15 +23,15 @@ class StatusRepositoryImpl implements StatusRepository {
   }
 
   @override
-  Future<void> addStatus({required String name}) async {
-    await _api.createStatus({'name': name});
+  Future<void> addStatus({required String name, required int displayOrder}) async {
+    await _api.createStatus({'name': name, 'displayOrder': displayOrder});
   }
 
   @override
   Future<void> updateStatus({required String id, required String name, int? sortOrder}) async {
     await _api.updateStatus(id, {
       'name': name,
-      if (sortOrder != null) 'sortOrder': sortOrder,
+      if (sortOrder != null) 'displayOrder': sortOrder,
     });
   }
 
@@ -43,7 +43,7 @@ class StatusRepositoryImpl implements StatusRepository {
   @override
   Future<void> reorderStatuses(List<String> orderedIds) async {
     for (var i = 0; i < orderedIds.length; i++) {
-      await _api.updateStatus(orderedIds[i], {'sortOrder': i});
+      await _api.updateStatus(orderedIds[i], {'displayOrder': i});
     }
   }
 }

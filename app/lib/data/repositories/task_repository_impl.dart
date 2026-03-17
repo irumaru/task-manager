@@ -14,7 +14,7 @@ class TaskRepositoryImpl implements TaskRepository {
       memo: json['memo'] as String?,
       dueDate: json['dueDate'] != null ? DateTime.parse(json['dueDate'] as String) : null,
       priorityId: json['priorityId'] as String?,
-      statusId: json['statusId'] as String?,
+      statusId: json['statusId'] as String,
       tagIds: (json['tagIds'] as List<dynamic>?)?.cast<String>() ?? const [],
       // priority/status/tags は Provider 層で解決
       priority: null,
@@ -140,7 +140,7 @@ class TaskRepositoryImpl implements TaskRepository {
       if (clearMemo) 'memo': null else if (memo != null) 'memo': memo,
       if (clearDueDate) 'dueDate': null else if (dueDate != null) 'dueDate': dueDate.toUtc().toIso8601String(),
       if (clearPriority) 'priorityId': null else if (priorityId != null) 'priorityId': priorityId,
-      if (clearStatus) 'statusId': null else if (statusId != null) 'statusId': statusId,
+      if (statusId case final s?) 'statusId': s,
       'tagIds': tagIds,
     });
     return _toTask(json);

@@ -13,7 +13,8 @@ class StatusNotifier extends AsyncNotifier<List<Status>> {
   }
 
   Future<void> add(String name) async {
-    await ref.read(statusRepositoryProvider).addStatus(name: name);
+    final currentCount = state.value?.length ?? 0;
+    await ref.read(statusRepositoryProvider).addStatus(name: name, displayOrder: currentCount);
     ref.invalidateSelf();
   }
 

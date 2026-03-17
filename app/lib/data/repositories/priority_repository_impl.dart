@@ -10,8 +10,8 @@ class PriorityRepositoryImpl implements PriorityRepository {
   Priority _toDomain(Map<String, dynamic> json) => Priority(
         id: json['id'] as String,
         name: json['name'] as String,
-        sortOrder: json['sortOrder'] as int,
-        isDefault: json['isDefault'] as bool? ?? false,
+        sortOrder: json['displayOrder'] as int,
+        isDefault: false,
       );
 
   @override
@@ -23,15 +23,15 @@ class PriorityRepositoryImpl implements PriorityRepository {
   }
 
   @override
-  Future<void> addPriority({required String name}) async {
-    await _api.createPriority({'name': name});
+  Future<void> addPriority({required String name, required int displayOrder}) async {
+    await _api.createPriority({'name': name, 'displayOrder': displayOrder});
   }
 
   @override
   Future<void> updatePriority({required String id, required String name, int? sortOrder}) async {
     await _api.updatePriority(id, {
       'name': name,
-      if (sortOrder != null) 'sortOrder': sortOrder,
+      if (sortOrder != null) 'displayOrder': sortOrder,
     });
   }
 
@@ -43,7 +43,7 @@ class PriorityRepositoryImpl implements PriorityRepository {
   @override
   Future<void> reorderPriorities(List<String> orderedIds) async {
     for (var i = 0; i < orderedIds.length; i++) {
-      await _api.updatePriority(orderedIds[i], {'sortOrder': i});
+      await _api.updatePriority(orderedIds[i], {'displayOrder': i});
     }
   }
 }

@@ -13,7 +13,8 @@ class PriorityNotifier extends AsyncNotifier<List<Priority>> {
   }
 
   Future<void> add(String name) async {
-    await ref.read(priorityRepositoryProvider).addPriority(name: name);
+    final currentCount = state.value?.length ?? 0;
+    await ref.read(priorityRepositoryProvider).addPriority(name: name, displayOrder: currentCount);
     ref.invalidateSelf();
   }
 
