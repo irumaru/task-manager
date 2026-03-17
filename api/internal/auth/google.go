@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strings"
 )
 
 const tokenInfoURL = "https://oauth2.googleapis.com/tokeninfo?id_token="
@@ -15,6 +17,47 @@ type GoogleUserInfo struct {
 	Name        string `json:"name"`
 	Picture     string `json:"picture"`
 	EmailVerified string `json:"email_verified"`
+}
+
+type googleTokenResponse struct {
+	IDToken string `json:"id_token"`
+}
+
+// ExchangeGoogleCode exchanges an authorization code for Google tokens,
+// then verifies the ID token and returns user info.
+func ExchangeGoogleCode(ctx context.Context, code, redirectURI, clientID, clientSecret string) (*GoogleUserInfo, error) {
+	data := url.Values{
+		"grant_type":    {"authorization_code"},
+		"code":          {code},
+		"redirect_uri":  {redirectURI},
+		"client_id":     {clientID},
+		"client_secret": {clientSecret},
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost,
+		"https://oauth2.googleapis.com/token",
+		strings.NewReader(data.Encode()))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("token exchange failed: status %d", resp.StatusCode)
+	}
+
+	var tokenResp googleTokenResponse
+	if err := json.NewDecoder(resp.Body).Decode(&tokenResp); err != nil {
+		return nil, err
+	}
+
+	return VerifyGoogleIDToken(ctx, tokenResp.IDToken)
 }
 
 // VerifyGoogleIDToken validates a Google ID token and returns user info.

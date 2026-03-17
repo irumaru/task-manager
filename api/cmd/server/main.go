@@ -22,6 +22,8 @@ func main() {
 	// -----------------------------------------------------------------------
 	dbURL := mustEnv("DATABASE_URL")
 	jwtSecret := mustEnv("JWT_SECRET")
+	googleClientID := mustEnv("GOOGLE_CLIENT_ID")
+	googleClientSecret := mustEnv("GOOGLE_CLIENT_SECRET")
 	port := envOr("PORT", "8080")
 
 	// -----------------------------------------------------------------------
@@ -44,7 +46,7 @@ func main() {
 	// -----------------------------------------------------------------------
 	// HTTP handlers (ogen)
 	// -----------------------------------------------------------------------
-	h := handler.New(q, jwtSvc, hub)
+	h := handler.New(q, jwtSvc, hub, googleClientID, googleClientSecret)
 	sec := auth.NewSecurityHandler(jwtSvc)
 
 	srv, err := api.NewServer(h, sec)

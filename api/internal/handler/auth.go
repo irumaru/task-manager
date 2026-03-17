@@ -34,6 +34,32 @@ func (h *Handler) AuthOpsGoogleLogin(ctx context.Context, req *api.GoogleAuthReq
 	}, nil
 }
 
+func (h *Handler) AuthOpsGoogleLoginWithCode(ctx context.Context, req *api.GoogleAuthCodeRequest) (*api.AuthResponse, error) {
+	info, err := auth.ExchangeGoogleCode(ctx, req.Code, req.RedirectUri, h.googleClientID, h.googleClientSecret)
+	if err != nil {
+		return nil, errUnauthorized("invalid authorization code")
+	}
+
+	user, err := h.q.UpsertUser(ctx, repository.UpsertUserParams{
+		Email:       info.Email,
+		DisplayName: info.Name,
+		AvatarUrl:   nilPtr(info.Picture),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := h.jwt.Issue(user.ID, user.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.AuthResponse{
+		AccessToken: token,
+		User:        *toAPIUser(user),
+	}, nil
+}
+
 func (h *Handler) AuthOpsGetMe(ctx context.Context) (*api.UserProfile, error) {
 	userID, err := auth.UserIDFromContext(ctx)
 	if err != nil {

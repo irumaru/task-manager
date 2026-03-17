@@ -36,6 +36,14 @@ model GoogleAuthRequest {
   idToken: string;
 }
 
+model GoogleAuthCodeRequest {
+  @doc("Authorization code from OAuth2 redirect")
+  code: string;
+
+  @doc("Redirect URI used in the OAuth2 flow (must match)")
+  redirectUri: string;
+}
+
 model AuthResponse {
   @doc("JWT access token issued by this server")
   accessToken: string;
@@ -58,6 +66,11 @@ interface AuthOps {
   @route("/google")
   @doc("Exchange Google ID token for a server-issued JWT")
   googleLogin(@body body: GoogleAuthRequest): AuthResponse | ApiError;
+
+  @post
+  @route("/google/code")
+  @doc("Exchange Google authorization code for a server-issued JWT")
+  googleLoginWithCode(@body body: GoogleAuthCodeRequest): AuthResponse | ApiError;
 
   @get
   @route("/me")

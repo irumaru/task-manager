@@ -20,6 +20,12 @@ type Handler interface {
 	//
 	// POST /auth/google
 	AuthOpsGoogleLogin(ctx context.Context, req *GoogleAuthRequest) (*AuthResponse, error)
+	// AuthOpsGoogleLoginWithCode implements AuthOps_googleLoginWithCode operation.
+	//
+	// Exchange Google authorization code for a server-issued JWT.
+	//
+	// POST /auth/google/code
+	AuthOpsGoogleLoginWithCode(ctx context.Context, req *GoogleAuthCodeRequest) (*AuthResponse, error)
 	// PriorityOpsCreate implements PriorityOps_create operation.
 	//
 	// POST /priorities

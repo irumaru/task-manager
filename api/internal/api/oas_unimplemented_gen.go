@@ -31,6 +31,15 @@ func (UnimplementedHandler) AuthOpsGoogleLogin(ctx context.Context, req *GoogleA
 	return r, ht.ErrNotImplemented
 }
 
+// AuthOpsGoogleLoginWithCode implements AuthOps_googleLoginWithCode operation.
+//
+// Exchange Google authorization code for a server-issued JWT.
+//
+// POST /auth/google/code
+func (UnimplementedHandler) AuthOpsGoogleLoginWithCode(ctx context.Context, req *GoogleAuthCodeRequest) (r *AuthResponse, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // PriorityOpsCreate implements PriorityOps_create operation.
 //
 // POST /priorities

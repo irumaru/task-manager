@@ -13,13 +13,15 @@ import (
 
 // Handler implements api.Handler.
 type Handler struct {
-	q   *repository.Queries
-	jwt *auth.JWTService
-	hub websocket.Hub
+	q                   *repository.Queries
+	jwt                 *auth.JWTService
+	hub                 websocket.Hub
+	googleClientID      string
+	googleClientSecret  string
 }
 
-func New(q *repository.Queries, jwt *auth.JWTService, hub websocket.Hub) *Handler {
-	return &Handler{q: q, jwt: jwt, hub: hub}
+func New(q *repository.Queries, jwt *auth.JWTService, hub websocket.Hub, googleClientID, googleClientSecret string) *Handler {
+	return &Handler{q: q, jwt: jwt, hub: hub, googleClientID: googleClientID, googleClientSecret: googleClientSecret}
 }
 
 // NewError converts an error returned by a handler method into the ogen error response.

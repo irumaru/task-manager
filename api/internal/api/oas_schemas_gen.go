@@ -253,6 +253,34 @@ func (s *CreateTaskRequest) SetTagIds(val []string) {
 	s.TagIds = val
 }
 
+// Ref: #/components/schemas/GoogleAuthCodeRequest
+type GoogleAuthCodeRequest struct {
+	// Authorization code from OAuth2 redirect.
+	Code string `json:"code"`
+	// Redirect URI used in the OAuth2 flow (must match).
+	RedirectUri string `json:"redirectUri"`
+}
+
+// GetCode returns the value of Code.
+func (s *GoogleAuthCodeRequest) GetCode() string {
+	return s.Code
+}
+
+// GetRedirectUri returns the value of RedirectUri.
+func (s *GoogleAuthCodeRequest) GetRedirectUri() string {
+	return s.RedirectUri
+}
+
+// SetCode sets the value of Code.
+func (s *GoogleAuthCodeRequest) SetCode(val string) {
+	s.Code = val
+}
+
+// SetRedirectUri sets the value of RedirectUri.
+func (s *GoogleAuthCodeRequest) SetRedirectUri(val string) {
+	s.RedirectUri = val
+}
+
 // Ref: #/components/schemas/GoogleAuthRequest
 type GoogleAuthRequest struct {
 	// Google ID token obtained from Google Sign-In.

@@ -21,8 +21,10 @@ services:
       dockerfile: Dockerfile.dev
     environment:
       DATABASE_URL: "postgres://postgres:example@db:5432/taskmanager?search_path=taskmanager&sslmode=disable"
-      JWT_SECRET: "change-me-in-production"
       PORT: "8080"
+      JWT_SECRET: ${JWT_SECRET:?err}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:?err}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:?err}
     ports:
       - "8080:8080"
     volumes:
