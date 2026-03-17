@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"task-manager/api/internal/api"
 	"task-manager/api/internal/auth"
@@ -58,7 +59,7 @@ func main() {
 	// HTTP mux
 	// -----------------------------------------------------------------------
 	mux := http.NewServeMux()
-	mux.Handle("/", srv)
+	mux.Handle("/", loggingMiddleware(srv))
 	mux.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		ws.ServeWS(hub, jwtSvc, w, r)
 	})
@@ -67,6 +68,25 @@ func main() {
 	if err := http.ListenAndServe(":"+port, mux); err != nil {
 		log.Fatalf("http: %v", err)
 	}
+}
+
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		rw := &responseWriter{ResponseWriter: w, status: http.StatusOK}
+		next.ServeHTTP(rw, r)
+		log.Printf("%s %s %d %s", r.Method, r.URL.Path, rw.status, time.Since(start))
+	})
+}
+
+type responseWriter struct {
+	http.ResponseWriter
+	status int
+}
+
+func (rw *responseWriter) WriteHeader(code int) {
+	rw.status = code
+	rw.ResponseWriter.WriteHeader(code)
 }
 
 func mustEnv(key string) string {
