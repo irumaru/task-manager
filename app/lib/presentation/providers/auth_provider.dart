@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 import 'api_provider.dart';
 
@@ -51,24 +50,15 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
   Future<void> signInWithGoogle() async {
     state = const AsyncLoading();
 
-    final signIn = GoogleSignIn.instance;
+    // 1. ブラウザで Google OAuth → authorization code 取得
+    final authService = ref.read(browserAuthServiceProvider);
+    final result = await authService.signInWithGoogle();
 
-    // v7: authenticate() の前にイベントを待ち受け
-    final eventFuture = signIn.authenticationEvents
-        .where((e) => e is GoogleSignInAuthenticationEventSignIn)
-        .map((e) => e as GoogleSignInAuthenticationEventSignIn)
-        .first;
-
-    await signIn.authenticate();
-    final event = await eventFuture;
-    final account = event.user;
-    final googleAuth = account.authentication;
-    final idToken = googleAuth.idToken;
-    if (idToken == null) throw Exception('Failed to get ID token');
-
+    // 2. バックエンドで code → JWT 交換
     final api = ref.read(apiClientProvider);
-    final response = await api.googleLogin(idToken);
+    final response = await api.googleLoginWithCode(result.code, result.redirectUri);
 
+    // 3. JWT 保存 → 状態更新
     final storage = ref.read(secureStorageProvider);
     await storage.write(key: 'access_token', value: response['accessToken'] as String);
 
@@ -84,7 +74,6 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
   }
 
   Future<void> signOut() async {
-    await GoogleSignIn.instance.signOut();
     final storage = ref.read(secureStorageProvider);
     await storage.delete(key: 'access_token');
     state = const AsyncData(AuthState(status: AuthStatus.unauthenticated));

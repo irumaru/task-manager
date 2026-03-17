@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../providers/auth_provider.dart';
 
@@ -36,14 +35,13 @@ class LoginPage extends ConsumerWidget {
                       style: TextStyle(color: Theme.of(context).colorScheme.error),
                     ),
                   ),
-                if (GoogleSignIn.instance.supportsAuthenticate())
-                  FilledButton.icon(
-                    icon: const Icon(Icons.login),
-                    label: const Text('Google でサインイン'),
-                    onPressed: () => ref
-                        .read(authNotifierProvider.notifier)
-                        .signInWithGoogle(),
-                  ),
+                FilledButton.icon(
+                  icon: const Icon(Icons.login),
+                  label: const Text('Google でサインイン'),
+                  onPressed: () => ref
+                      .read(authNotifierProvider.notifier)
+                      .signInWithGoogle(),
+                ),
               ],
             ],
           ),

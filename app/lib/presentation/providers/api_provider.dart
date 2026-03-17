@@ -3,6 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../data/api/api_client.dart';
+import '../../data/auth/browser_auth_service.dart';
 import '../../data/repositories/priority_repository_impl.dart';
 import '../../data/repositories/status_repository_impl.dart';
 import '../../data/repositories/tag_repository_impl.dart';
@@ -38,4 +39,8 @@ final statusRepositoryProvider = Provider<StatusRepository>((ref) {
 
 final tagRepositoryProvider = Provider<TagRepository>((ref) {
   return TagRepositoryImpl(ref.watch(apiClientProvider));
+});
+
+final browserAuthServiceProvider = Provider<BrowserAuthService>((ref) {
+  return BrowserAuthService(clientId: AppConstants.googleOAuthClientId);
 });

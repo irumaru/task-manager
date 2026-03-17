@@ -39,10 +39,13 @@ class ApiClient {
 
   // ─── Auth ───
 
-  /// POST /auth/google
-  Future<Map<String, dynamic>> googleLogin(String idToken) {
+  /// POST /auth/google/code
+  Future<Map<String, dynamic>> googleLoginWithCode(String code, String redirectUri) {
     return _handle(() async {
-      final response = await _dio.post('/auth/google', data: {'idToken': idToken});
+      final response = await _dio.post('/auth/google/code', data: {
+        'code': code,
+        'redirectUri': redirectUri,
+      });
       return response.data as Map<String, dynamic>;
     });
   }

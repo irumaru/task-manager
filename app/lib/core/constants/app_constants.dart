@@ -7,9 +7,9 @@ class AppConstants {
     defaultValue: 'http://localhost:8080',
   );
 
-  // Google Sign-In のサーバークライアント ID
-  static const String googleServerClientId = String.fromEnvironment(
-    'GOOGLE_SERVER_CLIENT_ID',
+  // Google OAuth クライアント ID（ブラウザ OAuth 用）
+  static const String googleOAuthClientId = String.fromEnvironment(
+    'GOOGLE_OAUTH_CLIENT_ID',
     defaultValue: '',
   );
 
