@@ -12,9 +12,9 @@ class FilterBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final filterState = ref.watch(filterProvider);
-    final priorities = ref.watch(priorityNotifierProvider).valueOrNull ?? [];
-    final statuses = ref.watch(statusNotifierProvider).valueOrNull ?? [];
-    final tags = ref.watch(tagNotifierProvider).valueOrNull ?? [];
+    final priorities = ref.watch(priorityNotifierProvider).value ?? [];
+    final statuses = ref.watch(statusNotifierProvider).value ?? [];
+    final tags = ref.watch(tagNotifierProvider).value ?? [];
 
     final hasFilter = filterState.filter.tagIds.isNotEmpty ||
         filterState.filter.priorityIds.isNotEmpty ||
@@ -53,7 +53,7 @@ class FilterBar extends ConsumerWidget {
                   label: Text(p.name),
                   selected: filterState.filter.priorityIds.contains(p.id),
                   onSelected: (v) {
-                    final ids = List<int>.from(filterState.filter.priorityIds);
+                    final ids = List<String>.from(filterState.filter.priorityIds);
                     v ? ids.add(p.id) : ids.remove(p.id);
                     ref.read(filterProvider.notifier).setPriorityIds(ids);
                   },
@@ -66,7 +66,7 @@ class FilterBar extends ConsumerWidget {
                   label: Text(s.name),
                   selected: filterState.filter.statusIds.contains(s.id),
                   onSelected: (v) {
-                    final ids = List<int>.from(filterState.filter.statusIds);
+                    final ids = List<String>.from(filterState.filter.statusIds);
                     v ? ids.add(s.id) : ids.remove(s.id);
                     ref.read(filterProvider.notifier).setStatusIds(ids);
                   },
@@ -79,7 +79,7 @@ class FilterBar extends ConsumerWidget {
                   label: Text(t.name),
                   selected: filterState.filter.tagIds.contains(t.id),
                   onSelected: (v) {
-                    final ids = List<int>.from(filterState.filter.tagIds);
+                    final ids = List<String>.from(filterState.filter.tagIds);
                     v ? ids.add(t.id) : ids.remove(t.id);
                     ref.read(filterProvider.notifier).setTagIds(ids);
                   },

@@ -1,66 +1,49 @@
-import 'package:drift/drift.dart';
-
-import '../database/app_database.dart';
+import '../../data/api/api_client.dart';
 import '../../domain/models/status.dart';
 import '../../domain/repositories/status_repository.dart';
 
 class StatusRepositoryImpl implements StatusRepository {
-  final AppDatabase _db;
+  final ApiClient _api;
 
-  StatusRepositoryImpl(this._db);
+  StatusRepositoryImpl(this._api);
 
-  Status _toDomain(StatusData d) => Status(
-        id: d.id,
-        name: d.name,
-        sortOrder: d.sortOrder,
-        isDefault: d.isDefault,
+  Status _toDomain(Map<String, dynamic> json) => Status(
+        id: json['id'] as String,
+        name: json['name'] as String,
+        sortOrder: json['displayOrder'] as int,
+        isDefault: false,
       );
 
   @override
   Future<List<Status>> getStatuses() async {
-    final rows = await (_db.select(_db.statuses)
-          ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
-        .get();
-    return rows.map(_toDomain).toList();
+    final items = await _api.getStatuses();
+    final list = items.map((json) => _toDomain(json as Map<String, dynamic>)).toList();
+    list.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    return list;
   }
 
   @override
-  Future<int> addStatus({required String name}) async {
-    final rows = await _db.select(_db.statuses).get();
-    final nextOrder = rows.isEmpty
-        ? 0
-        : rows.map((r) => r.sortOrder).reduce((a, b) => a > b ? a : b) + 1;
-    return _db.into(_db.statuses).insert(
-          StatusesCompanion.insert(name: name, sortOrder: nextOrder),
-        );
+  Future<void> addStatus({required String name, required int displayOrder}) async {
+    await _api.createStatus({'name': name, 'displayOrder': displayOrder});
   }
 
   @override
-  Future<void> updateStatus(
-      {required int id, required String name, int? sortOrder}) async {
-    await (_db.update(_db.statuses)..where((t) => t.id.equals(id))).write(
-      StatusesCompanion(
-        name: Value(name),
-        sortOrder: sortOrder != null ? Value(sortOrder) : const Value.absent(),
-      ),
-    );
-  }
-
-  @override
-  Future<void> deleteStatus(int id) async {
-    await (_db.update(_db.tasks)..where((t) => t.statusId.equals(id)))
-        .write(const TasksCompanion(statusId: Value(null)));
-    await (_db.delete(_db.statuses)..where((t) => t.id.equals(id))).go();
-  }
-
-  @override
-  Future<void> reorderStatuses(List<int> orderedIds) async {
-    await _db.transaction(() async {
-      for (var i = 0; i < orderedIds.length; i++) {
-        await (_db.update(_db.statuses)
-              ..where((t) => t.id.equals(orderedIds[i])))
-            .write(StatusesCompanion(sortOrder: Value(i)));
-      }
+  Future<void> updateStatus({required String id, required String name, int? sortOrder}) async {
+    await _api.updateStatus(id, {
+      'name': name,
+      if (sortOrder != null) 'displayOrder': sortOrder,
     });
+  }
+
+  @override
+  Future<void> deleteStatus(String id) async {
+    await _api.deleteStatus(id);
+  }
+
+  @override
+  Future<void> reorderStatuses(List<String> orderedIds) async {
+    for (var i = 0; i < orderedIds.length; i++) {
+      await _api.updateStatus(orderedIds[i], {'displayOrder': i});
+    }
   }
 }

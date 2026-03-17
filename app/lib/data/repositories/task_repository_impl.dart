@@ -1,63 +1,27 @@
-import 'package:drift/drift.dart';
-
-import '../database/app_database.dart';
+import '../../data/api/api_client.dart';
 import '../../domain/models/task.dart';
-import '../../domain/models/priority.dart';
-import '../../domain/models/status.dart';
-import '../../domain/models/tag.dart';
 import '../../domain/repositories/task_repository.dart';
 
 class TaskRepositoryImpl implements TaskRepository {
-  final AppDatabase _db;
+  final ApiClient _api;
 
-  TaskRepositoryImpl(this._db);
+  TaskRepositoryImpl(this._api);
 
-  Future<List<Tag>> _getTagsForTask(int taskId) async {
-    final rows = await (_db.select(_db.taskTags)
-          ..where((t) => t.taskId.equals(taskId)))
-        .get();
-    if (rows.isEmpty) return [];
-    final tagIds = rows.map((r) => r.tagId).toList();
-    final tags = await (_db.select(_db.tags)
-          ..where((t) => t.id.isIn(tagIds)))
-        .get();
-    return tags.map((t) => Tag(id: t.id, name: t.name)).toList();
-  }
-
-  Future<Task> _toTask(TaskData d) async {
-    Priority? priority;
-    if (d.priorityId != null) {
-      final p = await (_db.select(_db.priorities)
-            ..where((t) => t.id.equals(d.priorityId!)))
-          .getSingleOrNull();
-      if (p != null) {
-        priority = Priority(
-            id: p.id, name: p.name, sortOrder: p.sortOrder, isDefault: p.isDefault);
-      }
-    }
-
-    Status? status;
-    if (d.statusId != null) {
-      final s = await (_db.select(_db.statuses)
-            ..where((t) => t.id.equals(d.statusId!)))
-          .getSingleOrNull();
-      if (s != null) {
-        status = Status(
-            id: s.id, name: s.name, sortOrder: s.sortOrder, isDefault: s.isDefault);
-      }
-    }
-
-    final tags = await _getTagsForTask(d.id);
-
+  Task _toTask(Map<String, dynamic> json) {
     return Task(
-      id: d.id,
-      title: d.title,
-      dueDate: d.dueDate,
-      priority: priority,
-      status: status,
-      tags: tags,
-      createdAt: d.createdAt,
-      updatedAt: d.updatedAt,
+      id: json['id'] as String,
+      title: json['title'] as String,
+      memo: json['memo'] as String?,
+      dueDate: json['dueDate'] != null ? DateTime.parse(json['dueDate'] as String) : null,
+      priorityId: json['priorityId'] as String?,
+      statusId: json['statusId'] as String,
+      tagIds: (json['tagIds'] as List<dynamic>?)?.cast<String>() ?? const [],
+      // priority/status/tags は Provider 層で解決
+      priority: null,
+      status: null,
+      tags: const [],
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
   }
 
@@ -67,149 +31,123 @@ class TaskRepositoryImpl implements TaskRepository {
     SortField sortField = SortField.createdAt,
     SortOrder sortOrder = SortOrder.desc,
   }) async {
-    var query = _db.select(_db.tasks);
+    final items = await _api.getTasks();
+    var tasks = items.map((json) => _toTask(json as Map<String, dynamic>)).toList();
 
-    query.where((t) {
-      Expression<bool> condition = const Constant(true);
-
-      if (filter.searchQuery.isNotEmpty) {
-        condition = condition & t.title.contains(filter.searchQuery);
-      }
-      if (filter.priorityIds.isNotEmpty) {
-        condition = condition & t.priorityId.isIn(filter.priorityIds);
-      }
-      if (filter.statusIds.isNotEmpty) {
-        condition = condition & t.statusId.isIn(filter.statusIds);
-      }
-      if (filter.excludeStatusIds.isNotEmpty) {
-        condition = condition & t.statusId.isNotIn(filter.excludeStatusIds);
-      }
-      if (filter.isOverdue == true) {
-        condition = condition &
-            t.dueDate.isSmallerThan(Variable<DateTime>(DateTime.now()));
-      }
-
-      return condition;
-    });
-
-    query.orderBy([
-      (t) {
-        final Expression term;
-        switch (sortField) {
-          case SortField.createdAt:
-            term = t.createdAt;
-            break;
-          case SortField.updatedAt:
-            term = t.updatedAt;
-            break;
-          case SortField.dueDate:
-            term = t.dueDate;
-            break;
-          case SortField.priority:
-            term = t.priorityId;
-            break;
-          case SortField.title:
-            term = t.title;
-            break;
-        }
-        return OrderingTerm(
-          expression: term,
-          mode: sortOrder == SortOrder.asc ? OrderingMode.asc : OrderingMode.desc,
-        );
-      }
-    ]);
-
-    final rows = await query.get();
-    final tasks = await Future.wait(rows.map(_toTask));
-
-    if (filter.tagIds.isNotEmpty) {
-      return tasks.where((task) {
-        return task.tags.any((tag) => filter.tagIds.contains(tag.id));
-      }).toList();
+    // クライアントサイドフィルタリング
+    if (filter.searchQuery.isNotEmpty) {
+      tasks = tasks
+          .where((t) => t.title.toLowerCase().contains(filter.searchQuery.toLowerCase()))
+          .toList();
     }
+    if (filter.priorityIds.isNotEmpty) {
+      tasks = tasks
+          .where((t) => t.priorityId != null && filter.priorityIds.contains(t.priorityId))
+          .toList();
+    }
+    if (filter.statusIds.isNotEmpty) {
+      tasks = tasks
+          .where((t) => t.statusId != null && filter.statusIds.contains(t.statusId))
+          .toList();
+    }
+    if (filter.excludeStatusIds.isNotEmpty) {
+      tasks = tasks
+          .where((t) => !filter.excludeStatusIds.contains(t.statusId))
+          .toList();
+    }
+    if (filter.tagIds.isNotEmpty) {
+      tasks = tasks
+          .where((t) => t.tagIds.any((id) => filter.tagIds.contains(id)))
+          .toList();
+    }
+    if (filter.isOverdue == true) {
+      final now = DateTime.now();
+      tasks = tasks.where((t) => t.dueDate != null && t.dueDate!.isBefore(now)).toList();
+    }
+
+    // クライアントサイドソート（priority ソートは Provider 層で解決後に行う）
+    tasks.sort((a, b) {
+      int compare;
+      switch (sortField) {
+        case SortField.createdAt:
+          compare = a.createdAt.compareTo(b.createdAt);
+        case SortField.updatedAt:
+          compare = a.updatedAt.compareTo(b.updatedAt);
+        case SortField.dueDate:
+          if (a.dueDate == null && b.dueDate == null) {
+            compare = 0;
+          } else if (a.dueDate == null) {
+            compare = 1;
+          } else if (b.dueDate == null) {
+            compare = -1;
+          } else {
+            compare = a.dueDate!.compareTo(b.dueDate!);
+          }
+        case SortField.title:
+          compare = a.title.compareTo(b.title);
+        case SortField.priority:
+          // priority オブジェクト未解決のため ID で代替ソート
+          compare = (a.priorityId ?? '').compareTo(b.priorityId ?? '');
+      }
+      return sortOrder == SortOrder.asc ? compare : -compare;
+    });
 
     return tasks;
   }
 
   @override
-  Future<Task?> getTaskById(int id) async {
-    final row = await (_db.select(_db.tasks)..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
-    return row == null ? null : _toTask(row);
+  Future<Task?> getTaskById(String id) async {
+    final json = await _api.getTask(id);
+    return _toTask(json);
   }
 
   @override
-  Future<int> addTask({
+  Future<Task> addTask({
     required String title,
+    String? memo,
     DateTime? dueDate,
-    int? priorityId,
-    int? statusId,
-    List<int> tagIds = const [],
+    required String statusId,
+    String? priorityId,
+    List<String> tagIds = const [],
   }) async {
-    final now = DateTime.now();
-    final taskId = await _db.into(_db.tasks).insert(
-          TasksCompanion.insert(
-            title: title,
-            dueDate: Value(dueDate),
-            priorityId: Value(priorityId),
-            statusId: Value(statusId),
-            createdAt: Value(now),
-            updatedAt: Value(now),
-          ),
-        );
-    await _setTaskTags(taskId, tagIds);
-    return taskId;
+    final json = await _api.createTask({
+      'title': title,
+      if (memo != null) 'memo': memo,
+      if (dueDate != null) 'dueDate': dueDate.toUtc().toIso8601String(),
+      'statusId': statusId,
+      if (priorityId != null) 'priorityId': priorityId,
+      if (tagIds.isNotEmpty) 'tagIds': tagIds,
+    });
+    return _toTask(json);
   }
 
   @override
-  Future<void> updateTask({
-    required int id,
-    required String title,
+  Future<Task> updateTask({
+    required String id,
+    String? title,
+    String? memo,
+    bool clearMemo = false,
     DateTime? dueDate,
     bool clearDueDate = false,
-    int? priorityId,
+    String? priorityId,
     bool clearPriority = false,
-    int? statusId,
+    String? statusId,
     bool clearStatus = false,
-    List<int> tagIds = const [],
+    List<String> tagIds = const [],
   }) async {
-    await (_db.update(_db.tasks)..where((t) => t.id.equals(id))).write(
-      TasksCompanion(
-        title: Value(title),
-        dueDate: clearDueDate
-            ? const Value(null)
-            : dueDate != null
-                ? Value(dueDate)
-                : const Value.absent(),
-        priorityId: clearPriority
-            ? const Value(null)
-            : priorityId != null
-                ? Value(priorityId)
-                : const Value.absent(),
-        statusId: clearStatus
-            ? const Value(null)
-            : statusId != null
-                ? Value(statusId)
-                : const Value.absent(),
-        updatedAt: Value(DateTime.now()),
-      ),
-    );
-    await _setTaskTags(id, tagIds);
+    final json = await _api.updateTask(id, {
+      if (title != null) 'title': title,
+      if (clearMemo) 'memo': null else if (memo != null) 'memo': memo,
+      if (clearDueDate) 'dueDate': null else if (dueDate != null) 'dueDate': dueDate.toUtc().toIso8601String(),
+      if (clearPriority) 'priorityId': null else if (priorityId != null) 'priorityId': priorityId,
+      if (statusId case final s?) 'statusId': s,
+      'tagIds': tagIds,
+    });
+    return _toTask(json);
   }
 
   @override
-  Future<void> deleteTask(int id) async {
-    await (_db.delete(_db.taskTags)..where((t) => t.taskId.equals(id))).go();
-    await (_db.delete(_db.tasks)..where((t) => t.id.equals(id))).go();
-  }
-
-  Future<void> _setTaskTags(int taskId, List<int> tagIds) async {
-    await (_db.delete(_db.taskTags)..where((t) => t.taskId.equals(taskId)))
-        .go();
-    for (final tagId in tagIds) {
-      await _db.into(_db.taskTags).insertOnConflictUpdate(
-            TaskTagsCompanion.insert(taskId: taskId, tagId: tagId),
-          );
-    }
+  Future<void> deleteTask(String id) async {
+    await _api.deleteTask(id);
   }
 }

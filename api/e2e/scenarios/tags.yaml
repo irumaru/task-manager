@@ -1,0 +1,45 @@
+desc: タグ CRUD
+runners:
+  req: http://localhost:8080
+steps:
+  create_tag:
+    desc: POST /tags - タグ作成
+    req:
+      /tags:
+        post:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+          body:
+            application/json:
+              name: "e2e-tag"
+    test: current.res.status == 200 && current.res.body.name == "e2e-tag"
+
+  list_tags:
+    desc: GET /tags - タグ一覧取得
+    req:
+      /tags:
+        get:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+    test: current.res.status == 200 && len(current.res.body.items) >= 1
+
+  update_tag:
+    desc: PATCH /tags/{id} - タグ更新
+    req:
+      /tags/{{ steps.create_tag.res.body.id }}:
+        patch:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+          body:
+            application/json:
+              name: "e2e-tag-updated"
+    test: current.res.status == 200 && current.res.body.name == "e2e-tag-updated"
+
+  delete_tag:
+    desc: DELETE /tags/{id} - タグ削除
+    req:
+      /tags/{{ steps.create_tag.res.body.id }}:
+        delete:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+    test: current.res.status == 204

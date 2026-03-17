@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/models/priority.dart';
 import '../../../domain/models/status.dart';
 import '../../../domain/models/tag.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/priority_provider.dart';
 import '../../providers/status_provider.dart';
 import '../../providers/tag_provider.dart';
@@ -23,6 +24,8 @@ class SettingsPage extends ConsumerWidget {
           _StatusSettings(),
           _SectionHeader('タグ'),
           _TagSettings(),
+          _SectionHeader('アカウント'),
+          _AccountSettings(),
         ],
       ),
     );
@@ -373,5 +376,27 @@ class _TagTile extends ConsumerWidget {
         content: '「${tag.name}」を削除しますか？\nすべてのタスクからもこのタグが削除されます。');
     if (!ok) return;
     await ref.read(tagNotifierProvider.notifier).delete(tag.id);
+  }
+}
+
+// ==================== アカウント ====================
+
+class _AccountSettings extends ConsumerWidget {
+  const _AccountSettings();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authAsync = ref.watch(authNotifierProvider);
+    final user = authAsync.value;
+
+    return ListTile(
+      leading: const Icon(Icons.account_circle_outlined),
+      title: Text(user?.displayName ?? user?.email ?? 'ユーザー'),
+      subtitle: user?.email != null ? Text(user!.email!) : null,
+      trailing: TextButton(
+        onPressed: () => ref.read(authNotifierProvider.notifier).signOut(),
+        child: const Text('サインアウト'),
+      ),
+    );
   }
 }

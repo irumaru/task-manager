@@ -1,0 +1,46 @@
+desc: ステータス CRUD
+runners:
+  req: http://localhost:8080
+steps:
+  create_status:
+    desc: POST /statuses - ステータス作成
+    req:
+      /statuses:
+        post:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+          body:
+            application/json:
+              name: "e2e-status"
+              displayOrder: 1
+    test: current.res.status == 200 && current.res.body.name == "e2e-status"
+
+  list_statuses:
+    desc: GET /statuses - ステータス一覧取得
+    req:
+      /statuses:
+        get:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+    test: current.res.status == 200 && len(current.res.body.items) >= 1
+
+  update_status:
+    desc: PATCH /statuses/{id} - ステータス更新
+    req:
+      /statuses/{{ steps.create_status.res.body.id }}:
+        patch:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+          body:
+            application/json:
+              name: "e2e-status-updated"
+    test: current.res.status == 200 && current.res.body.name == "e2e-status-updated"
+
+  delete_status:
+    desc: DELETE /statuses/{id} - ステータス削除
+    req:
+      /statuses/{{ steps.create_status.res.body.id }}:
+        delete:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+    test: current.res.status == 204
