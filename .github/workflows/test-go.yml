@@ -20,7 +20,7 @@ jobs:
       - name: database initialize
         run: mise run db:migrate
       - name: go mod download
-        run: go mod download
+        run: cd api && go mod download
 
       - name: Run Tests
         run: cd api && go test -v ./...
