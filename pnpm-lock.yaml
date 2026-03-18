@@ -9,19 +9,16 @@ importers:
   spec:
     dependencies:
       '@typespec/compiler':
-        specifier: latest
+        specifier: 1.10.0
         version: 1.10.0
       '@typespec/http':
-        specifier: latest
+        specifier: 1.10.0
         version: 1.10.0(@typespec/compiler@1.10.0)
-      '@typespec/openapi':
-        specifier: latest
-        version: 1.10.0(@typespec/compiler@1.10.0)(@typespec/http@1.10.0(@typespec/compiler@1.10.0))
       '@typespec/openapi3':
-        specifier: latest
+        specifier: 1.10.0
         version: 1.10.0(@typespec/compiler@1.10.0)(@typespec/http@1.10.0(@typespec/compiler@1.10.0))(@typespec/openapi@1.10.0(@typespec/compiler@1.10.0)(@typespec/http@1.10.0(@typespec/compiler@1.10.0)))
       '@typespec/rest':
-        specifier: latest
+        specifier: 0.80.0
         version: 0.80.0(@typespec/compiler@1.10.0)(@typespec/http@1.10.0(@typespec/compiler@1.10.0))
 
 packages:
