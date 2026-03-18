@@ -30,7 +30,7 @@ run = "sqlc generate -f ./api/sqlc.yaml"
 
 [tasks."gen:tsp"]
 description = "TypeSpecのコード生成を実行します。"
-run = "cd spec && tsp compile ."
+run = "cd spec && pnpm exec -- tsp compile ."
 
 [tasks."clean"]
 description = "生成されたコードを削除します。"
