@@ -4,24 +4,25 @@ atlas = '1.1.0'
 node = "24.14.0"
 pnpm = "10.32.1"
 
-"aqua:k1LoW/runn" = "1.6.0"
-
 "go:github.com/ogen-go/ogen/cmd/ogen"  = "1.20.1"
 "go:github.com/sqlc-dev/sqlc/cmd/sqlc" = "1.30.0"
-"go:github.com/air-verse/air"          = "latest"
 
 [tasks."db:migrate"]
 description = "データベースのマイグレーションを実行します。"
 run = "docker compose exec -T db psql -U postgres -d taskmanager < schema.sql && docker compose exec -T db psql -U postgres -d taskmanager_template < schema.sql"
 
-[tasks."go:generate"]
-description = "Goのコード生成を実行します。"
-depends = ['go:generate:ogen', 'go:generate:sqlc']
+[tasks."gen"]
+description = "コード生成を実行します。"
+depends = ['gen:go']
 
-[tasks."go:generate:ogen"]
+[tasks."gen:go"]
+description = "Goのコード生成を実行します。"
+depends = ['gen:go:ogen', 'gen:go:sqlc']
+
+[tasks."gen:go:ogen"]
 description = 'ogenを使用してAPIコードを生成します。'
 run = "ogen --target ./api/internal/api/ -package api --clean ./spec/tsp-output/openapi.yaml"
 
-[tasks."go:generate:sqlc"]
+[tasks."gen:go:sqlc"]
 description = 'sqlcを使用してORMコードを生成します'
 run = "sqlc generate -f ./api/sqlc.yaml"
