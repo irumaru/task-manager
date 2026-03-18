@@ -1,11 +1,11 @@
 [tools]
 go   = "1.26.1"
 atlas = '1.1.0'
-node = "24.14.0"
-pnpm = "10.32.1"
 
 "go:github.com/ogen-go/ogen/cmd/ogen"  = "1.20.1"
 "go:github.com/sqlc-dev/sqlc/cmd/sqlc" = "1.30.0"
+
+"npm:@typespec/compiler" = "1.10.0"
 
 [tasks."db:migrate"]
 description = "データベースのマイグレーションを実行します。"
@@ -13,7 +13,7 @@ run = "docker compose exec -T db psql -U postgres -d taskmanager < schema.sql &&
 
 [tasks."gen"]
 description = "コード生成を実行します。"
-depends = ['gen:go']
+depends = ['gen:go', 'gen:tsp']
 
 [tasks."gen:go"]
 description = "Goのコード生成を実行します。"
@@ -21,8 +21,17 @@ depends = ['gen:go:ogen', 'gen:go:sqlc']
 
 [tasks."gen:go:ogen"]
 description = 'ogenを使用してAPIコードを生成します。'
+depends = ['gen:tsp']
 run = "ogen --target ./api/internal/api/ -package api --clean ./spec/tsp-output/openapi.yaml"
 
 [tasks."gen:go:sqlc"]
 description = 'sqlcを使用してORMコードを生成します'
 run = "sqlc generate -f ./api/sqlc.yaml"
+
+[tasks."gen:tsp"]
+description = "TypeSpecのコード生成を実行します。"
+run = "cd spec && tsp compile ."
+
+[tasks."clean"]
+description = "生成されたコードを削除します。"
+run = "rm -rf ./api/internal/api/* ./api/internal/repository/*"
