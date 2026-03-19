@@ -20,11 +20,15 @@ jobs:
           version: 10
           run_install: true
           cache: true
+      - name: Setup db
+        run: docker compose up -d db --wait
 
       - name: Clean generated files
         run: mise run clean
       - name: Generate files
         run: mise run gen
+      - name: Create migrations file
+        run: mise run db:migrations:create
 
       - name: Check for generated files
         run: |
