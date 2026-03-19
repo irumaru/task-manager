@@ -2,6 +2,11 @@ name: test-go
 
 on:
   pull_request:
+    paths:
+      - 'api/**'
+      - '.mise.toml'
+      - 'schemas.sql'
+      - '.github/workflows/test-go.yml'
 
 jobs:
   test:
