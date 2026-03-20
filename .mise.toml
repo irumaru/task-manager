@@ -13,7 +13,7 @@ run = "docker compose exec -T db psql -U postgres -d taskmanager < schema.sql &&
 
 [tasks."db:migrations:create"]
 description = "データベースのマイグレーションファイルを作成します。"
-run = "atlas migrate diff --to file://schemas.sql --dev-url \"postgres://postgres:example@127.0.0.1:5432/taskmanager_atlas_dev?sslmode=disable\""
+run = "atlas migrate diff --to file://schema.sql --dir file://migrator/migrations --dev-url \"postgres://postgres:example@127.0.0.1:5432/taskmanager_atlas_dev?sslmode=disable\""
 
 [tasks."gen"]
 description = "コード生成を実行します。"
