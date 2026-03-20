@@ -1,0 +1,143 @@
+name: build-and-release/api
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+on:
+  workflow_dispatch:
+
+concurrency: build-and-release/api
+
+jobs:
+  calc_tag:
+    runs-on: ubuntu-latest
+    outputs:
+      tagName: ${{ steps.calc.outputs.tag }}
+    steps:
+      - id: calc
+        name: Calculate release tag
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const per_page = 100;
+            const d = new Date();
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const datePart = `${year}.${month}${day}`;
+            let page = 1;
+            let max = 0;
+            while (true) {
+              const res = await github.rest.repos.listTags({ owner, repo, per_page, page });
+              if (!res || !res.data || res.data.length === 0) break;
+              for (const t of res.data) {
+                const m = t.name.match(new RegExp(`^v${year}\\.${month}${day}\\.(\\d+)$`));
+                if (m) {
+                  const n = parseInt(m[1], 10);
+                  if (n > max) max = n;
+                }
+              }
+              if (res.data.length < per_page) break;
+              page += 1;
+            }
+            const next = max + 1;
+            const tagName = `v${datePart}.${next}`;
+            core.setOutput('tag', tagName);
+            console.log(`Calculated tag ${tagName}`);
+
+  docker:
+    needs: calc_tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build and push to ghcr.io
+        uses: docker/build-push-action@v7
+        with:
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ needs.calc_tag.outputs.tagName }}
+          context: ./api
+
+  create_release:
+    needs: [docker, calc_tag]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Create CalVer tag and GitHub Release
+        uses: actions/github-script@v8
+        env:
+          TAG_NAME: ${{ needs.calc_tag.outputs.tagName }}
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const sha = context.sha;
+            const tagName = process.env.TAG_NAME;
+            console.log(`Creating tag ${tagName} at ${sha}`);
+            await github.rest.git.createRef({ owner, repo, ref: `refs/tags/${tagName}`, sha });
+
+            // Find previous tag (excluding the new one)
+            const tagsRes = await github.rest.repos.listTags({ owner, repo, per_page: 10 });
+            const tags = tagsRes.data.map(t => t.name).filter(t => t !== tagName);
+            let previousTag = null;
+            if (tags.length > 0) {
+              // Assume tags are sorted by recency, so the first is the previous
+              previousTag = tags[0];
+            }
+
+            let releaseBody = '';
+            if (previousTag) {
+              // Get commits between previousTag and tagName
+              const compareRes = await github.rest.repos.compareCommits({
+                owner,
+                repo,
+                base: previousTag,
+                head: sha,
+              });
+              const commits = compareRes.data.commits;
+              if (commits.length > 0) {
+                releaseBody += `## Changes since [${previousTag}](https://github.com/${owner}/${repo}/releases/tag/${previousTag})\n\n`;
+                for (const c of commits) {
+                  const msg = c.commit.message.split('\n')[0];
+                  releaseBody += `- ${msg} ([${c.sha.substring(0,7)}](https://github.com/${owner}/${repo}/commit/${c.sha}))\n`;
+                }
+                releaseBody += `\n[Full diff](https://github.com/${owner}/${repo}/compare/${previousTag}...${tagName})\n`;
+              } else {
+                releaseBody += `No changes since previous release [${previousTag}](https://github.com/${owner}/${repo}/releases/tag/${previousTag}).\n`;
+              }
+            } else {
+              releaseBody = 'First release.';
+            }
+
+            // Add GHCR image link to the release body
+            const imageUrl = `ghcr.io/${process.env.GITHUB_REPOSITORY_OWNER}/${context.repo.repo}:${tagName}`;
+            releaseBody += `\n\n**Build image**:\n\n${imageUrl}\n`;
+
+            await github.rest.repos.createRelease({
+              owner,
+              repo,
+              tag_name: tagName,
+              name: tagName,
+              body: releaseBody,
+              draft: false,
+              prerelease: false,
+              target_commitish: sha
+            });
+            console.log(`Release ${tagName} created`);
