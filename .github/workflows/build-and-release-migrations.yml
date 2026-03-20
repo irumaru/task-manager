@@ -1,4 +1,4 @@
-name: build-and-release/api
+name: build-and-release/migrations
 
 permissions:
   contents: write
@@ -8,7 +8,7 @@ permissions:
 on:
   workflow_dispatch:
 
-concurrency: build-and-release/api
+concurrency: build-and-release/migrations
 
 jobs:
   calc_tag:
@@ -52,6 +52,9 @@ jobs:
   docker:
     needs: calc_tag
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [migrator]
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -69,8 +72,8 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ needs.calc_tag.outputs.tagName }}
-          context: ./api
+          tags: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}/${{ matrix.service }}:${{ needs.calc_tag.outputs.tagName }}
+          context: ./${{ matrix.service }}
 
   create_release:
     needs: [docker, calc_tag]
@@ -126,9 +129,13 @@ jobs:
               releaseBody = 'First release.';
             }
 
-            // Add GHCR image link to the release body
-            const imageUrl = `ghcr.io/${process.env.GITHUB_REPOSITORY_OWNER}/${context.repo.repo}:${tagName}`;
-            releaseBody += `\n\n**Build image**:\n\n${imageUrl}\n`;
+            // Add GHCR image links to the release body
+            const services = ['migrator'];
+            releaseBody += `\n\n**Build images**:\n`;
+            for (const svc of services) {
+              const imageUrl = `ghcr.io/${process.env.GITHUB_REPOSITORY_OWNER}/${context.repo.repo}/${svc}:${tagName}`;
+              releaseBody += `\n${imageUrl}\n`;
+            }
 
             await github.rest.repos.createRelease({
               owner,
