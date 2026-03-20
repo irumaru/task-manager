@@ -1,4 +1,4 @@
-name: build-and-release/migrations
+name: build-and-release/container
 
 permissions:
   contents: write
@@ -7,8 +7,17 @@ permissions:
 
 on:
   workflow_dispatch:
+    inputs:
+      api:
+        description: "api"
+        type: boolean
+        default: true
+      migrator:
+        description: "migrator"
+        type: boolean
+        default: true
 
-concurrency: build-and-release/migrations
+concurrency: build-and-release/container
 
 jobs:
   calc_tag:
@@ -49,12 +58,26 @@ jobs:
             core.setOutput('tag', tagName);
             console.log(`Calculated tag ${tagName}`);
 
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.set.outputs.services }}
+    steps:
+      - id: set
+        run: |
+          services=()
+          if [ "${{ github.event.inputs.api }}" = "true" ]; then services+=("api"); fi
+          if [ "${{ github.event.inputs.migrator }}" = "true" ]; then services+=("migrator"); fi
+          json=$(printf '%s\n' "${services[@]}" | jq -R . | jq -sc .)
+          echo "services=$json" >> "$GITHUB_OUTPUT"
+
   docker:
-    needs: calc_tag
+    needs: [calc_tag, prepare]
+    if: needs.prepare.outputs.services != '[]'
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [migrator]
+        service: ${{ fromJson(needs.prepare.outputs.services) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -76,7 +99,7 @@ jobs:
           context: ./${{ matrix.service }}
 
   create_release:
-    needs: [docker, calc_tag]
+    needs: [docker, calc_tag, prepare]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
@@ -130,7 +153,7 @@ jobs:
             }
 
             // Add GHCR image links to the release body
-            const services = ['migrator'];
+            const services = JSON.parse('${{ needs.prepare.outputs.services }}');
             releaseBody += `\n\n**Build images**:\n`;
             for (const svc of services) {
               const imageUrl = `ghcr.io/${process.env.GITHUB_REPOSITORY_OWNER}/${context.repo.repo}/${svc}:${tagName}`;
