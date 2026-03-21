@@ -35,7 +35,7 @@
 
 | 用途 | ライブラリ |
 |---|---|
-| フレームワーク | Flutter（SDK ^3.11.1） |
+| フレームワーク | Flutter（Dart SDK ^3.11.1） |
 | 状態管理 | Riverpod 3.x + riverpod_generator |
 | HTTP クライアント | dio |
 | WebSocket | web_socket_channel |
