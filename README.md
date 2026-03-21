@@ -199,7 +199,7 @@ migrator/migrations/*.sql（マイグレーションファイル）
 
 ## API 仕様
 
-API の詳細な仕様は [spec/tsp-output/openapi.yaml](spec/tsp-output/openapi.yaml) を参照してください。
+API の詳細な仕様は TypeSpec で記述された [spec/main.tsp](spec/main.tsp) を参照してください（OpenAPI はこの定義から生成されます）。
 
 ### エンドポイント一覧
 
