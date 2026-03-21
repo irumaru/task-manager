@@ -1,38 +1,111 @@
 # Task Manager
 
-シンプルで軽量なTodoアプリ。Android / iOS / Windows / macOS に対応。
+クラウド対応のタスク管理アプリ。Go REST API + Flutter クライアント + PostgreSQL で構成され、Google OAuth 認証とWebSocketによるリアルタイム同期をサポート。
+
+## アーキテクチャ概要
+
+本プロジェクトは3つのコンポーネントで構成されています。
+
+| コンポーネント | 説明 |
+|---|---|
+| **API** (`api/`) | Go製のREST APIサーバー。認証・データアクセス・WebSocket を担当 |
+| **Flutter App** (`app/`) | クロスプラットフォーム対応のクライアントアプリ（Android / iOS / Windows / macOS） |
+| **Migrator** (`migrator/`) | Atlas を使用したデータベースマイグレーションランナー |
+
+補助ディレクトリ:
+- `spec/` — TypeSpec で記述された API 仕様（OpenAPI 生成元）
+- `docs/` — 設計ドキュメント
 
 ## 技術スタック
 
+### API（`api/`）
+
+| 用途 | ツール / ライブラリ |
+|---|---|
+| 言語 | Go 1.26.1 |
+| API コード生成 | ogen（OpenAPI → サーバーコード） |
+| DB アクセスコード生成 | sqlc（SQL → Go コード） |
+| PostgreSQL ドライバー | pgx/v5 |
+| 認証 | golang-jwt/jwt v5（HS256） |
+| WebSocket | gorilla/websocket |
+| E2E テスト | runn |
+| ホットリロード（開発用） | Air |
+
+### クライアント（`app/`）
+
 | 用途 | ライブラリ |
 |---|---|
-| フレームワーク | Flutter 3.41.4 |
-| 状態管理 | Riverpod 2.x |
-| ローカルDB | drift (SQLite) |
+| フレームワーク | Flutter（SDK ^3.11.1） |
+| 状態管理 | Riverpod 3.x + riverpod_generator |
+| HTTP クライアント | dio |
+| WebSocket | web_socket_channel |
+| 認証トークン保存 | flutter_secure_storage |
 | コード生成 | build_runner |
+
+### インフラ・ツールチェーン
+
+| 用途 | ツール |
+|---|---|
+| データベース | PostgreSQL 18 |
+| マイグレーション | Atlas |
+| コンテナ | Docker / Docker Compose |
+| API 仕様定義 | TypeSpec |
+| ツールバージョン管理 | mise |
+| CI/CD | GitHub Actions |
+| コンテナレジストリ | GitHub Container Registry（ghcr.io） |
+
+## プロジェクト構成
+
+```
+task-manager/
+├── api/                            # Go REST API サーバー
+│   ├── cmd/server/main.go          #   エントリーポイント
+│   ├── internal/
+│   │   ├── api/                    #   ogen 生成コード（サーバー・型・ルーター）
+│   │   ├── auth/                   #   JWT・Google OAuth・SecurityHandler
+│   │   ├── bootstrap/              #   DB接続プール初期化
+│   │   ├── db/queries/             #   SQLクエリ（sqlc入力）
+│   │   ├── handler/                #   ハンドラー実装
+│   │   ├── repository/             #   sqlc 生成コード（DBアクセス）
+│   │   ├── repository-test/        #   DB統合テスト
+│   │   ├── testfactory/            #   テストデータファクトリ
+│   │   ├── testutils/              #   テストユーティリティ
+│   │   └── websocket/              #   WebSocket Hub・接続管理
+│   ├── e2e/                        #   E2Eテスト（runn）
+│   ├── Dockerfile                  #   本番用
+│   ├── Dockerfile.dev              #   開発用（Air ホットリロード）
+│   └── sqlc.yaml                   #   sqlc 設定
+├── app/                            # Flutter クライアント
+│   ├── lib/
+│   │   ├── main.dart               #   エントリーポイント
+│   │   ├── app.dart                #   アプリルート・テーマ設定
+│   │   ├── core/                   #   定数・テーマ・ユーティリティ
+│   │   ├── data/                   #   APIクライアント・リポジトリ実装・認証
+│   │   ├── domain/                 #   モデル・リポジトリインターフェース
+│   │   └── presentation/           #   画面・プロバイダー・ウィジェット
+│   └── pubspec.yaml
+├── migrator/                       # DBマイグレーションランナー（Atlas）
+│   ├── Dockerfile
+│   └── migrations/
+├── spec/                           # API仕様（TypeSpec）
+│   ├── main.tsp                    #   API定義
+│   ├── tspconfig.yaml
+│   └── tsp-output/openapi.yaml     #   生成された OpenAPI 仕様
+├── docs/                           # 設計ドキュメント
+├── schema.sql                      # PostgreSQL スキーマ定義（単一ソース）
+├── docker-compose.yml              # ローカル開発用（DB + API）
+├── .env.example                    # 環境変数テンプレート
+└── .mise.toml                      # ツールバージョン・タスク定義
+```
 
 ## 開発環境のセットアップ
 
 ### 前提条件
 
-- Flutter SDK (`C:\Users\jibak\sdk\flutter`)
-- Android Studio（Android エミュレータ・SDK 管理用）
+- [mise](https://mise.jdx.dev/)（Go, sqlc, atlas, Node.js, pnpm, ogen を自動管理）
+- [Flutter SDK](https://docs.flutter.dev/get-started/install)
+- [Docker](https://docs.docker.com/get-started/) / Docker Compose
 - Git
-
-### PATH の設定
-
-Flutter コマンドを使えるように PATH を通してください。
-
-**Windows（永続設定）**
-システム環境変数の `Path` に以下を追加：
-```
-C:\Users\jibak\sdk\flutter\bin
-```
-
-設定後、新しいターミナルを開いて確認：
-```bash
-flutter --version
-```
 
 ### セットアップ手順
 
@@ -41,96 +114,104 @@ flutter --version
 git clone <repository-url>
 cd task-manager
 
-# 2. 依存パッケージのインストール
-cd app
-flutter pub get
+# 2. mise でツールをインストール
+mise install
 
-# 3. コード生成（drift・Riverpod のコードを生成）
+# 3. 環境変数の設定
+cp .env.example .env
+# .env を編集して JWT_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET を設定
+# JWT_SECRET生成の例: openssl rand -hex 32
+
+# 4. TypeSpec の依存パッケージをインストール
+cd spec && pnpm install && cd ..
+
+# 5. コード生成
+mise run gen
+
+# 6. DB とAPIサーバーを起動
+docker compose up -d
+
+# 7. DBスキーマを適用
+mise run db:migrate
+
+# 8. Flutter アプリの依存パッケージをインストール
+cd app && flutter pub get
+
+# 9. Flutter のコード生成（Riverpod）
 flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
-### 環境確認
-
-```bash
-flutter doctor
-```
-
-必要なコンポーネントがすべて緑になっていることを確認してください。
-
-## 開発コマンド
-
-### アプリの起動
+#### Flutter アプリの起動
 
 ```bash
 cd app
 
-# 接続中のデバイスを確認
-flutter devices
+# 環境変数を指定して起動
+flutter run \
+  --dart-define=API_BASE_URL=http://127.0.0.1:8080 \
+  --dart-define=GOOGLE_OAUTH_CLIENT_ID=<your-client-id> \
+  -d <device>
 
-# Windows で起動
-flutter run -d windows
-
-# Android エミュレータで起動
-flutter run -d android
-
-# 特定デバイスを指定して起動（デバイスIDを使う場合）
-flutter run -d <device-id>
-
-# 環境変数を指定して実行
-flutter run --dart-define=API_BASE_URL=http://127.0.0.1:8080 --dart-define=GOOGLE_OAUTH_CLIENT_ID=729359629726-1edq8brg5hksql8q65v0cpn5maqud0vj.apps.googleusercontent.com -d Windows
+# デバイス例: windows, android, macos, ios, chrome
+flutter devices  # 利用可能なデバイスを確認
 ```
 
-### コード生成
+#### 環境変数
 
-drift（DB）や Riverpod のコードは自動生成です。モデル・テーブル定義を変更したら再実行してください。
+| 変数名 | 説明 |
+|---|---|
+| `JWT_SECRET` | JWT署名キー（HS256） |
+| `GOOGLE_CLIENT_ID` | Google OAuth クライアントID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth クライアントシークレット |
 
-```bash
-# 一度だけ生成
-flutter pub run build_runner build --delete-conflicting-outputs
 
-# ファイル変更を監視して自動生成
-flutter pub run build_runner watch --delete-conflicting-outputs
-```
+## コード生成パイプライン
 
-### ビルド
-
-```bash
-# Windows 向けリリースビルド
-flutter build windows
-
-# Android 向けリリースビルド（APK）
-flutter build apk
-
-# Android 向けリリースビルド（App Bundle）
-flutter build appbundle
-
-# macOS 向けリリースビルド（macOS 環境が必要）
-flutter build macos
-
-# iOS 向けリリースビルド（macOS + Xcode が必要）
-flutter build ios
-```
-
-## プロジェクト構成
+本プロジェクトでは手書きの定義ファイルからコードを自動生成しています。
 
 ```
-task-manager/
-├── app/                        # Flutterプロジェクト
-│   ├── lib/
-│   │   ├── main.dart           # エントリーポイント
-│   │   ├── app.dart            # アプリルート・テーマ設定
-│   │   ├── core/               # 定数・テーマ・ユーティリティ
-│   │   ├── data/               # DB・リポジトリ
-│   │   └── presentation/       # 画面・ウィジェット・プロバイダー
-│   ├── test/                   # テスト
-│   └── pubspec.yaml            # パッケージ定義
-└── docs/                       # 設計ドキュメント
-    ├── specification.md        # 仕様書
-    └── directory-structure.md  # ディレクトリ構成
+spec/main.tsp（TypeSpec 手書き）
+  ↓ tsp compile
+spec/tsp-output/openapi.yaml（OpenAPI 3.0）
+  ↓ ogen
+api/internal/api/oas_*_gen.go（サーバーインターフェース・型・ルーター）
+
+schema.sql（PostgreSQL スキーマ 手書き）
+  ↓ sqlc generate
+api/internal/repository/*.sql.go（DBアクセスコード）
+
+schema.sql
+  ↓ atlas migrate diff
+migrator/migrations/*.sql（マイグレーションファイル）
 ```
 
-## iOS / macOS ビルドについて
+スキーマや API 仕様を変更した場合は `mise run gen` で再生成し、生成ファイルをコミットしてください。
 
-iOS・macOS のビルドには **macOS マシンと Xcode** が必要です。Windows 環境では Android・Windows ビルドのみ可能です。
+## CI/CD
 
-CI/CD（GitHub Actions の macOS ランナー）を使う方法もあります。
+### `test-generated.yml`（PR時に自動実行）
+
+生成ファイルがコミット済みの定義ファイルと同期しているかを検証します。コード生成の実行忘れを防止します。
+
+### `build-and-release-container.yml`（手動実行）
+
+`api` と `migrator` の Docker イメージをビルドし、GitHub Container Registry（`ghcr.io`）にプッシュします。`main` ブランチでの実行時は CalVer 形式（`vYYYY.MMDD.N`）で GitHub Release を作成します。
+
+## API 仕様
+
+API の詳細な仕様は [spec/tsp-output/openapi.yaml](spec/tsp-output/openapi.yaml) を参照してください。
+
+### エンドポイント一覧
+
+| メソッド | パス | 説明 |
+|---|---|---|
+| POST | `/auth/google` | Google IDトークンでログイン |
+| POST | `/auth/google/code` | Google 認可コードでログイン |
+| GET | `/auth/me` | 認証ユーザー情報を取得(JWT Bearer 認証が必要) |
+| GET / POST | `/tasks`, `/tasks/{id}` | タスクの一覧・作成・取得・更新・削除 |
+| GET / POST | `/statuses`, `/statuses/{id}` | ステータスの一覧・作成・更新・削除 |
+| GET / POST | `/priorities`, `/priorities/{id}` | 優先度の一覧・作成・更新・削除 |
+| GET / POST | `/tags`, `/tags/{id}` | タグの一覧・作成・更新・削除 |
+| GET | `/ws?token=<JWT>` | WebSocket接続（リアルタイムイベント配信） |
+
+全エンドポイント（`/auth/*` を除く）は JWT Bearer 認証が必要です。
