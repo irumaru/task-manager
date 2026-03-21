@@ -208,10 +208,14 @@ API の詳細な仕様は TypeSpec で記述された [spec/main.tsp](spec/main.
 | POST | `/auth/google` | Google IDトークンでログイン |
 | POST | `/auth/google/code` | Google 認可コードでログイン |
 | GET | `/auth/me` | 認証ユーザー情報を取得(JWT Bearer 認証が必要) |
-| GET / POST | `/tasks`, `/tasks/{id}` | タスクの一覧・作成・取得・更新・削除 |
-| GET / POST | `/statuses`, `/statuses/{id}` | ステータスの一覧・作成・更新・削除 |
-| GET / POST | `/priorities`, `/priorities/{id}` | 優先度の一覧・作成・更新・削除 |
-| GET / POST | `/tags`, `/tags/{id}` | タグの一覧・作成・更新・削除 |
+| GET / POST | `/tasks` | タスクの一覧取得・作成 |
+| GET / PATCH / DELETE | `/tasks/{id}` | タスクの取得・更新・削除 |
+| GET / POST | `/statuses` | ステータスの一覧取得・作成 |
+| PATCH / DELETE | `/statuses/{id}` | ステータスの更新・削除 |
+| GET / POST | `/priorities` | 優先度の一覧取得・作成 |
+| PATCH / DELETE | `/priorities/{id}` | 優先度の更新・削除 |
+| GET / POST | `/tags` | タグの一覧取得・作成 |
+| PATCH / DELETE | `/tags/{id}` | タグの更新・削除 |
 | GET | `/ws?token=<JWT>` | WebSocket接続（リアルタイムイベント配信） |
 
 全エンドポイント（`/auth/*` を除く）は JWT Bearer 認証が必要です。
