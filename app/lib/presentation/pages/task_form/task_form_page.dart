@@ -23,6 +23,7 @@ class _TaskFormPageState extends ConsumerState<TaskFormPage> {
   late final TextEditingController _titleController;
   late final TextEditingController _memoController;
   late final TextEditingController _tagInputController;
+  late final FocusNode _tagInputFocusNode;
 
   DateTime? _dueDate;
   String? _priorityId;
@@ -39,6 +40,7 @@ class _TaskFormPageState extends ConsumerState<TaskFormPage> {
     _titleController = TextEditingController(text: task?.title ?? '');
     _memoController = TextEditingController(text: task?.memo ?? '');
     _tagInputController = TextEditingController();
+    _tagInputFocusNode = FocusNode();
     _dueDate = task?.dueDate;
     _priorityId = task?.priority?.id ?? task?.priorityId;
     _statusId = task?.status?.id ?? task?.statusId;
@@ -52,6 +54,7 @@ class _TaskFormPageState extends ConsumerState<TaskFormPage> {
     _titleController.dispose();
     _memoController.dispose();
     _tagInputController.dispose();
+    _tagInputFocusNode.dispose();
     super.dispose();
   }
 
@@ -107,22 +110,39 @@ class _TaskFormPageState extends ConsumerState<TaskFormPage> {
     if (mounted) Navigator.pop(context);
   }
 
-  Future<void> _addTag(String name) async {
-    final trimmed = name.trim();
+  Future<void> _addTagByName() async {
+    final trimmed = _tagInputController.text.trim();
     if (trimmed.isEmpty) return;
-    if (_selectedTags.any((t) => t.name == trimmed)) return;
+    if (_selectedTags.any((t) => t.name == trimmed)) {
+      _tagInputController.clear();
+      return;
+    }
 
-    final id = await ref.read(tagNotifierProvider.notifier).findOrCreate(trimmed);
+    final id =
+        await ref.read(tagNotifierProvider.notifier).findOrCreate(trimmed);
+    if (!mounted) return;
     setState(() {
       _selectedTags.add(Tag(id: id, name: trimmed));
-      _tagInputController.clear();
     });
+    _tagInputController.clear();
+  }
+
+  void _addExistingTag(Tag tag) {
+    if (_selectedTags.any((t) => t.id == tag.id)) {
+      _tagInputController.clear();
+      return;
+    }
+    setState(() {
+      _selectedTags.add(tag);
+    });
+    _tagInputController.clear();
   }
 
   @override
   Widget build(BuildContext context) {
     final priorities = ref.watch(priorityNotifierProvider).value ?? [];
     final statuses = ref.watch(statusNotifierProvider).value ?? [];
+    final allTags = ref.watch(tagNotifierProvider).value ?? [];
 
     return Scaffold(
       appBar: AppBar(
@@ -236,24 +256,69 @@ class _TaskFormPageState extends ConsumerState<TaskFormPage> {
                     )),
               ],
             ),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _tagInputController,
-                    decoration: const InputDecoration(
-                      hintText: 'タグを入力してEnter',
-                      border: OutlineInputBorder(),
+            Autocomplete<Tag>(
+              textEditingController: _tagInputController,
+              focusNode: _tagInputFocusNode,
+              displayStringForOption: (tag) => tag.name,
+              optionsBuilder: (textEditingValue) {
+                final input = textEditingValue.text.trim().toLowerCase();
+                if (input.isEmpty) return const Iterable<Tag>.empty();
+                return allTags.where((tag) {
+                  if (_selectedTags.any((t) => t.id == tag.id)) return false;
+                  return tag.name.toLowerCase().contains(input);
+                });
+              },
+              onSelected: _addExistingTag,
+              fieldViewBuilder:
+                  (context, controller, focusNode, onFieldSubmitted) {
+                return Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        decoration: const InputDecoration(
+                          hintText: 'タグを入力してEnter',
+                          border: OutlineInputBorder(),
+                        ),
+                        onSubmitted: (_) => _addTagByName(),
+                      ),
                     ),
-                    onSubmitted: _addTag,
+                    const SizedBox(width: 8),
+                    IconButton.filled(
+                      icon: const Icon(Icons.add),
+                      onPressed: _addTagByName,
+                    ),
+                  ],
+                );
+              },
+              optionsViewBuilder: (context, onSelected, options) {
+                return Align(
+                  alignment: Alignment.topLeft,
+                  child: Material(
+                    elevation: 4,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxHeight: 200,
+                        maxWidth: 400,
+                      ),
+                      child: ListView.builder(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        itemCount: options.length,
+                        itemBuilder: (context, index) {
+                          final tag = options.elementAt(index);
+                          return ListTile(
+                            dense: true,
+                            title: Text(tag.name),
+                            onTap: () => onSelected(tag),
+                          );
+                        },
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                IconButton.filled(
-                  icon: const Icon(Icons.add),
-                  onPressed: () => _addTag(_tagInputController.text),
-                ),
-              ],
+                );
+              },
             ),
             const SizedBox(height: 32),
 
