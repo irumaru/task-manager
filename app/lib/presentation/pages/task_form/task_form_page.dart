@@ -125,6 +125,7 @@ class _TaskFormPageState extends ConsumerState<TaskFormPage> {
       _selectedTags.add(Tag(id: id, name: trimmed));
     });
     _tagInputController.clear();
+    ref.read(lastUsedTagIdProvider.notifier).set(id);
   }
 
   void _addExistingTag(Tag tag) {
@@ -136,6 +137,7 @@ class _TaskFormPageState extends ConsumerState<TaskFormPage> {
       _selectedTags.add(tag);
     });
     _tagInputController.clear();
+    ref.read(lastUsedTagIdProvider.notifier).set(tag.id);
   }
 
   @override
@@ -143,6 +145,7 @@ class _TaskFormPageState extends ConsumerState<TaskFormPage> {
     final priorities = ref.watch(priorityNotifierProvider).value ?? [];
     final statuses = ref.watch(statusNotifierProvider).value ?? [];
     final allTags = ref.watch(tagNotifierProvider).value ?? [];
+    final lastUsedTagId = ref.watch(lastUsedTagIdProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -262,7 +265,17 @@ class _TaskFormPageState extends ConsumerState<TaskFormPage> {
               displayStringForOption: (tag) => tag.name,
               optionsBuilder: (textEditingValue) {
                 final input = textEditingValue.text.trim().toLowerCase();
-                if (input.isEmpty) return const Iterable<Tag>.empty();
+                if (input.isEmpty) {
+                  if (lastUsedTagId == null) return const Iterable<Tag>.empty();
+                  final recent = allTags
+                      .where((t) => t.id == lastUsedTagId)
+                      .firstOrNull;
+                  if (recent == null) return const Iterable<Tag>.empty();
+                  if (_selectedTags.any((t) => t.id == recent.id)) {
+                    return const Iterable<Tag>.empty();
+                  }
+                  return [recent];
+                }
                 return allTags.where((tag) {
                   if (_selectedTags.any((t) => t.id == tag.id)) return false;
                   return tag.name.toLowerCase().contains(input);
