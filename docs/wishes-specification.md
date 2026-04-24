@@ -29,7 +29,7 @@
 - やりたいこと一覧でのラベルによる絞り込み
 - 既存 API への機能追加（TypeSpec / schema.sql / ハンドラ / リポジトリ）
 - Flutter クライアントの画面追加と既存メニューへの導線追加
-- WebSocket による他端末へのリアルタイム反映（既存タスクと同様）
+- WebSocket による他端末へのリアルタイム反映
 
 ### 3.2 非対象（本フェーズでは扱わない）
 
@@ -153,7 +153,9 @@
 
 ## 6. API設計（TypeSpec 追加案）
 
-すべて `BearerAuth` 必須。既存のタスク/タグと同じ規約に従う。
+すべて `BearerAuth` 必須。
+
+**更新は PUT（全置換）を採用する**。既存のタスク/タグ/ステータス/優先度は PATCH（部分更新）だが、本機能のみ PUT とする。理由と詳細は [設計書 1.3.1](./wishes-design.md) を参照。クライアントは更新時にリソース全体（title / detail / labelIds）を送る必要がある。
 
 ### 6.1 やりたいこと（/wishes）
 
@@ -162,7 +164,7 @@
 | GET | `/wishes` | 一覧取得（自分のやりたいこと全件） |
 | POST | `/wishes` | 新規作成 |
 | GET | `/wishes/{id}` | 単体取得 |
-| PATCH | `/wishes/{id}` | 更新 |
+| PUT | `/wishes/{id}` | 更新（全置換） |
 | DELETE | `/wishes/{id}` | 削除 |
 
 クエリパラメータでのサーバ側フィルタは**提供しない**（クライアント側で絞り込む）。
@@ -173,7 +175,7 @@
 |---|---|---|
 | GET | `/wish-labels` | ラベル一覧 |
 | POST | `/wish-labels` | 新規作成 |
-| PATCH | `/wish-labels/{id}` | 更新（改名） |
+| PUT | `/wish-labels/{id}` | 更新（全置換、改名） |
 | DELETE | `/wish-labels/{id}` | 削除（中間テーブルはCASCADE） |
 
 ### 6.3 モデル（TypeSpec 概形）
@@ -194,10 +196,11 @@ model CreateWishRequest {
   labelIds?: string[];
 }
 
+// PUT セマンティクス: 全フィールド必須。リソース全体を差し替える。
 model UpdateWishRequest {
-  title?: string;
-  detail?: string | null;
-  labelIds?: string[];
+  title: string;
+  detail: string | null;
+  labelIds: string[];
 }
 
 model WishList {
@@ -217,8 +220,9 @@ model CreateWishLabelRequest {
   name: string;
 }
 
+// PUT セマンティクス: `name` 必須。
 model UpdateWishLabelRequest {
-  name?: string;
+  name: string;
 }
 ```
 
@@ -239,16 +243,14 @@ model UpdateWishLabelRequest {
 
 既存の `internal/websocket/` の Hub を利用し、以下のイベントを追加する。
 
-| イベント名（案） | 発火タイミング | ペイロード |
+| イベント名 | 発火タイミング | ペイロード |
 |---|---|---|
-| `wish.created` | やりたいこと作成 | Wish 全体 |
-| `wish.updated` | やりたいこと更新 | Wish 全体 |
-| `wish.deleted` | やりたいこと削除 | wish id |
-| `wish_label.created` | ラベル作成 | WishLabel |
-| `wish_label.updated` | ラベル更新 | WishLabel |
-| `wish_label.deleted` | ラベル削除 | wish_label id |
+| `wish.changed` | やりたいこと作成／更新／削除のいずれか | `{}`（空オブジェクト） |
+| `wish_label.changed` | ラベル作成／更新／削除のいずれか | `{}`（空オブジェクト） |
 
-既存のタスク側イベントと同じ命名規約・ハブ実装に乗せる。
+クライアントはこのイベントを受けて該当 provider のキャッシュを破棄し、再取得する。個別の create/update/delete 区別やエンティティ本体のペイロードは、本フェーズでは不要（楽観更新などで必要になった時点で細分化を検討する）。
+
+本機能では `internal/websocket/Hub.Broadcast` を **CRUD ハンドラから実際に呼ぶ**。既存の `tasks` / `tags` 等は Hub インターフェイスは定義されているが呼び出しは未実装で、本機能が最初の配線となる。既存エンドポイントの broadcast 配線は本機能のスコープ外とし、別途対応する（詳細は [設計書 1.1](./wishes-design.md) / [4.4](./wishes-design.md) を参照）。
 
 ---
 
