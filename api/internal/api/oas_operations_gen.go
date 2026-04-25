@@ -26,4 +26,13 @@ const (
 	TaskOpsGetOperation                 OperationName = "TaskOpsGet"
 	TaskOpsListOperation                OperationName = "TaskOpsList"
 	TaskOpsUpdateOperation              OperationName = "TaskOpsUpdate"
+	WishLabelOpsCreateOperation         OperationName = "WishLabelOpsCreate"
+	WishLabelOpsDeleteOperation         OperationName = "WishLabelOpsDelete"
+	WishLabelOpsListOperation           OperationName = "WishLabelOpsList"
+	WishLabelOpsUpdateOperation         OperationName = "WishLabelOpsUpdate"
+	WishOpsCreateOperation              OperationName = "WishOpsCreate"
+	WishOpsDeleteOperation              OperationName = "WishOpsDelete"
+	WishOpsGetOperation                 OperationName = "WishOpsGet"
+	WishOpsListOperation                OperationName = "WishOpsList"
+	WishOpsUpdateOperation              OperationName = "WishOpsUpdate"
 )

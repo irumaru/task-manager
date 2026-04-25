@@ -253,6 +253,58 @@ func (s *CreateTaskRequest) SetTagIds(val []string) {
 	s.TagIds = val
 }
 
+// Ref: #/components/schemas/CreateWishLabelRequest
+type CreateWishLabelRequest struct {
+	Name string `json:"name"`
+}
+
+// GetName returns the value of Name.
+func (s *CreateWishLabelRequest) GetName() string {
+	return s.Name
+}
+
+// SetName sets the value of Name.
+func (s *CreateWishLabelRequest) SetName(val string) {
+	s.Name = val
+}
+
+// Ref: #/components/schemas/CreateWishRequest
+type CreateWishRequest struct {
+	Title    string    `json:"title"`
+	Detail   OptString `json:"detail"`
+	LabelIds []string  `json:"labelIds"`
+}
+
+// GetTitle returns the value of Title.
+func (s *CreateWishRequest) GetTitle() string {
+	return s.Title
+}
+
+// GetDetail returns the value of Detail.
+func (s *CreateWishRequest) GetDetail() OptString {
+	return s.Detail
+}
+
+// GetLabelIds returns the value of LabelIds.
+func (s *CreateWishRequest) GetLabelIds() []string {
+	return s.LabelIds
+}
+
+// SetTitle sets the value of Title.
+func (s *CreateWishRequest) SetTitle(val string) {
+	s.Title = val
+}
+
+// SetDetail sets the value of Detail.
+func (s *CreateWishRequest) SetDetail(val OptString) {
+	s.Detail = val
+}
+
+// SetLabelIds sets the value of LabelIds.
+func (s *CreateWishRequest) SetLabelIds(val []string) {
+	s.LabelIds = val
+}
+
 // Ref: #/components/schemas/GoogleAuthCodeRequest
 type GoogleAuthCodeRequest struct {
 	// Authorization code from OAuth2 redirect.
@@ -1063,6 +1115,58 @@ func (s *UpdateTaskRequest) SetTagIds(val []string) {
 	s.TagIds = val
 }
 
+// Ref: #/components/schemas/UpdateWishLabelRequest
+type UpdateWishLabelRequest struct {
+	Name string `json:"name"`
+}
+
+// GetName returns the value of Name.
+func (s *UpdateWishLabelRequest) GetName() string {
+	return s.Name
+}
+
+// SetName sets the value of Name.
+func (s *UpdateWishLabelRequest) SetName(val string) {
+	s.Name = val
+}
+
+// Ref: #/components/schemas/UpdateWishRequest
+type UpdateWishRequest struct {
+	Title    string    `json:"title"`
+	Detail   NilString `json:"detail"`
+	LabelIds []string  `json:"labelIds"`
+}
+
+// GetTitle returns the value of Title.
+func (s *UpdateWishRequest) GetTitle() string {
+	return s.Title
+}
+
+// GetDetail returns the value of Detail.
+func (s *UpdateWishRequest) GetDetail() NilString {
+	return s.Detail
+}
+
+// GetLabelIds returns the value of LabelIds.
+func (s *UpdateWishRequest) GetLabelIds() []string {
+	return s.LabelIds
+}
+
+// SetTitle sets the value of Title.
+func (s *UpdateWishRequest) SetTitle(val string) {
+	s.Title = val
+}
+
+// SetDetail sets the value of Detail.
+func (s *UpdateWishRequest) SetDetail(val NilString) {
+	s.Detail = val
+}
+
+// SetLabelIds sets the value of LabelIds.
+func (s *UpdateWishRequest) SetLabelIds(val []string) {
+	s.LabelIds = val
+}
+
 // Ref: #/components/schemas/UserProfile
 type UserProfile struct {
 	ID          string    `json:"id"`
@@ -1110,3 +1214,135 @@ func (s *UserProfile) SetDisplayName(val string) {
 func (s *UserProfile) SetAvatarUrl(val NilString) {
 	s.AvatarUrl = val
 }
+
+// Ref: #/components/schemas/Wish
+type Wish struct {
+	ID        string    `json:"id"`
+	Title     string    `json:"title"`
+	Detail    NilString `json:"detail"`
+	LabelIds  []string  `json:"labelIds"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+// GetID returns the value of ID.
+func (s *Wish) GetID() string {
+	return s.ID
+}
+
+// GetTitle returns the value of Title.
+func (s *Wish) GetTitle() string {
+	return s.Title
+}
+
+// GetDetail returns the value of Detail.
+func (s *Wish) GetDetail() NilString {
+	return s.Detail
+}
+
+// GetLabelIds returns the value of LabelIds.
+func (s *Wish) GetLabelIds() []string {
+	return s.LabelIds
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *Wish) GetCreatedAt() time.Time {
+	return s.CreatedAt
+}
+
+// GetUpdatedAt returns the value of UpdatedAt.
+func (s *Wish) GetUpdatedAt() time.Time {
+	return s.UpdatedAt
+}
+
+// SetID sets the value of ID.
+func (s *Wish) SetID(val string) {
+	s.ID = val
+}
+
+// SetTitle sets the value of Title.
+func (s *Wish) SetTitle(val string) {
+	s.Title = val
+}
+
+// SetDetail sets the value of Detail.
+func (s *Wish) SetDetail(val NilString) {
+	s.Detail = val
+}
+
+// SetLabelIds sets the value of LabelIds.
+func (s *Wish) SetLabelIds(val []string) {
+	s.LabelIds = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *Wish) SetCreatedAt(val time.Time) {
+	s.CreatedAt = val
+}
+
+// SetUpdatedAt sets the value of UpdatedAt.
+func (s *Wish) SetUpdatedAt(val time.Time) {
+	s.UpdatedAt = val
+}
+
+// Ref: #/components/schemas/WishLabel
+type WishLabel struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+// GetID returns the value of ID.
+func (s *WishLabel) GetID() string {
+	return s.ID
+}
+
+// GetName returns the value of Name.
+func (s *WishLabel) GetName() string {
+	return s.Name
+}
+
+// SetID sets the value of ID.
+func (s *WishLabel) SetID(val string) {
+	s.ID = val
+}
+
+// SetName sets the value of Name.
+func (s *WishLabel) SetName(val string) {
+	s.Name = val
+}
+
+// Ref: #/components/schemas/WishLabelList
+type WishLabelList struct {
+	Items []WishLabel `json:"items"`
+}
+
+// GetItems returns the value of Items.
+func (s *WishLabelList) GetItems() []WishLabel {
+	return s.Items
+}
+
+// SetItems sets the value of Items.
+func (s *WishLabelList) SetItems(val []WishLabel) {
+	s.Items = val
+}
+
+// WishLabelOpsDeleteNoContent is response for WishLabelOpsDelete operation.
+type WishLabelOpsDeleteNoContent struct{}
+
+// Ref: #/components/schemas/WishList
+type WishList struct {
+	Items []Wish `json:"items"`
+}
+
+// GetItems returns the value of Items.
+func (s *WishList) GetItems() []Wish {
+	return s.Items
+}
+
+// SetItems sets the value of Items.
+func (s *WishList) SetItems(val []Wish) {
+	s.Items = val
+}
+
+// WishOpsDeleteNoContent is response for WishOpsDelete operation.
+type WishOpsDeleteNoContent struct{}

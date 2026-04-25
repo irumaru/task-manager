@@ -1,0 +1,45 @@
+desc: ウィッシュラベル CRUD
+runners:
+  req: http://localhost:8080
+steps:
+  create_wish_label:
+    desc: POST /wish-labels - ラベル作成
+    req:
+      /wish-labels:
+        post:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+          body:
+            application/json:
+              name: "e2e-wish-label"
+    test: current.res.status == 200 && current.res.body.name == "e2e-wish-label"
+
+  list_wish_labels:
+    desc: GET /wish-labels - ラベル一覧取得
+    req:
+      /wish-labels:
+        get:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+    test: current.res.status == 200 && len(current.res.body.items) >= 1
+
+  update_wish_label:
+    desc: PUT /wish-labels/{id} - ラベル更新
+    req:
+      /wish-labels/{{ steps.create_wish_label.res.body.id }}:
+        put:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+          body:
+            application/json:
+              name: "e2e-wish-label-updated"
+    test: current.res.status == 200 && current.res.body.name == "e2e-wish-label-updated"
+
+  delete_wish_label:
+    desc: DELETE /wish-labels/{id} - ラベル削除
+    req:
+      /wish-labels/{{ steps.create_wish_label.res.body.id }}:
+        delete:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+    test: current.res.status == 204
