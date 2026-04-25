@@ -5,6 +5,8 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/ogen-go/ogen/ogenerrors"
+
 	"task-manager/api/internal/api"
 	"task-manager/api/internal/auth"
 	"task-manager/api/internal/repository"
@@ -28,8 +30,11 @@ func New(q *repository.Queries, jwt *auth.JWTService, hub websocket.Hub, googleC
 func (h *Handler) NewError(_ context.Context, err error) *api.ApiErrorStatusCode {
 	code := http.StatusInternalServerError
 	var statusErr *statusError
+	var secErr *ogenerrors.SecurityError
 	if errors.As(err, &statusErr) {
 		code = statusErr.code
+	} else if errors.As(err, &secErr) {
+		code = http.StatusUnauthorized
 	}
 	return &api.ApiErrorStatusCode{
 		StatusCode: code,

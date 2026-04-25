@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
@@ -17,6 +18,15 @@ import (
 
 func main() {
 	ctx := context.Background()
+
+	// -----------------------------------------------------------------------
+	// Logger
+	// -----------------------------------------------------------------------
+	logLevel := slog.LevelInfo
+	if os.Getenv("APP_ENV") == "dev" {
+		logLevel = slog.LevelDebug
+	}
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: logLevel})))
 
 	// -----------------------------------------------------------------------
 	// Config from environment
