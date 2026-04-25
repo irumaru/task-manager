@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -12,10 +13,10 @@ import (
 const tokenInfoURL = "https://oauth2.googleapis.com/tokeninfo?id_token="
 
 type GoogleUserInfo struct {
-	Sub         string `json:"sub"`
-	Email       string `json:"email"`
-	Name        string `json:"name"`
-	Picture     string `json:"picture"`
+	Sub           string `json:"sub"`
+	Email         string `json:"email"`
+	Name          string `json:"name"`
+	Picture       string `json:"picture"`
 	EmailVerified string `json:"email_verified"`
 }
 
@@ -49,7 +50,8 @@ func ExchangeGoogleCode(ctx context.Context, code, redirectURI, clientID, client
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("token exchange failed: status %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("token exchange failed: status %d, body: %s", resp.StatusCode, string(body))
 	}
 
 	var tokenResp googleTokenResponse
@@ -74,7 +76,8 @@ func VerifyGoogleIDToken(ctx context.Context, idToken string) (*GoogleUserInfo, 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("google token verification failed: status %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("google token verification failed: status %d, body: %s", resp.StatusCode, string(body))
 	}
 
 	var info GoogleUserInfo

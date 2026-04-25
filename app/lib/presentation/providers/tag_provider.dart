@@ -31,3 +31,17 @@ class TagNotifier extends AsyncNotifier<List<Tag>> {
 
 final tagNotifierProvider =
     AsyncNotifierProvider<TagNotifier, List<Tag>>(TagNotifier.new);
+
+/// 直前にタスクへ付与したタグの ID（アプリ起動中のみ保持）。
+/// 連続作成時のサジェスト用。
+class LastUsedTagIdNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void set(String? id) => state = id;
+}
+
+final lastUsedTagIdProvider =
+    NotifierProvider<LastUsedTagIdNotifier, String?>(
+  LastUsedTagIdNotifier.new,
+);

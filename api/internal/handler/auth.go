@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"log/slog"
 
 	"task-manager/api/internal/api"
 	"task-manager/api/internal/auth"
@@ -11,6 +12,7 @@ import (
 func (h *Handler) AuthOpsGoogleLogin(ctx context.Context, req *api.GoogleAuthRequest) (*api.AuthResponse, error) {
 	info, err := auth.VerifyGoogleIDToken(ctx, req.IdToken)
 	if err != nil {
+		slog.WarnContext(ctx, "failed to verify Google ID token", "err", err)
 		return nil, errUnauthorized("invalid Google ID token")
 	}
 
@@ -37,6 +39,7 @@ func (h *Handler) AuthOpsGoogleLogin(ctx context.Context, req *api.GoogleAuthReq
 func (h *Handler) AuthOpsGoogleLoginWithCode(ctx context.Context, req *api.GoogleAuthCodeRequest) (*api.AuthResponse, error) {
 	info, err := auth.ExchangeGoogleCode(ctx, req.Code, req.RedirectUri, h.googleClientID, h.googleClientSecret)
 	if err != nil {
+		slog.WarnContext(ctx, "failed to exchange Google auth code", "err", err)
 		return nil, errUnauthorized("invalid authorization code")
 	}
 
