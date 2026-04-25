@@ -26,6 +26,12 @@ type Handler interface {
 	//
 	// POST /auth/google/code
 	AuthOpsGoogleLoginWithCode(ctx context.Context, req *GoogleAuthCodeRequest) (*AuthResponse, error)
+	// HealthOpsPing implements HealthOps_ping operation.
+	//
+	// Healthcheck endpoint.
+	//
+	// GET /ping
+	HealthOpsPing(ctx context.Context) (*PingResponse, error)
 	// PriorityOpsCreate implements PriorityOps_create operation.
 	//
 	// POST /priorities

@@ -9,6 +9,7 @@ const (
 	AuthOpsGetMeOperation               OperationName = "AuthOpsGetMe"
 	AuthOpsGoogleLoginOperation         OperationName = "AuthOpsGoogleLogin"
 	AuthOpsGoogleLoginWithCodeOperation OperationName = "AuthOpsGoogleLoginWithCode"
+	HealthOpsPingOperation              OperationName = "HealthOpsPing"
 	PriorityOpsCreateOperation          OperationName = "PriorityOpsCreate"
 	PriorityOpsDeleteOperation          OperationName = "PriorityOpsDelete"
 	PriorityOpsListOperation            OperationName = "PriorityOpsList"

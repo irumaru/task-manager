@@ -40,6 +40,15 @@ func (UnimplementedHandler) AuthOpsGoogleLoginWithCode(ctx context.Context, req 
 	return r, ht.ErrNotImplemented
 }
 
+// HealthOpsPing implements HealthOps_ping operation.
+//
+// Healthcheck endpoint.
+//
+// GET /ping
+func (UnimplementedHandler) HealthOpsPing(ctx context.Context) (r *PingResponse, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // PriorityOpsCreate implements PriorityOps_create operation.
 //
 // POST /priorities
