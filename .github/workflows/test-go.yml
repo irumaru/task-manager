@@ -28,7 +28,7 @@ jobs:
       - name: Build with cache
         uses: docker/bake-action@v7
         with:
-          files: docker-compose.yaml
+          files: docker-compose.yml
           set: |
             *.cache-from=type=gha
             *.cache-to=type=gha,mode=max
