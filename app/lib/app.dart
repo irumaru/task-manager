@@ -6,6 +6,7 @@ import 'core/theme/app_theme.dart';
 import 'presentation/pages/login/login_page.dart';
 import 'presentation/pages/settings/settings_page.dart';
 import 'presentation/pages/task_list/task_list_page.dart';
+import 'presentation/pages/wish_list/wish_list_page.dart';
 import 'presentation/providers/auth_provider.dart';
 import 'presentation/providers/websocket_provider.dart';
 
@@ -61,6 +62,7 @@ class _MainShellState extends State<MainShell> {
 
   final _pages = const [
     TaskListPage(),
+    WishListPage(),
     SettingsPage(),
   ];
 
@@ -73,6 +75,7 @@ class _MainShellState extends State<MainShell> {
         onDestinationSelected: (index) => setState(() => _currentIndex = index),
         destinations: const [
           NavigationDestination(icon: Icon(Icons.check_circle_outline), label: 'タスク'),
+          NavigationDestination(icon: Icon(Icons.lightbulb_outline), label: 'やりたいこと'),
           NavigationDestination(icon: Icon(Icons.settings_outlined), label: '設定'),
         ],
       ),

@@ -2,7 +2,7 @@ name: task_manager
 description: "シンプルで軽量なTodoアプリ"
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.0+3
 
 environment:
   sdk: ^3.11.1
@@ -36,6 +36,9 @@ dev_dependencies:
   # コード生成
   build_runner: ^2.12.2
   riverpod_generator: ^4.0.3
+
+  # テスト
+  mocktail: ^1.0.0
 
 flutter:
   uses-material-design: true

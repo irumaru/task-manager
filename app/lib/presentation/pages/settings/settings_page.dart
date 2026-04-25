@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/models/priority.dart';
 import '../../../domain/models/status.dart';
 import '../../../domain/models/tag.dart';
+import '../../../domain/models/wish_label.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/priority_provider.dart';
 import '../../providers/status_provider.dart';
 import '../../providers/tag_provider.dart';
+import '../../providers/wish_label_provider.dart';
 import '../../widgets/confirm_dialog.dart';
 
 class SettingsPage extends ConsumerWidget {
@@ -24,6 +26,8 @@ class SettingsPage extends ConsumerWidget {
           _StatusSettings(),
           _SectionHeader('タグ'),
           _TagSettings(),
+          _SectionHeader('ラベル（やりたいこと）'),
+          _WishLabelSettings(),
           _SectionHeader('アカウント'),
           _AccountSettings(),
         ],
@@ -376,6 +380,90 @@ class _TagTile extends ConsumerWidget {
         content: '「${tag.name}」を削除しますか？\nすべてのタスクからもこのタグが削除されます。');
     if (!ok) return;
     await ref.read(tagNotifierProvider.notifier).delete(tag.id);
+  }
+}
+
+// ==================== ラベル（やりたいこと） ====================
+
+class _WishLabelSettings extends ConsumerWidget {
+  const _WishLabelSettings();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(wishLabelNotifierProvider);
+    return async.when(
+      loading: () => const LinearProgressIndicator(),
+      error: (e, _) => Text('エラー: $e'),
+      data: (list) => Column(
+        children: list.map((l) => _WishLabelTile(label: l)).toList(),
+      ),
+    );
+  }
+}
+
+class _WishLabelTile extends ConsumerWidget {
+  final WishLabel label;
+  const _WishLabelTile({required this.label});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ListTile(
+      leading: const Icon(Icons.label_outline),
+      title: Text(label.name),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.edit_outlined),
+            onPressed: () => _showEditDialog(context, ref),
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_outline),
+            onPressed: () => _delete(context, ref),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditDialog(BuildContext context, WidgetRef ref) {
+    final ctrl = TextEditingController(text: label.name);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('ラベルを編集'),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          decoration: const InputDecoration(
+              labelText: '名前', border: OutlineInputBorder()),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('キャンセル')),
+          TextButton(
+            onPressed: () async {
+              final name = ctrl.text.trim();
+              if (name.isEmpty) return;
+              await ref
+                  .read(wishLabelNotifierProvider.notifier)
+                  .edit(label.id, name);
+              if (ctx.mounted) Navigator.pop(ctx);
+            },
+            child: const Text('保存'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _delete(BuildContext context, WidgetRef ref) async {
+    final ok = await showConfirmDialog(context,
+        title: 'ラベルを削除',
+        content: '「${label.name}」を削除しますか？\nすべてのやりたいことからもこのラベルが削除されます。');
+    if (!ok) return;
+    await ref.read(wishLabelNotifierProvider.notifier).delete(label.id);
   }
 }
 
