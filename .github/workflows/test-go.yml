@@ -26,7 +26,7 @@ jobs:
           echo "GOOGLE_CLIENT_ID=\"test-google-client-id\"" >> .env
           echo "GOOGLE_CLIENT_SECRET=\"test-google-client-secret\"" >> .env
       - name: Docker Compose Up
-        run: docker compose up -d --wait db
+        run: docker compose up -d --wait api
       - name: database initialize
         run: mise run db:migrate
       - name: go mod download
