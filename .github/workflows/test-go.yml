@@ -20,6 +20,11 @@ jobs:
           install: true
           cache: true
 
+      - name: Set environment variables
+        run: |
+          echo "JWT_SECRET=\"test-secret\"" > .env
+          echo "GOOGLE_CLIENT_ID=\"test-google-client-id\"" >> .env
+          echo "GOOGLE_CLIENT_SECRET=\"test-google-client-secret\"" >> .env
       - name: Docker Compose Up
         run: docker compose up -d --wait db
       - name: database initialize

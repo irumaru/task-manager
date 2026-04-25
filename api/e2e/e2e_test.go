@@ -15,7 +15,7 @@ import (
 func TestE2E(t *testing.T) {
 	// docker-compose のデフォルト値にフォールバック
 	dbURL := envOr("DATABASE_URL", "postgres://postgres:example@127.0.0.1:5432/taskmanager?search_path=taskmanager&sslmode=disable")
-	jwtSecret := envOr("JWT_SECRET", "change-me-in-production")
+	jwtSecret := envOr("JWT_SECRET", "test-secret")
 	apiURL := envOr("API_URL", "http://localhost:8080")
 
 	pool, err := bootstrap.SetupDatabase(t.Context(), dbURL)
