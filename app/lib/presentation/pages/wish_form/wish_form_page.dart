@@ -57,6 +57,14 @@ class _WishFormPageState extends ConsumerState<WishFormPage> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_labelInputController.text.trim().isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('ラベル名が確定されていません。Enter で確定するか、入力を消去してください。'),
+        ),
+      );
+      return;
+    }
     setState(() => _isSaving = true);
 
     final detail = _detailController.text.trim();

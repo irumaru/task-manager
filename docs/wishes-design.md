@@ -483,6 +483,7 @@ class WishNotifier extends AsyncNotifier<void> {
   - 詳細: `TextFormField(maxLines: null, minLines: 3)`
   - 優先度・ステータス・期限日セクションを削除
   - ラベル入力は既存のタグ入力 Autocomplete をそのまま流用（`tagNotifier` → `wishLabelNotifier`）
+  - **未確定ラベルのガード**: ラベル入力フィールドの `TextEditingController` を保持し、保存ボタン押下時にコントローラのテキストが空でない場合は保存を中断して `SnackBar`（例: `'ラベル名が確定されていません。Enter で確定するか、入力を消去してください。'`）を表示する。`repo` 呼び出しは行わない。
 
 ### 5.4 MainShell
 
@@ -666,6 +667,7 @@ ProviderContainer makeContainer({
 - 詳細を空で保存できる
 - 編集モード: 既存値が initialValue に載っている
 - ラベル Chip を選択→保存時に `labelIds` に含まれる
+- **未確定ラベルがある状態で保存**: ラベル入力フィールドにテキストを入力したまま（Enter/選択で確定せず）保存ボタンをタップすると、`SnackBar` が表示され、repo の `addWish` / `updateWish` が呼ばれない
 
 ### 8.5 スコープ外（本フェーズでやらない）
 
