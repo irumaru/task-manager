@@ -651,6 +651,21 @@ func (o OptString) Or(d string) string {
 	return d
 }
 
+// Ref: #/components/schemas/PingResponse
+type PingResponse struct {
+	Message string `json:"message"`
+}
+
+// GetMessage returns the value of Message.
+func (s *PingResponse) GetMessage() string {
+	return s.Message
+}
+
+// SetMessage sets the value of Message.
+func (s *PingResponse) SetMessage(val string) {
+	s.Message = val
+}
+
 // Ref: #/components/schemas/Priority
 type Priority struct {
 	ID           string `json:"id"`
