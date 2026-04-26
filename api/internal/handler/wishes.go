@@ -219,10 +219,9 @@ func parseWishLabelIDs(ids []string) ([]uuid.UUID, error) {
 
 func isFKViolation(err error) bool {
 	var pgErr *pgconn.PgError
-	if pgErr, ok := err.(*pgconn.PgError); ok {
+	if errors.As(err, &pgErr) {
 		return pgErr.Code == "23503"
 	}
-	_ = pgErr
 	return false
 }
 
