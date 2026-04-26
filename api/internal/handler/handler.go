@@ -5,6 +5,9 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/ogen-go/ogen/ogenerrors"
+
 	"task-manager/api/internal/api"
 	"task-manager/api/internal/auth"
 	"task-manager/api/internal/repository"
@@ -13,6 +16,7 @@ import (
 
 // Handler implements api.Handler.
 type Handler struct {
+	pool                *pgxpool.Pool
 	q                   *repository.Queries
 	jwt                 *auth.JWTService
 	hub                 websocket.Hub
@@ -20,16 +24,19 @@ type Handler struct {
 	googleClientSecret  string
 }
 
-func New(q *repository.Queries, jwt *auth.JWTService, hub websocket.Hub, googleClientID, googleClientSecret string) *Handler {
-	return &Handler{q: q, jwt: jwt, hub: hub, googleClientID: googleClientID, googleClientSecret: googleClientSecret}
+func New(pool *pgxpool.Pool, q *repository.Queries, jwt *auth.JWTService, hub websocket.Hub, googleClientID, googleClientSecret string) *Handler {
+	return &Handler{pool: pool, q: q, jwt: jwt, hub: hub, googleClientID: googleClientID, googleClientSecret: googleClientSecret}
 }
 
 // NewError converts an error returned by a handler method into the ogen error response.
 func (h *Handler) NewError(_ context.Context, err error) *api.ApiErrorStatusCode {
 	code := http.StatusInternalServerError
 	var statusErr *statusError
+	var secErr *ogenerrors.SecurityError
 	if errors.As(err, &statusErr) {
 		code = statusErr.code
+	} else if errors.As(err, &secErr) {
+		code = http.StatusUnauthorized
 	}
 	return &api.ApiErrorStatusCode{
 		StatusCode: code,
@@ -59,4 +66,8 @@ func errBadRequest(msg string) error {
 
 func errUnauthorized(msg string) error {
 	return &statusError{code: http.StatusUnauthorized, err: errors.New(msg)}
+}
+
+func errConflict(msg string) error {
+	return &statusError{code: http.StatusConflict, err: errors.New(msg)}
 }

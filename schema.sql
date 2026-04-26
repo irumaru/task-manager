@@ -61,3 +61,27 @@ CREATE TABLE task_tags (
     tag_id  UUID NOT NULL REFERENCES tags(id)  ON DELETE CASCADE,
     PRIMARY KEY (task_id, tag_id)
 );
+
+CREATE TABLE wishes (
+    id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id    UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title      TEXT        NOT NULL,
+    detail     TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE wish_labels (
+    id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id    UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name       TEXT        NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (user_id, name)
+);
+
+CREATE TABLE wish_label_assignments (
+    wish_id       UUID NOT NULL REFERENCES wishes(id)      ON DELETE CASCADE,
+    wish_label_id UUID NOT NULL REFERENCES wish_labels(id) ON DELETE CASCADE,
+    PRIMARY KEY (wish_id, wish_label_id)
+);

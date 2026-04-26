@@ -197,4 +197,78 @@ class ApiClient {
       await _dio.delete('/tags/$id');
     });
   }
+
+  // ─── Wishes ───
+
+  /// GET /wishes
+  Future<List<dynamic>> getWishes() {
+    return _handle(() async {
+      final response = await _dio.get('/wishes');
+      return response.data['items'] as List<dynamic>;
+    });
+  }
+
+  /// GET /wishes/:id
+  Future<Map<String, dynamic>> getWish(String id) {
+    return _handle(() async {
+      final response = await _dio.get('/wishes/$id');
+      return response.data as Map<String, dynamic>;
+    });
+  }
+
+  /// POST /wishes
+  Future<Map<String, dynamic>> createWish(Map<String, dynamic> body) {
+    return _handle(() async {
+      final response = await _dio.post('/wishes', data: body);
+      return response.data as Map<String, dynamic>;
+    });
+  }
+
+  /// PUT /wishes/:id
+  Future<Map<String, dynamic>> updateWish(String id, Map<String, dynamic> body) {
+    return _handle(() async {
+      final response = await _dio.put('/wishes/$id', data: body);
+      return response.data as Map<String, dynamic>;
+    });
+  }
+
+  /// DELETE /wishes/:id
+  Future<void> deleteWish(String id) {
+    return _handle(() async {
+      await _dio.delete('/wishes/$id');
+    });
+  }
+
+  // ─── Wish Labels ───
+
+  /// GET /wish-labels
+  Future<List<dynamic>> getWishLabels() {
+    return _handle(() async {
+      final response = await _dio.get('/wish-labels');
+      return response.data['items'] as List<dynamic>;
+    });
+  }
+
+  /// POST /wish-labels
+  Future<Map<String, dynamic>> createWishLabel(Map<String, dynamic> body) {
+    return _handle(() async {
+      final response = await _dio.post('/wish-labels', data: body);
+      return response.data as Map<String, dynamic>;
+    });
+  }
+
+  /// PUT /wish-labels/:id
+  Future<Map<String, dynamic>> updateWishLabel(String id, Map<String, dynamic> body) {
+    return _handle(() async {
+      final response = await _dio.put('/wish-labels/$id', data: body);
+      return response.data as Map<String, dynamic>;
+    });
+  }
+
+  /// DELETE /wish-labels/:id
+  Future<void> deleteWishLabel(String id) {
+    return _handle(() async {
+      await _dio.delete('/wish-labels/$id');
+    });
+  }
 }

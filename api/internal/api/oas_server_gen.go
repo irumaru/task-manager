@@ -110,6 +110,42 @@ type Handler interface {
 	//
 	// PATCH /tasks/{id}
 	TaskOpsUpdate(ctx context.Context, req *UpdateTaskRequest, params TaskOpsUpdateParams) (*Task, error)
+	// WishLabelOpsCreate implements WishLabelOps_create operation.
+	//
+	// POST /wish-labels
+	WishLabelOpsCreate(ctx context.Context, req *CreateWishLabelRequest) (*WishLabel, error)
+	// WishLabelOpsDelete implements WishLabelOps_delete operation.
+	//
+	// DELETE /wish-labels/{id}
+	WishLabelOpsDelete(ctx context.Context, params WishLabelOpsDeleteParams) error
+	// WishLabelOpsList implements WishLabelOps_list operation.
+	//
+	// GET /wish-labels
+	WishLabelOpsList(ctx context.Context) (*WishLabelList, error)
+	// WishLabelOpsUpdate implements WishLabelOps_update operation.
+	//
+	// PUT /wish-labels/{id}
+	WishLabelOpsUpdate(ctx context.Context, req *UpdateWishLabelRequest, params WishLabelOpsUpdateParams) (*WishLabel, error)
+	// WishOpsCreate implements WishOps_create operation.
+	//
+	// POST /wishes
+	WishOpsCreate(ctx context.Context, req *CreateWishRequest) (*Wish, error)
+	// WishOpsDelete implements WishOps_delete operation.
+	//
+	// DELETE /wishes/{id}
+	WishOpsDelete(ctx context.Context, params WishOpsDeleteParams) error
+	// WishOpsGet implements WishOps_get operation.
+	//
+	// GET /wishes/{id}
+	WishOpsGet(ctx context.Context, params WishOpsGetParams) (*Wish, error)
+	// WishOpsList implements WishOps_list operation.
+	//
+	// GET /wishes
+	WishOpsList(ctx context.Context) (*WishList, error)
+	// WishOpsUpdate implements WishOps_update operation.
+	//
+	// PUT /wishes/{id}
+	WishOpsUpdate(ctx context.Context, req *UpdateWishRequest, params WishOpsUpdateParams) (*Wish, error)
 	// NewError creates *ApiErrorStatusCode from error returned by handler.
 	//
 	// Used for common default response.

@@ -1,0 +1,71 @@
+desc: やりたいこと CRUD
+runners:
+  req: http://localhost:8080
+steps:
+  create_wish_label:
+    desc: POST /wish-labels - ラベル作成（wish に付与するため）
+    req:
+      /wish-labels:
+        post:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+          body:
+            application/json:
+              name: "e2e-label-for-wish"
+    test: current.res.status == 200
+
+  create_wish:
+    desc: POST /wishes - やりたいこと作成（ラベルID指定）
+    req:
+      /wishes:
+        post:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+          body:
+            application/json:
+              title: "e2e-wish"
+              detail: "some detail"
+              labelIds:
+                - "{{ steps.create_wish_label.res.body.id }}"
+    test: current.res.status == 200 && current.res.body.title == "e2e-wish" && len(current.res.body.labelIds) == 1
+
+  list_wishes:
+    desc: GET /wishes - やりたいこと一覧（labelIds が含まれていること）
+    req:
+      /wishes:
+        get:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+    test: current.res.status == 200 && len(current.res.body.items) >= 1
+
+  get_wish:
+    desc: GET /wishes/{id} - 単一取得
+    req:
+      /wishes/{{ steps.create_wish.res.body.id }}:
+        get:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+    test: current.res.status == 200 && current.res.body.id == steps.create_wish.res.body.id && current.res.body.title == "e2e-wish" && current.res.body.detail == "some detail"
+
+  update_wish:
+    desc: PUT /wishes/{id} - 全置換（detail を null にする）
+    req:
+      /wishes/{{ steps.create_wish.res.body.id }}:
+        put:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+          body:
+            application/json:
+              title: "e2e-wish-updated"
+              detail: null
+              labelIds: []
+    test: current.res.status == 200 && current.res.body.title == "e2e-wish-updated" && len(current.res.body.labelIds) == 0
+
+  delete_wish:
+    desc: DELETE /wishes/{id} - やりたいこと削除
+    req:
+      /wishes/{{ steps.create_wish.res.body.id }}:
+        delete:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+    test: current.res.status == 204

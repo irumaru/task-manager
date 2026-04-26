@@ -121,3 +121,30 @@ func pgtzFromPtr(t *pgtype.Timestamptz) pgtype.Timestamptz {
 	}
 	return *t
 }
+
+func toAPIWishLabel(l repository.WishLabel) *api.WishLabel {
+	return &api.WishLabel{ID: l.ID.String(), Name: l.Name}
+}
+
+func toAPIWish(id uuid.UUID, userID uuid.UUID, title string, detail *string, createdAt, updatedAt pgtype.Timestamptz, labelIds []uuid.UUID) api.Wish {
+	return api.Wish{
+		ID:        id.String(),
+		Title:     title,
+		Detail:    nilStringFromPtr(detail),
+		LabelIds:  uuidSliceToStrings(labelIds),
+		CreatedAt: createdAt.Time,
+		UpdatedAt: updatedAt.Time,
+	}
+}
+
+func toAPIWishFromRow(row repository.ListWishesRow) api.Wish {
+	return toAPIWish(row.ID, row.UserID, row.Title, row.Detail, row.CreatedAt, row.UpdatedAt, row.LabelIds)
+}
+
+func toAPIWishFromGetRow(row repository.GetWishRow) api.Wish {
+	return toAPIWish(row.ID, row.UserID, row.Title, row.Detail, row.CreatedAt, row.UpdatedAt, row.LabelIds)
+}
+
+func toAPIWishFromWish(w repository.Wish, labelIds []uuid.UUID) api.Wish {
+	return toAPIWish(w.ID, w.UserID, w.Title, w.Detail, w.CreatedAt, w.UpdatedAt, labelIds)
+}

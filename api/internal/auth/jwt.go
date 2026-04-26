@@ -2,6 +2,7 @@ package auth
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -45,7 +46,7 @@ func (j *JWTService) Verify(tokenStr string) (*Claims, error) {
 		return j.secret, nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse JWT token: %w", err)
 	}
 	claims, ok := token.Claims.(*Claims)
 	if !ok || !token.Valid {

@@ -8,10 +8,14 @@ import '../../data/repositories/priority_repository_impl.dart';
 import '../../data/repositories/status_repository_impl.dart';
 import '../../data/repositories/tag_repository_impl.dart';
 import '../../data/repositories/task_repository_impl.dart';
+import '../../data/repositories/wish_label_repository_impl.dart';
+import '../../data/repositories/wish_repository_impl.dart';
 import '../../domain/repositories/priority_repository.dart';
 import '../../domain/repositories/status_repository.dart';
 import '../../domain/repositories/tag_repository.dart';
 import '../../domain/repositories/task_repository.dart';
+import '../../domain/repositories/wish_label_repository.dart';
+import '../../domain/repositories/wish_repository.dart';
 
 final secureStorageProvider = Provider<FlutterSecureStorage>(
   (_) => const FlutterSecureStorage(),
@@ -39,6 +43,14 @@ final statusRepositoryProvider = Provider<StatusRepository>((ref) {
 
 final tagRepositoryProvider = Provider<TagRepository>((ref) {
   return TagRepositoryImpl(ref.watch(apiClientProvider));
+});
+
+final wishRepositoryProvider = Provider<WishRepository>((ref) {
+  return WishRepositoryImpl(ref.watch(apiClientProvider));
+});
+
+final wishLabelRepositoryProvider = Provider<WishLabelRepository>((ref) {
+  return WishLabelRepositoryImpl(ref.watch(apiClientProvider));
 });
 
 final browserAuthServiceProvider = Provider<BrowserAuthService>((ref) {

@@ -178,6 +178,69 @@ func (UnimplementedHandler) TaskOpsUpdate(ctx context.Context, req *UpdateTaskRe
 	return r, ht.ErrNotImplemented
 }
 
+// WishLabelOpsCreate implements WishLabelOps_create operation.
+//
+// POST /wish-labels
+func (UnimplementedHandler) WishLabelOpsCreate(ctx context.Context, req *CreateWishLabelRequest) (r *WishLabel, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// WishLabelOpsDelete implements WishLabelOps_delete operation.
+//
+// DELETE /wish-labels/{id}
+func (UnimplementedHandler) WishLabelOpsDelete(ctx context.Context, params WishLabelOpsDeleteParams) error {
+	return ht.ErrNotImplemented
+}
+
+// WishLabelOpsList implements WishLabelOps_list operation.
+//
+// GET /wish-labels
+func (UnimplementedHandler) WishLabelOpsList(ctx context.Context) (r *WishLabelList, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// WishLabelOpsUpdate implements WishLabelOps_update operation.
+//
+// PUT /wish-labels/{id}
+func (UnimplementedHandler) WishLabelOpsUpdate(ctx context.Context, req *UpdateWishLabelRequest, params WishLabelOpsUpdateParams) (r *WishLabel, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// WishOpsCreate implements WishOps_create operation.
+//
+// POST /wishes
+func (UnimplementedHandler) WishOpsCreate(ctx context.Context, req *CreateWishRequest) (r *Wish, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// WishOpsDelete implements WishOps_delete operation.
+//
+// DELETE /wishes/{id}
+func (UnimplementedHandler) WishOpsDelete(ctx context.Context, params WishOpsDeleteParams) error {
+	return ht.ErrNotImplemented
+}
+
+// WishOpsGet implements WishOps_get operation.
+//
+// GET /wishes/{id}
+func (UnimplementedHandler) WishOpsGet(ctx context.Context, params WishOpsGetParams) (r *Wish, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// WishOpsList implements WishOps_list operation.
+//
+// GET /wishes
+func (UnimplementedHandler) WishOpsList(ctx context.Context) (r *WishList, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// WishOpsUpdate implements WishOps_update operation.
+//
+// PUT /wishes/{id}
+func (UnimplementedHandler) WishOpsUpdate(ctx context.Context, req *UpdateWishRequest, params WishOpsUpdateParams) (r *Wish, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // NewError creates *ApiErrorStatusCode from error returned by handler.
 //
 // Used for common default response.

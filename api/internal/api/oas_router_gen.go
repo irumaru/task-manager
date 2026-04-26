@@ -53,6 +53,23 @@ var (
 		"GET":    "Authorization",
 		"PATCH":  "Authorization,Content-Type",
 	}
+	rn21AllowedHeaders = map[string]string{
+		"GET":  "Authorization",
+		"POST": "Authorization,Content-Type",
+	}
+	rn23AllowedHeaders = map[string]string{
+		"DELETE": "Authorization",
+		"PUT":    "Authorization,Content-Type",
+	}
+	rn25AllowedHeaders = map[string]string{
+		"GET":  "Authorization",
+		"POST": "Authorization,Content-Type",
+	}
+	rn27AllowedHeaders = map[string]string{
+		"DELETE": "Authorization",
+		"GET":    "Authorization",
+		"PUT":    "Authorization,Content-Type",
+	}
 )
 
 func (s *Server) cutPrefix(path string) (string, bool) {
@@ -515,6 +532,160 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 									allowedHeaders: rn20AllowedHeaders,
 									acceptPost:     "",
 									acceptPatch:    "application/json",
+								})
+							}
+
+							return
+						}
+
+					}
+
+				}
+
+			case 'w': // Prefix: "wish"
+
+				if l := len("wish"); len(elem) >= l && elem[0:l] == "wish" {
+					elem = elem[l:]
+				} else {
+					break
+				}
+
+				if len(elem) == 0 {
+					break
+				}
+				switch elem[0] {
+				case '-': // Prefix: "-labels"
+
+					if l := len("-labels"); len(elem) >= l && elem[0:l] == "-labels" {
+						elem = elem[l:]
+					} else {
+						break
+					}
+
+					if len(elem) == 0 {
+						switch r.Method {
+						case "GET":
+							s.handleWishLabelOpsListRequest([0]string{}, elemIsEscaped, w, r)
+						case "POST":
+							s.handleWishLabelOpsCreateRequest([0]string{}, elemIsEscaped, w, r)
+						default:
+							s.notAllowed(w, r, notAllowedParams{
+								allowedMethods: "GET,POST",
+								allowedHeaders: rn21AllowedHeaders,
+								acceptPost:     "application/json",
+								acceptPatch:    "",
+							})
+						}
+
+						return
+					}
+					switch elem[0] {
+					case '/': // Prefix: "/"
+
+						if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+							elem = elem[l:]
+						} else {
+							break
+						}
+
+						// Param: "id"
+						// Leaf parameter, slashes are prohibited
+						idx := strings.IndexByte(elem, '/')
+						if idx >= 0 {
+							break
+						}
+						args[0] = elem
+						elem = ""
+
+						if len(elem) == 0 {
+							// Leaf node.
+							switch r.Method {
+							case "DELETE":
+								s.handleWishLabelOpsDeleteRequest([1]string{
+									args[0],
+								}, elemIsEscaped, w, r)
+							case "PUT":
+								s.handleWishLabelOpsUpdateRequest([1]string{
+									args[0],
+								}, elemIsEscaped, w, r)
+							default:
+								s.notAllowed(w, r, notAllowedParams{
+									allowedMethods: "DELETE,PUT",
+									allowedHeaders: rn23AllowedHeaders,
+									acceptPost:     "",
+									acceptPatch:    "",
+								})
+							}
+
+							return
+						}
+
+					}
+
+				case 'e': // Prefix: "es"
+
+					if l := len("es"); len(elem) >= l && elem[0:l] == "es" {
+						elem = elem[l:]
+					} else {
+						break
+					}
+
+					if len(elem) == 0 {
+						switch r.Method {
+						case "GET":
+							s.handleWishOpsListRequest([0]string{}, elemIsEscaped, w, r)
+						case "POST":
+							s.handleWishOpsCreateRequest([0]string{}, elemIsEscaped, w, r)
+						default:
+							s.notAllowed(w, r, notAllowedParams{
+								allowedMethods: "GET,POST",
+								allowedHeaders: rn25AllowedHeaders,
+								acceptPost:     "application/json",
+								acceptPatch:    "",
+							})
+						}
+
+						return
+					}
+					switch elem[0] {
+					case '/': // Prefix: "/"
+
+						if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+							elem = elem[l:]
+						} else {
+							break
+						}
+
+						// Param: "id"
+						// Leaf parameter, slashes are prohibited
+						idx := strings.IndexByte(elem, '/')
+						if idx >= 0 {
+							break
+						}
+						args[0] = elem
+						elem = ""
+
+						if len(elem) == 0 {
+							// Leaf node.
+							switch r.Method {
+							case "DELETE":
+								s.handleWishOpsDeleteRequest([1]string{
+									args[0],
+								}, elemIsEscaped, w, r)
+							case "GET":
+								s.handleWishOpsGetRequest([1]string{
+									args[0],
+								}, elemIsEscaped, w, r)
+							case "PUT":
+								s.handleWishOpsUpdateRequest([1]string{
+									args[0],
+								}, elemIsEscaped, w, r)
+							default:
+								s.notAllowed(w, r, notAllowedParams{
+									allowedMethods: "DELETE,GET,PUT",
+									allowedHeaders: rn27AllowedHeaders,
+									acceptPost:     "",
+									acceptPatch:    "",
 								})
 							}
 
@@ -1077,6 +1248,185 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 								r.operationID = "TaskOps_update"
 								r.operationGroup = ""
 								r.pathPattern = "/tasks/{id}"
+								r.args = args
+								r.count = 1
+								return r, true
+							default:
+								return
+							}
+						}
+
+					}
+
+				}
+
+			case 'w': // Prefix: "wish"
+
+				if l := len("wish"); len(elem) >= l && elem[0:l] == "wish" {
+					elem = elem[l:]
+				} else {
+					break
+				}
+
+				if len(elem) == 0 {
+					break
+				}
+				switch elem[0] {
+				case '-': // Prefix: "-labels"
+
+					if l := len("-labels"); len(elem) >= l && elem[0:l] == "-labels" {
+						elem = elem[l:]
+					} else {
+						break
+					}
+
+					if len(elem) == 0 {
+						switch method {
+						case "GET":
+							r.name = WishLabelOpsListOperation
+							r.summary = ""
+							r.operationID = "WishLabelOps_list"
+							r.operationGroup = ""
+							r.pathPattern = "/wish-labels"
+							r.args = args
+							r.count = 0
+							return r, true
+						case "POST":
+							r.name = WishLabelOpsCreateOperation
+							r.summary = ""
+							r.operationID = "WishLabelOps_create"
+							r.operationGroup = ""
+							r.pathPattern = "/wish-labels"
+							r.args = args
+							r.count = 0
+							return r, true
+						default:
+							return
+						}
+					}
+					switch elem[0] {
+					case '/': // Prefix: "/"
+
+						if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+							elem = elem[l:]
+						} else {
+							break
+						}
+
+						// Param: "id"
+						// Leaf parameter, slashes are prohibited
+						idx := strings.IndexByte(elem, '/')
+						if idx >= 0 {
+							break
+						}
+						args[0] = elem
+						elem = ""
+
+						if len(elem) == 0 {
+							// Leaf node.
+							switch method {
+							case "DELETE":
+								r.name = WishLabelOpsDeleteOperation
+								r.summary = ""
+								r.operationID = "WishLabelOps_delete"
+								r.operationGroup = ""
+								r.pathPattern = "/wish-labels/{id}"
+								r.args = args
+								r.count = 1
+								return r, true
+							case "PUT":
+								r.name = WishLabelOpsUpdateOperation
+								r.summary = ""
+								r.operationID = "WishLabelOps_update"
+								r.operationGroup = ""
+								r.pathPattern = "/wish-labels/{id}"
+								r.args = args
+								r.count = 1
+								return r, true
+							default:
+								return
+							}
+						}
+
+					}
+
+				case 'e': // Prefix: "es"
+
+					if l := len("es"); len(elem) >= l && elem[0:l] == "es" {
+						elem = elem[l:]
+					} else {
+						break
+					}
+
+					if len(elem) == 0 {
+						switch method {
+						case "GET":
+							r.name = WishOpsListOperation
+							r.summary = ""
+							r.operationID = "WishOps_list"
+							r.operationGroup = ""
+							r.pathPattern = "/wishes"
+							r.args = args
+							r.count = 0
+							return r, true
+						case "POST":
+							r.name = WishOpsCreateOperation
+							r.summary = ""
+							r.operationID = "WishOps_create"
+							r.operationGroup = ""
+							r.pathPattern = "/wishes"
+							r.args = args
+							r.count = 0
+							return r, true
+						default:
+							return
+						}
+					}
+					switch elem[0] {
+					case '/': // Prefix: "/"
+
+						if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
+							elem = elem[l:]
+						} else {
+							break
+						}
+
+						// Param: "id"
+						// Leaf parameter, slashes are prohibited
+						idx := strings.IndexByte(elem, '/')
+						if idx >= 0 {
+							break
+						}
+						args[0] = elem
+						elem = ""
+
+						if len(elem) == 0 {
+							// Leaf node.
+							switch method {
+							case "DELETE":
+								r.name = WishOpsDeleteOperation
+								r.summary = ""
+								r.operationID = "WishOps_delete"
+								r.operationGroup = ""
+								r.pathPattern = "/wishes/{id}"
+								r.args = args
+								r.count = 1
+								return r, true
+							case "GET":
+								r.name = WishOpsGetOperation
+								r.summary = ""
+								r.operationID = "WishOps_get"
+								r.operationGroup = ""
+								r.pathPattern = "/wishes/{id}"
+								r.args = args
+								r.count = 1
+								return r, true
+							case "PUT":
+								r.name = WishOpsUpdateOperation
+								r.summary = ""
+								r.operationID = "WishOps_update"
+								r.operationGroup = ""
+								r.pathPattern = "/wishes/{id}"
 								r.args = args
 								r.count = 1
 								return r, true

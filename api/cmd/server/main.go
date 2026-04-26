@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
@@ -17,6 +18,15 @@ import (
 
 func main() {
 	ctx := context.Background()
+
+	// -----------------------------------------------------------------------
+	// Logger
+	// -----------------------------------------------------------------------
+	logLevel := slog.LevelInfo
+	if os.Getenv("APP_ENV") == "dev" {
+		logLevel = slog.LevelDebug
+	}
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: logLevel})))
 
 	// -----------------------------------------------------------------------
 	// Config from environment
@@ -47,7 +57,7 @@ func main() {
 	// -----------------------------------------------------------------------
 	// HTTP handlers (ogen)
 	// -----------------------------------------------------------------------
-	h := handler.New(q, jwtSvc, hub, googleClientID, googleClientSecret)
+	h := handler.New(pool, q, jwtSvc, hub, googleClientID, googleClientSecret)
 	sec := auth.NewSecurityHandler(jwtSvc)
 
 	srv, err := api.NewServer(h, sec)
@@ -75,7 +85,9 @@ func loggingMiddleware(next http.Handler) http.Handler {
 		start := time.Now()
 		rw := &responseWriter{ResponseWriter: w, status: http.StatusOK}
 		next.ServeHTTP(rw, r)
-		log.Printf("%s %s %d %s", r.Method, r.URL.Path, rw.status, time.Since(start))
+		if r.URL.Path != "/ping" {
+			log.Printf("%s %s %d %s", r.Method, r.URL.Path, rw.status, time.Since(start))
+		}
 	})
 }
 

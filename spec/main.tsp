@@ -277,3 +277,68 @@ interface TagOps {
   @route("{id}")
   delete(@path id: string): void | ApiError;
 }
+
+// ---------------------------------------------------------------------------
+// Wishes (やりたいこと)
+// ---------------------------------------------------------------------------
+
+model Wish {
+  id: string;
+  title: string;
+  detail: string | null;
+  labelIds: string[];
+  createdAt: utcDateTime;
+  updatedAt: utcDateTime;
+}
+
+model WishList { items: Wish[]; }
+
+model CreateWishRequest {
+  title: string;
+  detail?: string;
+  labelIds?: string[];
+}
+
+// PUT semantics: full replacement. All fields required.
+model UpdateWishRequest {
+  title: string;
+  detail: string | null;
+  labelIds: string[];
+}
+
+@route("/wishes")
+@tag("Wishes")
+@useAuth(BearerAuth)
+interface WishOps {
+  @get list(): WishList | ApiError;
+  @post create(@body body: CreateWishRequest): Wish | ApiError;
+  @get  @route("{id}") get(@path id: string): Wish | ApiError;
+  @put  @route("{id}") update(@path id: string, @body body: UpdateWishRequest): Wish | ApiError;
+  @delete @route("{id}") delete(@path id: string): void | ApiError;
+}
+
+// ---------------------------------------------------------------------------
+// Wish Labels
+// ---------------------------------------------------------------------------
+
+model WishLabel {
+  id: string;
+  name: string;
+}
+
+model WishLabelList { items: WishLabel[]; }
+
+model CreateWishLabelRequest { name: string; }
+
+// PUT semantics: full replacement. `name` required.
+model UpdateWishLabelRequest { name: string; }
+
+@route("/wish-labels")
+@tag("WishLabels")
+@useAuth(BearerAuth)
+interface WishLabelOps {
+  @get list(): WishLabelList | ApiError;
+  @post create(@body body: CreateWishLabelRequest): WishLabel | ApiError;
+  @put   @route("{id}") update(@path id: string, @body body: UpdateWishLabelRequest): WishLabel | ApiError;
+  @delete @route("{id}") delete(@path id: string): void | ApiError;
+}

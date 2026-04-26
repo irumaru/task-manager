@@ -7,6 +7,8 @@ import 'priority_provider.dart';
 import 'status_provider.dart';
 import 'tag_provider.dart';
 import 'task_provider.dart';
+import 'wish_label_provider.dart';
+import 'wish_provider.dart';
 
 final websocketProvider = Provider<WebSocketClient?>((ref) {
   final authState = ref.watch(authNotifierProvider).value;
@@ -25,6 +27,10 @@ final websocketProvider = Provider<WebSocketClient?>((ref) {
         ref.invalidate(statusNotifierProvider);
       case 'tag.created' || 'tag.updated' || 'tag.deleted':
         ref.invalidate(tagNotifierProvider);
+      case 'wish.changed':
+        ref.invalidate(wishesProvider);
+      case 'wish_label.changed':
+        ref.invalidate(wishLabelNotifierProvider);
     }
   });
 

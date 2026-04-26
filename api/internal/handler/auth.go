@@ -66,11 +66,13 @@ func (h *Handler) AuthOpsGoogleLoginWithCode(ctx context.Context, req *api.Googl
 func (h *Handler) AuthOpsGetMe(ctx context.Context) (*api.UserProfile, error) {
 	userID, err := auth.UserIDFromContext(ctx)
 	if err != nil {
+		slog.WarnContext(ctx, "failed to get user ID from context", "err", err)
 		return nil, errUnauthorized("unauthenticated")
 	}
 
 	user, err := h.q.GetUserByID(ctx, userID)
 	if err != nil {
+		slog.DebugContext(ctx, "failed to get user by ID", "err", err)
 		return nil, errNotFound("user not found")
 	}
 
