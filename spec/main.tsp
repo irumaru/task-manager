@@ -291,6 +291,7 @@ model Wish {
   title: string;
   detail: string | null;
   labelIds: string[];
+  archivedAt: utcDateTime | null;
   createdAt: utcDateTime;
   updatedAt: utcDateTime;
 }
@@ -304,10 +305,12 @@ model CreateWishRequest {
 }
 
 // PUT semantics: full replacement. All fields required.
+// archivedAt: null = 通常状態、値あり = アーカイブ済み。
 model UpdateWishRequest {
   title: string;
   detail: string | null;
   labelIds: string[];
+  archivedAt: utcDateTime | null;
 }
 
 @route("/wishes")

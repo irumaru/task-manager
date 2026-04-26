@@ -975,9 +975,10 @@ func (s *UpdateWishLabelRequest) SetName(val string) {
 
 // Ref: #/components/schemas/UpdateWishRequest
 type UpdateWishRequest struct {
-	Title    string    `json:"title"`
-	Detail   NilString `json:"detail"`
-	LabelIds []string  `json:"labelIds"`
+	Title      string      `json:"title"`
+	Detail     NilString   `json:"detail"`
+	LabelIds   []string    `json:"labelIds"`
+	ArchivedAt NilDateTime `json:"archivedAt"`
 }
 
 // GetTitle returns the value of Title.
@@ -995,6 +996,11 @@ func (s *UpdateWishRequest) GetLabelIds() []string {
 	return s.LabelIds
 }
 
+// GetArchivedAt returns the value of ArchivedAt.
+func (s *UpdateWishRequest) GetArchivedAt() NilDateTime {
+	return s.ArchivedAt
+}
+
 // SetTitle sets the value of Title.
 func (s *UpdateWishRequest) SetTitle(val string) {
 	s.Title = val
@@ -1008,6 +1014,11 @@ func (s *UpdateWishRequest) SetDetail(val NilString) {
 // SetLabelIds sets the value of LabelIds.
 func (s *UpdateWishRequest) SetLabelIds(val []string) {
 	s.LabelIds = val
+}
+
+// SetArchivedAt sets the value of ArchivedAt.
+func (s *UpdateWishRequest) SetArchivedAt(val NilDateTime) {
+	s.ArchivedAt = val
 }
 
 // Ref: #/components/schemas/UserProfile
@@ -1060,12 +1071,13 @@ func (s *UserProfile) SetAvatarUrl(val NilString) {
 
 // Ref: #/components/schemas/Wish
 type Wish struct {
-	ID        string    `json:"id"`
-	Title     string    `json:"title"`
-	Detail    NilString `json:"detail"`
-	LabelIds  []string  `json:"labelIds"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	ID         string      `json:"id"`
+	Title      string      `json:"title"`
+	Detail     NilString   `json:"detail"`
+	LabelIds   []string    `json:"labelIds"`
+	ArchivedAt NilDateTime `json:"archivedAt"`
+	CreatedAt  time.Time   `json:"createdAt"`
+	UpdatedAt  time.Time   `json:"updatedAt"`
 }
 
 // GetID returns the value of ID.
@@ -1086,6 +1098,11 @@ func (s *Wish) GetDetail() NilString {
 // GetLabelIds returns the value of LabelIds.
 func (s *Wish) GetLabelIds() []string {
 	return s.LabelIds
+}
+
+// GetArchivedAt returns the value of ArchivedAt.
+func (s *Wish) GetArchivedAt() NilDateTime {
+	return s.ArchivedAt
 }
 
 // GetCreatedAt returns the value of CreatedAt.
@@ -1116,6 +1133,11 @@ func (s *Wish) SetDetail(val NilString) {
 // SetLabelIds sets the value of LabelIds.
 func (s *Wish) SetLabelIds(val []string) {
 	s.LabelIds = val
+}
+
+// SetArchivedAt sets the value of ArchivedAt.
+func (s *Wish) SetArchivedAt(val NilDateTime) {
+	s.ArchivedAt = val
 }
 
 // SetCreatedAt sets the value of CreatedAt.
