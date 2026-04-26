@@ -14,7 +14,7 @@ on:
           - prod
         default: dev
 
-concurrency: client-android-${{ github.event.inputs.environment }}
+concurrency: client-${{ github.event.inputs.environment }}
 
 jobs:
   calc_tag:
@@ -67,9 +67,8 @@ jobs:
       platforms: ${{ steps.set.outputs.platforms }}
     steps:
       - id: set
-        # To add Windows builds in the future, append {"platform":"windows","runner":"windows-latest"} here
         run: |
-          echo 'platforms=[{"platform":"android","runner":"ubuntu-latest"}]' >> "$GITHUB_OUTPUT"
+          echo 'platforms=[{"platform":"android","runner":"ubuntu-latest"},{"platform":"windows","runner":"windows-latest"}]' >> "$GITHUB_OUTPUT"
 
   build:
     needs: [calc_tag, prepare]
@@ -125,6 +124,36 @@ jobs:
           name: app-release-aab
           path: app/build/app/outputs/bundle/release/app-release.aab
 
+      - name: Build Windows
+        if: matrix.platform == 'windows'
+        working-directory: app
+        shell: pwsh
+        run: |
+          flutter build windows --release `
+            --dart-define=API_BASE_URL=${{ secrets.API_BASE_URL }} `
+            --dart-define=GOOGLE_OAUTH_CLIENT_ID=${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+
+      - name: Build Inno Setup installer
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          iscc `
+            /DAppId="${{ secrets.INNO_APP_ID }}" `
+            /DAppName="${{ vars.INNO_APP_NAME }}" `
+            /DInstallDirName="${{ vars.INNO_INSTALL_DIR_NAME }}" `
+            /DAppVersion="${{ needs.calc_tag.outputs.tagName }}" `
+            /DOutputBaseFilename="${{ vars.INNO_OUTPUT_BASENAME }}-${{ needs.calc_tag.outputs.tagName }}" `
+            /DSourceDir="..\..\build\windows\x64\runner\Release" `
+            /DOutputDir="..\..\..\dist" `
+            app\windows\installer\installer.iss
+
+      - name: Upload Windows installer artifact
+        if: matrix.platform == 'windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: app/dist/*.exe
+
   play_upload:
     needs: [build, calc_tag]
     runs-on: ubuntu-latest
@@ -157,6 +186,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: app-release-aab
+
+      - name: Download Windows installer
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-installer
+          path: windows-installer
 
       - name: Create CalVer tag and GitHub Release
         uses: actions/github-script@v8
@@ -212,8 +247,10 @@ jobs:
             });
             console.log(`Release ${tagName} created`);
 
-      - name: Attach AAB to Release
+      - name: Attach assets to Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.calc_tag.outputs.tagName }}
-          files: app-release.aab
+          files: |
+            app-release.aab
+            windows-installer/*.exe
