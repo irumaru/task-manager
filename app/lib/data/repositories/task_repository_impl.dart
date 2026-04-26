@@ -112,10 +112,10 @@ class TaskRepositoryImpl implements TaskRepository {
   }) async {
     final json = await _api.createTask({
       'title': title,
-      if (memo != null) 'memo': memo,
-      if (dueDate != null) 'dueDate': dueDate.toUtc().toIso8601String(),
+      'memo': ?memo,
+      'dueDate': ?dueDate?.toUtc().toIso8601String(),
       'statusId': statusId,
-      if (priorityId != null) 'priorityId': priorityId,
+      'priorityId': ?priorityId,
       if (tagIds.isNotEmpty) 'tagIds': tagIds,
     });
     return _toTask(json);

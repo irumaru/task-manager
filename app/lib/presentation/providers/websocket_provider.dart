@@ -19,13 +19,13 @@ final websocketProvider = Provider<WebSocketClient?>((ref) {
 
   client.events.listen((event) {
     switch (event.type) {
-      case 'task.created' || 'task.updated' || 'task.deleted':
+      case 'task.changed':
         ref.invalidate(tasksProvider);
-      case 'priority.created' || 'priority.updated' || 'priority.deleted':
+      case 'priority.changed':
         ref.invalidate(priorityNotifierProvider);
-      case 'status.created' || 'status.updated' || 'status.deleted':
+      case 'status.changed':
         ref.invalidate(statusNotifierProvider);
-      case 'tag.created' || 'tag.updated' || 'tag.deleted':
+      case 'tag.changed':
         ref.invalidate(tagNotifierProvider);
       case 'wish.changed':
         ref.invalidate(wishesProvider);

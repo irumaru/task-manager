@@ -6,14 +6,15 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 class WebSocketEvent {
   final String type;
-  final Map<String, dynamic> data;
+  final Map<String, dynamic> payload;
 
-  WebSocketEvent({required this.type, required this.data});
+  WebSocketEvent({required this.type, required this.payload});
 
   factory WebSocketEvent.fromJson(Map<String, dynamic> json) {
+    final raw = json['payload'];
     return WebSocketEvent(
       type: json['type'] as String,
-      data: json['data'] as Map<String, dynamic>,
+      payload: raw is Map<String, dynamic> ? raw : const {},
     );
   }
 }
