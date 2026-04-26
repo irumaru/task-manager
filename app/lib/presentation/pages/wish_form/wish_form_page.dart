@@ -78,6 +78,7 @@ class _WishFormPageState extends ConsumerState<WishFormPage> {
           title: _titleController.text.trim(),
           detail: detail.isEmpty ? null : detail,
           labelIds: labelIds,
+          archivedAt: widget.wish!.archivedAt,
         );
       } else {
         await notifier.addWish(

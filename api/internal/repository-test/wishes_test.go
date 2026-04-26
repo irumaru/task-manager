@@ -2,12 +2,14 @@ package repository_test
 
 import (
 	"testing"
+	"time"
 
 	"task-manager/api/internal/repository"
 	"task-manager/api/internal/testfactory"
 	"task-manager/api/internal/testutils"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -193,4 +195,90 @@ func TestWishLabel_CascadeOnWishLabelDelete(t *testing.T) {
 	assert.Equal(t, wish.ID, got.ID)
 	// label_ids should be empty
 	assert.Empty(t, got.LabelIds)
+}
+
+func TestCreateWish_ArchivedAtIsNull(t *testing.T) {
+	pool := testutils.SetupTestDB(t)
+	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
+	q := repository.New(pool)
+
+	wish, err := q.CreateWish(t.Context(), repository.CreateWishParams{
+		UserID: user.ID,
+		Title:  "new wish",
+	})
+	require.NoError(t, err)
+	assert.False(t, wish.ArchivedAt.Valid)
+}
+
+func TestListWishes_IncludesArchived(t *testing.T) {
+	pool := testutils.SetupTestDB(t)
+	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
+	q := repository.New(pool)
+
+	normal := testfactory.CreateWish(t, pool, testfactory.WishParams{UserID: user.ID, Title: "normal"})
+	_, err := q.UpdateWish(t.Context(), repository.UpdateWishParams{
+		ID:         normal.ID,
+		UserID:     user.ID,
+		Title:      normal.Title,
+		ArchivedAt: pgtype.Timestamptz{Time: time.Now(), Valid: true},
+	})
+	require.NoError(t, err)
+
+	testfactory.CreateWish(t, pool, testfactory.WishParams{UserID: user.ID, Title: "active"})
+
+	wishes, err := q.ListWishes(t.Context(), user.ID)
+	require.NoError(t, err)
+	assert.Len(t, wishes, 2)
+}
+
+func TestUpdateWish_SetsArchivedAt(t *testing.T) {
+	pool := testutils.SetupTestDB(t)
+	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
+	created := testfactory.CreateWish(t, pool, testfactory.WishParams{UserID: user.ID})
+
+	archiveTime := time.Now().UTC().Truncate(time.Microsecond)
+	q := repository.New(pool)
+	updated, err := q.UpdateWish(t.Context(), repository.UpdateWishParams{
+		ID:         created.ID,
+		UserID:     user.ID,
+		Title:      created.Title,
+		ArchivedAt: pgtype.Timestamptz{Time: archiveTime, Valid: true},
+	})
+	require.NoError(t, err)
+	require.True(t, updated.ArchivedAt.Valid)
+	assert.WithinDuration(t, archiveTime, updated.ArchivedAt.Time, time.Second)
+
+	got, err := q.GetWish(t.Context(), repository.GetWishParams{ID: created.ID, UserID: user.ID})
+	require.NoError(t, err)
+	assert.True(t, got.ArchivedAt.Valid)
+}
+
+func TestUpdateWish_ClearsArchivedAt(t *testing.T) {
+	pool := testutils.SetupTestDB(t)
+	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
+	q := repository.New(pool)
+
+	wish, err := q.CreateWish(t.Context(), repository.CreateWishParams{
+		UserID: user.ID,
+		Title:  "to be archived then restored",
+	})
+	require.NoError(t, err)
+
+	// archive
+	_, err = q.UpdateWish(t.Context(), repository.UpdateWishParams{
+		ID:         wish.ID,
+		UserID:     user.ID,
+		Title:      wish.Title,
+		ArchivedAt: pgtype.Timestamptz{Time: time.Now(), Valid: true},
+	})
+	require.NoError(t, err)
+
+	// restore (archived_at = NULL)
+	restored, err := q.UpdateWish(t.Context(), repository.UpdateWishParams{
+		ID:     wish.ID,
+		UserID: user.ID,
+		Title:  wish.Title,
+	})
+	require.NoError(t, err)
+	assert.False(t, restored.ArchivedAt.Valid)
 }
