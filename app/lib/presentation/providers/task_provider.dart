@@ -77,28 +77,20 @@ class TaskNotifier extends AsyncNotifier<void> {
 
   Future<void> updateTask({
     required String id,
-    String? title,
-    String? memo,
-    bool clearMemo = false,
-    DateTime? dueDate,
-    bool clearDueDate = false,
-    String? priorityId,
-    bool clearPriority = false,
-    String? statusId,
-    bool clearStatus = false,
-    List<String> tagIds = const [],
+    required String title,
+    required String? memo,
+    required DateTime? dueDate,
+    required String statusId,
+    required String? priorityId,
+    required List<String> tagIds,
   }) async {
     await ref.read(taskRepositoryProvider).updateTask(
           id: id,
           title: title,
           memo: memo,
-          clearMemo: clearMemo,
           dueDate: dueDate,
-          clearDueDate: clearDueDate,
-          priorityId: priorityId,
-          clearPriority: clearPriority,
           statusId: statusId,
-          clearStatus: clearStatus,
+          priorityId: priorityId,
           tagIds: tagIds,
         );
     ref.invalidate(tasksProvider);

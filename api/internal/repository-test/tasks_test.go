@@ -128,16 +128,76 @@ func TestUpdateTask(t *testing.T) {
 	status := testfactory.CreateStatus(t, pool, testfactory.StatusParams{UserID: user.ID})
 	task := testfactory.CreateTask(t, pool, testfactory.TaskParams{UserID: user.ID, Title: "Old Title", StatusID: status.ID})
 
-	newTitle := "New Title"
 	q := repository.New(pool)
 	updated, err := q.UpdateTask(t.Context(), repository.UpdateTaskParams{
-		ID:     task.ID,
-		UserID: user.ID,
-		Title:  &newTitle,
+		ID:       task.ID,
+		UserID:   user.ID,
+		Title:    "New Title",
+		StatusID: status.ID,
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "New Title", updated.Title)
-	assert.Equal(t, status.ID, updated.StatusID) // unchanged
+	assert.Equal(t, status.ID, updated.StatusID)
+}
+
+func TestUpdateTask_ClearMemo(t *testing.T) {
+	pool := testutils.SetupTestDB(t)
+	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
+	status := testfactory.CreateStatus(t, pool, testfactory.StatusParams{UserID: user.ID})
+	memo := "initial memo"
+	task := testfactory.CreateTask(t, pool, testfactory.TaskParams{UserID: user.ID, StatusID: status.ID, Memo: &memo})
+
+	q := repository.New(pool)
+	updated, err := q.UpdateTask(t.Context(), repository.UpdateTaskParams{
+		ID:       task.ID,
+		UserID:   user.ID,
+		Title:    task.Title,
+		Memo:     nil,
+		StatusID: status.ID,
+	})
+	require.NoError(t, err)
+	assert.Nil(t, updated.Memo)
+}
+
+func TestUpdateTask_ClearPriorityId(t *testing.T) {
+	pool := testutils.SetupTestDB(t)
+	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
+	status := testfactory.CreateStatus(t, pool, testfactory.StatusParams{UserID: user.ID})
+	priority := testfactory.CreatePriority(t, pool, testfactory.PriorityParams{UserID: user.ID})
+	task := testfactory.CreateTask(t, pool, testfactory.TaskParams{UserID: user.ID, StatusID: status.ID, PriorityID: uuid.NullUUID{UUID: priority.ID, Valid: true}})
+
+	q := repository.New(pool)
+	updated, err := q.UpdateTask(t.Context(), repository.UpdateTaskParams{
+		ID:         task.ID,
+		UserID:     user.ID,
+		Title:      task.Title,
+		StatusID:   status.ID,
+		PriorityID: uuid.NullUUID{Valid: false},
+	})
+	require.NoError(t, err)
+	assert.False(t, updated.PriorityID.Valid)
+}
+
+func TestUpdateTask_ClearDueDate(t *testing.T) {
+	pool := testutils.SetupTestDB(t)
+	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
+	status := testfactory.CreateStatus(t, pool, testfactory.StatusParams{UserID: user.ID})
+	task := testfactory.CreateTask(t, pool, testfactory.TaskParams{
+		UserID:   user.ID,
+		StatusID: status.ID,
+		DueDate:  pgtype.Timestamptz{Time: time.Now(), Valid: true},
+	})
+
+	q := repository.New(pool)
+	updated, err := q.UpdateTask(t.Context(), repository.UpdateTaskParams{
+		ID:       task.ID,
+		UserID:   user.ID,
+		Title:    task.Title,
+		StatusID: status.ID,
+		DueDate:  pgtype.Timestamptz{Valid: false},
+	})
+	require.NoError(t, err)
+	assert.False(t, updated.DueDate.Valid)
 }
 
 func TestUpdateTask_NotFound(t *testing.T) {
@@ -147,12 +207,12 @@ func TestUpdateTask_NotFound(t *testing.T) {
 	status := testfactory.CreateStatus(t, pool, testfactory.StatusParams{UserID: user1.ID})
 	task := testfactory.CreateTask(t, pool, testfactory.TaskParams{UserID: user1.ID, StatusID: status.ID})
 
-	newTitle := "Hacked"
 	q := repository.New(pool)
 	_, err := q.UpdateTask(t.Context(), repository.UpdateTaskParams{
-		ID:     task.ID,
-		UserID: user2.ID,
-		Title:  &newTitle,
+		ID:       task.ID,
+		UserID:   user2.ID,
+		Title:    "Hacked",
+		StatusID: status.ID,
 	})
 	require.Error(t, err)
 }

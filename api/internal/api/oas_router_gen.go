@@ -26,7 +26,7 @@ var (
 	}
 	rn10AllowedHeaders = map[string]string{
 		"DELETE": "Authorization",
-		"PATCH":  "Authorization,Content-Type",
+		"PUT":    "Authorization,Content-Type",
 	}
 	rn11AllowedHeaders = map[string]string{
 		"GET":  "Authorization",
@@ -34,7 +34,7 @@ var (
 	}
 	rn13AllowedHeaders = map[string]string{
 		"DELETE": "Authorization",
-		"PATCH":  "Authorization,Content-Type",
+		"PUT":    "Authorization,Content-Type",
 	}
 	rn14AllowedHeaders = map[string]string{
 		"GET":  "Authorization",
@@ -42,7 +42,7 @@ var (
 	}
 	rn16AllowedHeaders = map[string]string{
 		"DELETE": "Authorization",
-		"PATCH":  "Authorization,Content-Type",
+		"PUT":    "Authorization,Content-Type",
 	}
 	rn18AllowedHeaders = map[string]string{
 		"GET":  "Authorization",
@@ -51,7 +51,7 @@ var (
 	rn20AllowedHeaders = map[string]string{
 		"DELETE": "Authorization",
 		"GET":    "Authorization",
-		"PATCH":  "Authorization,Content-Type",
+		"PUT":    "Authorization,Content-Type",
 	}
 	rn21AllowedHeaders = map[string]string{
 		"GET":  "Authorization",
@@ -300,16 +300,16 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								s.handlePriorityOpsDeleteRequest([1]string{
 									args[0],
 								}, elemIsEscaped, w, r)
-							case "PATCH":
+							case "PUT":
 								s.handlePriorityOpsUpdateRequest([1]string{
 									args[0],
 								}, elemIsEscaped, w, r)
 							default:
 								s.notAllowed(w, r, notAllowedParams{
-									allowedMethods: "DELETE,PATCH",
+									allowedMethods: "DELETE,PUT",
 									allowedHeaders: rn10AllowedHeaders,
 									acceptPost:     "",
-									acceptPatch:    "application/json",
+									acceptPatch:    "",
 								})
 							}
 
@@ -370,16 +370,16 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 							s.handleStatusOpsDeleteRequest([1]string{
 								args[0],
 							}, elemIsEscaped, w, r)
-						case "PATCH":
+						case "PUT":
 							s.handleStatusOpsUpdateRequest([1]string{
 								args[0],
 							}, elemIsEscaped, w, r)
 						default:
 							s.notAllowed(w, r, notAllowedParams{
-								allowedMethods: "DELETE,PATCH",
+								allowedMethods: "DELETE,PUT",
 								allowedHeaders: rn13AllowedHeaders,
 								acceptPost:     "",
-								acceptPatch:    "application/json",
+								acceptPatch:    "",
 							})
 						}
 
@@ -450,16 +450,16 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								s.handleTagOpsDeleteRequest([1]string{
 									args[0],
 								}, elemIsEscaped, w, r)
-							case "PATCH":
+							case "PUT":
 								s.handleTagOpsUpdateRequest([1]string{
 									args[0],
 								}, elemIsEscaped, w, r)
 							default:
 								s.notAllowed(w, r, notAllowedParams{
-									allowedMethods: "DELETE,PATCH",
+									allowedMethods: "DELETE,PUT",
 									allowedHeaders: rn16AllowedHeaders,
 									acceptPost:     "",
-									acceptPatch:    "application/json",
+									acceptPatch:    "",
 								})
 							}
 
@@ -522,16 +522,16 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 								s.handleTaskOpsGetRequest([1]string{
 									args[0],
 								}, elemIsEscaped, w, r)
-							case "PATCH":
+							case "PUT":
 								s.handleTaskOpsUpdateRequest([1]string{
 									args[0],
 								}, elemIsEscaped, w, r)
 							default:
 								s.notAllowed(w, r, notAllowedParams{
-									allowedMethods: "DELETE,GET,PATCH",
+									allowedMethods: "DELETE,GET,PUT",
 									allowedHeaders: rn20AllowedHeaders,
 									acceptPost:     "",
-									acceptPatch:    "application/json",
+									acceptPatch:    "",
 								})
 							}
 
@@ -985,7 +985,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 								r.args = args
 								r.count = 1
 								return r, true
-							case "PATCH":
+							case "PUT":
 								r.name = PriorityOpsUpdateOperation
 								r.summary = ""
 								r.operationID = "PriorityOps_update"
@@ -1065,7 +1065,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 							r.args = args
 							r.count = 1
 							return r, true
-						case "PATCH":
+						case "PUT":
 							r.name = StatusOpsUpdateOperation
 							r.summary = ""
 							r.operationID = "StatusOps_update"
@@ -1155,7 +1155,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 								r.args = args
 								r.count = 1
 								return r, true
-							case "PATCH":
+							case "PUT":
 								r.name = TagOpsUpdateOperation
 								r.summary = ""
 								r.operationID = "TagOps_update"
@@ -1242,7 +1242,7 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 								r.args = args
 								r.count = 1
 								return r, true
-							case "PATCH":
+							case "PUT":
 								r.name = TaskOpsUpdateOperation
 								r.summary = ""
 								r.operationID = "TaskOps_update"

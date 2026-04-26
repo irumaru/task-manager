@@ -30,11 +30,11 @@ RETURNING *;
 
 -- name: UpdateTask :one
 UPDATE tasks SET
-    title       = COALESCE(sqlc.narg('title'),       title),
-    memo        = COALESCE(sqlc.narg('memo'),        memo),
-    due_date    = COALESCE(sqlc.narg('due_date'),    due_date),
-    status_id   = COALESCE(sqlc.narg('status_id'),   status_id),
-    priority_id = COALESCE(sqlc.narg('priority_id'), priority_id),
+    title       = $3,
+    memo        = $4,
+    due_date    = $5,
+    status_id   = $6,
+    priority_id = $7,
     updated_at  = NOW()
 WHERE id = $1 AND user_id = $2
 RETURNING *;

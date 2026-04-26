@@ -46,7 +46,7 @@ type Handler interface {
 	PriorityOpsList(ctx context.Context) (*PriorityList, error)
 	// PriorityOpsUpdate implements PriorityOps_update operation.
 	//
-	// PATCH /priorities/{id}
+	// PUT /priorities/{id}
 	PriorityOpsUpdate(ctx context.Context, req *UpdatePriorityRequest, params PriorityOpsUpdateParams) (*Priority, error)
 	// StatusOpsCreate implements StatusOps_create operation.
 	//
@@ -62,7 +62,7 @@ type Handler interface {
 	StatusOpsList(ctx context.Context) (*StatusList, error)
 	// StatusOpsUpdate implements StatusOps_update operation.
 	//
-	// PATCH /statuses/{id}
+	// PUT /statuses/{id}
 	StatusOpsUpdate(ctx context.Context, req *UpdateStatusRequest, params StatusOpsUpdateParams) (*Status, error)
 	// TagOpsCreate implements TagOps_create operation.
 	//
@@ -78,7 +78,7 @@ type Handler interface {
 	TagOpsList(ctx context.Context) (*TagList, error)
 	// TagOpsUpdate implements TagOps_update operation.
 	//
-	// PATCH /tags/{id}
+	// PUT /tags/{id}
 	TagOpsUpdate(ctx context.Context, req *UpdateTagRequest, params TagOpsUpdateParams) (*Tag, error)
 	// TaskOpsCreate implements TaskOps_create operation.
 	//
@@ -108,7 +108,7 @@ type Handler interface {
 	//
 	// Update a task.
 	//
-	// PATCH /tasks/{id}
+	// PUT /tasks/{id}
 	TaskOpsUpdate(ctx context.Context, req *UpdateTaskRequest, params TaskOpsUpdateParams) (*Task, error)
 	// WishLabelOpsCreate implements WishLabelOps_create operation.
 	//

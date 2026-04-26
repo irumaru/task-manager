@@ -124,23 +124,19 @@ class TaskRepositoryImpl implements TaskRepository {
   @override
   Future<Task> updateTask({
     required String id,
-    String? title,
-    String? memo,
-    bool clearMemo = false,
-    DateTime? dueDate,
-    bool clearDueDate = false,
-    String? priorityId,
-    bool clearPriority = false,
-    String? statusId,
-    bool clearStatus = false,
-    List<String> tagIds = const [],
+    required String title,
+    required String? memo,
+    required DateTime? dueDate,
+    required String statusId,
+    required String? priorityId,
+    required List<String> tagIds,
   }) async {
     final json = await _api.updateTask(id, {
-      if (title != null) 'title': title,
-      if (clearMemo) 'memo': null else if (memo != null) 'memo': memo,
-      if (clearDueDate) 'dueDate': null else if (dueDate != null) 'dueDate': dueDate.toUtc().toIso8601String(),
-      if (clearPriority) 'priorityId': null else if (priorityId != null) 'priorityId': priorityId,
-      if (statusId case final s?) 'statusId': s,
+      'title': title,
+      'memo': memo,
+      'dueDate': dueDate?.toUtc().toIso8601String(),
+      'statusId': statusId,
+      'priorityId': priorityId,
       'tagIds': tagIds,
     });
     return _toTask(json);

@@ -121,33 +121,24 @@ func (h *Handler) TaskOpsUpdate(ctx context.Context, req *api.UpdateTaskRequest,
 		return nil, errBadRequest("invalid task id")
 	}
 
-	var title *string
-	if v, ok := req.Title.Get(); ok {
-		title = &v
-	}
-
 	var memo *string
-	if v, ok := req.Memo.Get(); ok {
-		memo = &v
+	if !req.Memo.Null {
+		memo = &req.Memo.Value
 	}
 
 	var dueDate pgtype.Timestamptz
-	if v, ok := req.DueDate.Get(); ok {
-		dueDate = pgtype.Timestamptz{Time: v, Valid: true}
+	if !req.DueDate.Null {
+		dueDate = pgtype.Timestamptz{Time: req.DueDate.Value, Valid: true}
 	}
 
-	var statusID uuid.NullUUID
-	if v, ok := req.StatusId.Get(); ok {
-		sid, err := uuid.Parse(v)
-		if err != nil {
-			return nil, errBadRequest("invalid status_id")
-		}
-		statusID = uuid.NullUUID{UUID: sid, Valid: true}
+	statusID, err := uuid.Parse(req.StatusId)
+	if err != nil {
+		return nil, errBadRequest("invalid status_id")
 	}
 
 	var priorityID uuid.NullUUID
-	if v, ok := req.PriorityId.Get(); ok {
-		pid, err := uuid.Parse(v)
+	if !req.PriorityId.Null {
+		pid, err := uuid.Parse(req.PriorityId.Value)
 		if err != nil {
 			return nil, errBadRequest("invalid priority_id")
 		}
@@ -157,7 +148,7 @@ func (h *Handler) TaskOpsUpdate(ctx context.Context, req *api.UpdateTaskRequest,
 	task, err := h.q.UpdateTask(ctx, repository.UpdateTaskParams{
 		ID:         id,
 		UserID:     userID,
-		Title:      title,
+		Title:      req.Title,
 		Memo:       memo,
 		DueDate:    dueDate,
 		StatusID:   statusID,
@@ -167,22 +158,20 @@ func (h *Handler) TaskOpsUpdate(ctx context.Context, req *api.UpdateTaskRequest,
 		return nil, errNotFound("task not found")
 	}
 
-	// Update tag associations if provided
-	if len(req.TagIds) > 0 {
-		if err := h.q.SetTaskTags(ctx, task.ID); err != nil {
-			return nil, err
+	// PUT semantics: always replace all tag associations
+	if err := h.q.SetTaskTags(ctx, task.ID); err != nil {
+		return nil, err
+	}
+	for _, tagIDStr := range req.TagIds {
+		tagID, err := uuid.Parse(tagIDStr)
+		if err != nil {
+			return nil, errBadRequest("invalid tag_id: " + tagIDStr)
 		}
-		for _, tagIDStr := range req.TagIds {
-			tagID, err := uuid.Parse(tagIDStr)
-			if err != nil {
-				return nil, errBadRequest("invalid tag_id: " + tagIDStr)
-			}
-			if err := h.q.InsertTaskTag(ctx, repository.InsertTaskTagParams{
-				TaskID: task.ID,
-				TagID:  tagID,
-			}); err != nil {
-				return nil, err
-			}
+		if err := h.q.InsertTaskTag(ctx, repository.InsertTaskTagParams{
+			TaskID: task.ID,
+			TagID:  tagID,
+		}); err != nil {
+			return nil, err
 		}
 	}
 

@@ -485,178 +485,6 @@ func (o OptDateTime) Or(d time.Time) time.Time {
 	return d
 }
 
-// NewOptInt32 returns new OptInt32 with value set to v.
-func NewOptInt32(v int32) OptInt32 {
-	return OptInt32{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptInt32 is optional int32.
-type OptInt32 struct {
-	Value int32
-	Set   bool
-}
-
-// IsSet returns true if OptInt32 was set.
-func (o OptInt32) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptInt32) Reset() {
-	var v int32
-	o.Value = v
-	o.Set = false
-}
-
-// SetTo sets value to v.
-func (o *OptInt32) SetTo(v int32) {
-	o.Set = true
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptInt32) Get() (v int32, ok bool) {
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptInt32) Or(d int32) int32 {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptNilDateTime returns new OptNilDateTime with value set to v.
-func NewOptNilDateTime(v time.Time) OptNilDateTime {
-	return OptNilDateTime{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptNilDateTime is optional nullable time.Time.
-type OptNilDateTime struct {
-	Value time.Time
-	Set   bool
-	Null  bool
-}
-
-// IsSet returns true if OptNilDateTime was set.
-func (o OptNilDateTime) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptNilDateTime) Reset() {
-	var v time.Time
-	o.Value = v
-	o.Set = false
-	o.Null = false
-}
-
-// SetTo sets value to v.
-func (o *OptNilDateTime) SetTo(v time.Time) {
-	o.Set = true
-	o.Null = false
-	o.Value = v
-}
-
-// IsNull returns true if value is Null.
-func (o OptNilDateTime) IsNull() bool { return o.Null }
-
-// SetToNull sets value to null.
-func (o *OptNilDateTime) SetToNull() {
-	o.Set = true
-	o.Null = true
-	var v time.Time
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptNilDateTime) Get() (v time.Time, ok bool) {
-	if o.Null {
-		return v, false
-	}
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptNilDateTime) Or(d time.Time) time.Time {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
-// NewOptNilString returns new OptNilString with value set to v.
-func NewOptNilString(v string) OptNilString {
-	return OptNilString{
-		Value: v,
-		Set:   true,
-	}
-}
-
-// OptNilString is optional nullable string.
-type OptNilString struct {
-	Value string
-	Set   bool
-	Null  bool
-}
-
-// IsSet returns true if OptNilString was set.
-func (o OptNilString) IsSet() bool { return o.Set }
-
-// Reset unsets value.
-func (o *OptNilString) Reset() {
-	var v string
-	o.Value = v
-	o.Set = false
-	o.Null = false
-}
-
-// SetTo sets value to v.
-func (o *OptNilString) SetTo(v string) {
-	o.Set = true
-	o.Null = false
-	o.Value = v
-}
-
-// IsNull returns true if value is Null.
-func (o OptNilString) IsNull() bool { return o.Null }
-
-// SetToNull sets value to null.
-func (o *OptNilString) SetToNull() {
-	o.Set = true
-	o.Null = true
-	var v string
-	o.Value = v
-}
-
-// Get returns value and boolean that denotes whether value was set.
-func (o OptNilString) Get() (v string, ok bool) {
-	if o.Null {
-		return v, false
-	}
-	if !o.Set {
-		return v, false
-	}
-	return o.Value, true
-}
-
-// Or returns value if set, or given parameter if does not.
-func (o OptNilString) Or(d string) string {
-	if v, ok := o.Get(); ok {
-		return v
-	}
-	return d
-}
-
 // NewOptString returns new OptString with value set to v.
 func NewOptString(v string) OptString {
 	return OptString{
@@ -995,103 +823,103 @@ type TaskOpsDeleteNoContent struct{}
 
 // Ref: #/components/schemas/UpdatePriorityRequest
 type UpdatePriorityRequest struct {
-	Name         OptString `json:"name"`
-	DisplayOrder OptInt32  `json:"displayOrder"`
+	Name         string `json:"name"`
+	DisplayOrder int32  `json:"displayOrder"`
 }
 
 // GetName returns the value of Name.
-func (s *UpdatePriorityRequest) GetName() OptString {
+func (s *UpdatePriorityRequest) GetName() string {
 	return s.Name
 }
 
 // GetDisplayOrder returns the value of DisplayOrder.
-func (s *UpdatePriorityRequest) GetDisplayOrder() OptInt32 {
+func (s *UpdatePriorityRequest) GetDisplayOrder() int32 {
 	return s.DisplayOrder
 }
 
 // SetName sets the value of Name.
-func (s *UpdatePriorityRequest) SetName(val OptString) {
+func (s *UpdatePriorityRequest) SetName(val string) {
 	s.Name = val
 }
 
 // SetDisplayOrder sets the value of DisplayOrder.
-func (s *UpdatePriorityRequest) SetDisplayOrder(val OptInt32) {
+func (s *UpdatePriorityRequest) SetDisplayOrder(val int32) {
 	s.DisplayOrder = val
 }
 
 // Ref: #/components/schemas/UpdateStatusRequest
 type UpdateStatusRequest struct {
-	Name         OptString `json:"name"`
-	DisplayOrder OptInt32  `json:"displayOrder"`
+	Name         string `json:"name"`
+	DisplayOrder int32  `json:"displayOrder"`
 }
 
 // GetName returns the value of Name.
-func (s *UpdateStatusRequest) GetName() OptString {
+func (s *UpdateStatusRequest) GetName() string {
 	return s.Name
 }
 
 // GetDisplayOrder returns the value of DisplayOrder.
-func (s *UpdateStatusRequest) GetDisplayOrder() OptInt32 {
+func (s *UpdateStatusRequest) GetDisplayOrder() int32 {
 	return s.DisplayOrder
 }
 
 // SetName sets the value of Name.
-func (s *UpdateStatusRequest) SetName(val OptString) {
+func (s *UpdateStatusRequest) SetName(val string) {
 	s.Name = val
 }
 
 // SetDisplayOrder sets the value of DisplayOrder.
-func (s *UpdateStatusRequest) SetDisplayOrder(val OptInt32) {
+func (s *UpdateStatusRequest) SetDisplayOrder(val int32) {
 	s.DisplayOrder = val
 }
 
 // Ref: #/components/schemas/UpdateTagRequest
 type UpdateTagRequest struct {
-	Name OptString `json:"name"`
+	Name string `json:"name"`
 }
 
 // GetName returns the value of Name.
-func (s *UpdateTagRequest) GetName() OptString {
+func (s *UpdateTagRequest) GetName() string {
 	return s.Name
 }
 
 // SetName sets the value of Name.
-func (s *UpdateTagRequest) SetName(val OptString) {
+func (s *UpdateTagRequest) SetName(val string) {
 	s.Name = val
 }
 
 // Ref: #/components/schemas/UpdateTaskRequest
 type UpdateTaskRequest struct {
-	Title      OptString      `json:"title"`
-	Memo       OptNilString   `json:"memo"`
-	DueDate    OptNilDateTime `json:"dueDate"`
-	StatusId   OptString      `json:"statusId"`
-	PriorityId OptNilString   `json:"priorityId"`
-	TagIds     []string       `json:"tagIds"`
+	Title      string      `json:"title"`
+	Memo       NilString   `json:"memo"`
+	DueDate    NilDateTime `json:"dueDate"`
+	StatusId   string      `json:"statusId"`
+	PriorityId NilString   `json:"priorityId"`
+	TagIds     []string    `json:"tagIds"`
 }
 
 // GetTitle returns the value of Title.
-func (s *UpdateTaskRequest) GetTitle() OptString {
+func (s *UpdateTaskRequest) GetTitle() string {
 	return s.Title
 }
 
 // GetMemo returns the value of Memo.
-func (s *UpdateTaskRequest) GetMemo() OptNilString {
+func (s *UpdateTaskRequest) GetMemo() NilString {
 	return s.Memo
 }
 
 // GetDueDate returns the value of DueDate.
-func (s *UpdateTaskRequest) GetDueDate() OptNilDateTime {
+func (s *UpdateTaskRequest) GetDueDate() NilDateTime {
 	return s.DueDate
 }
 
 // GetStatusId returns the value of StatusId.
-func (s *UpdateTaskRequest) GetStatusId() OptString {
+func (s *UpdateTaskRequest) GetStatusId() string {
 	return s.StatusId
 }
 
 // GetPriorityId returns the value of PriorityId.
-func (s *UpdateTaskRequest) GetPriorityId() OptNilString {
+func (s *UpdateTaskRequest) GetPriorityId() NilString {
 	return s.PriorityId
 }
 
@@ -1101,27 +929,27 @@ func (s *UpdateTaskRequest) GetTagIds() []string {
 }
 
 // SetTitle sets the value of Title.
-func (s *UpdateTaskRequest) SetTitle(val OptString) {
+func (s *UpdateTaskRequest) SetTitle(val string) {
 	s.Title = val
 }
 
 // SetMemo sets the value of Memo.
-func (s *UpdateTaskRequest) SetMemo(val OptNilString) {
+func (s *UpdateTaskRequest) SetMemo(val NilString) {
 	s.Memo = val
 }
 
 // SetDueDate sets the value of DueDate.
-func (s *UpdateTaskRequest) SetDueDate(val OptNilDateTime) {
+func (s *UpdateTaskRequest) SetDueDate(val NilDateTime) {
 	s.DueDate = val
 }
 
 // SetStatusId sets the value of StatusId.
-func (s *UpdateTaskRequest) SetStatusId(val OptString) {
+func (s *UpdateTaskRequest) SetStatusId(val string) {
 	s.StatusId = val
 }
 
 // SetPriorityId sets the value of PriorityId.
-func (s *UpdateTaskRequest) SetPriorityId(val OptNilString) {
+func (s *UpdateTaskRequest) SetPriorityId(val NilString) {
 	s.PriorityId = val
 }
 

@@ -19,7 +19,13 @@ class PriorityNotifier extends AsyncNotifier<List<Priority>> {
   }
 
   Future<void> edit(String id, String name) async {
-    await ref.read(priorityRepositoryProvider).updatePriority(id: id, name: name);
+    final current = state.value ?? [];
+    final target = current.firstWhere((p) => p.id == id);
+    await ref.read(priorityRepositoryProvider).updatePriority(
+          id: id,
+          name: name,
+          displayOrder: target.sortOrder,
+        );
     ref.invalidateSelf();
   }
 
@@ -29,7 +35,10 @@ class PriorityNotifier extends AsyncNotifier<List<Priority>> {
   }
 
   Future<void> reorder(List<String> orderedIds) async {
-    await ref.read(priorityRepositoryProvider).reorderPriorities(orderedIds);
+    final current = state.value ?? [];
+    final byId = {for (final p in current) p.id: p};
+    final ordered = orderedIds.map((id) => byId[id]!).toList();
+    await ref.read(priorityRepositoryProvider).reorderPriorities(ordered);
     ref.invalidateSelf();
   }
 }

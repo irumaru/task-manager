@@ -85,12 +85,11 @@ func TestUpdateTag(t *testing.T) {
 	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
 	created := testfactory.CreateTag(t, pool, testfactory.TagParams{UserID: user.ID, Name: "old-name"})
 
-	newName := "new-name"
 	q := repository.New(pool)
 	updated, err := q.UpdateTag(t.Context(), repository.UpdateTagParams{
 		ID:     created.ID,
 		UserID: user.ID,
-		Name:   &newName,
+		Name:   "new-name",
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "new-name", updated.Name)

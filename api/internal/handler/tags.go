@@ -55,15 +55,10 @@ func (h *Handler) TagOpsUpdate(ctx context.Context, req *api.UpdateTagRequest, p
 		return nil, errBadRequest("invalid tag id")
 	}
 
-	var name *string
-	if v, ok := req.Name.Get(); ok {
-		name = &v
-	}
-
 	row, err := h.q.UpdateTag(ctx, repository.UpdateTagParams{
 		ID:     id,
 		UserID: userID,
-		Name:   name,
+		Name:   req.Name,
 	})
 	if err != nil {
 		return nil, errNotFound("tag not found")

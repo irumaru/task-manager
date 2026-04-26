@@ -24,10 +24,10 @@ steps:
     test: current.res.status == 200 && len(current.res.body.items) >= 1
 
   update_tag:
-    desc: PATCH /tags/{id} - タグ更新
+    desc: PUT /tags/{id} - タグ更新（全フィールド）
     req:
       /tags/{{ steps.create_tag.res.body.id }}:
-        patch:
+        put:
           headers:
             Authorization: "Bearer {{ vars.token }}"
           body:

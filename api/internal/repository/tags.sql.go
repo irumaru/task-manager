@@ -103,7 +103,7 @@ func (q *Queries) ListTags(ctx context.Context, userID uuid.UUID) ([]Tag, error)
 
 const updateTag = `-- name: UpdateTag :one
 UPDATE tags SET
-    name       = COALESCE($3, name),
+    name       = $3,
     updated_at = NOW()
 WHERE id = $1 AND user_id = $2
 RETURNING id, user_id, name, created_at, updated_at
@@ -112,7 +112,7 @@ RETURNING id, user_id, name, created_at, updated_at
 type UpdateTagParams struct {
 	ID     uuid.UUID `json:"id"`
 	UserID uuid.UUID `json:"user_id"`
-	Name   *string   `json:"name"`
+	Name   string    `json:"name"`
 }
 
 func (q *Queries) UpdateTag(ctx context.Context, arg UpdateTagParams) (Tag, error) {

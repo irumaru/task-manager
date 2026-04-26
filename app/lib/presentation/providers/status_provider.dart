@@ -19,7 +19,13 @@ class StatusNotifier extends AsyncNotifier<List<Status>> {
   }
 
   Future<void> edit(String id, String name) async {
-    await ref.read(statusRepositoryProvider).updateStatus(id: id, name: name);
+    final current = state.value ?? [];
+    final target = current.firstWhere((s) => s.id == id);
+    await ref.read(statusRepositoryProvider).updateStatus(
+          id: id,
+          name: name,
+          displayOrder: target.sortOrder,
+        );
     ref.invalidateSelf();
   }
 
@@ -29,7 +35,10 @@ class StatusNotifier extends AsyncNotifier<List<Status>> {
   }
 
   Future<void> reorder(List<String> orderedIds) async {
-    await ref.read(statusRepositoryProvider).reorderStatuses(orderedIds);
+    final current = state.value ?? [];
+    final byId = {for (final s in current) s.id: s};
+    final ordered = orderedIds.map((id) => byId[id]!).toList();
+    await ref.read(statusRepositoryProvider).reorderStatuses(ordered);
     ref.invalidateSelf();
   }
 }

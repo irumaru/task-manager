@@ -11,8 +11,8 @@ RETURNING *;
 
 -- name: UpdatePriority :one
 UPDATE priorities SET
-    name          = COALESCE(sqlc.narg('name'),          name),
-    display_order = COALESCE(sqlc.narg('display_order'), display_order),
+    name          = $3,
+    display_order = $4,
     updated_at    = NOW()
 WHERE id = $1 AND user_id = $2
 RETURNING *;

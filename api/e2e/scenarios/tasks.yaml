@@ -63,16 +63,48 @@ steps:
     test: current.res.status == 200 && current.res.body.id == steps.create_task.res.body.id
 
   update_task:
-    desc: PATCH /tasks/{id} - タスク更新
+    desc: PUT /tasks/{id} - タスク更新（全フィールド）
     req:
       /tasks/{{ steps.create_task.res.body.id }}:
-        patch:
+        put:
           headers:
             Authorization: "Bearer {{ vars.token }}"
           body:
             application/json:
               title: "e2e-task-updated"
+              memo: null
+              dueDate: null
+              statusId: "{{ steps.setup_status.res.body.id }}"
+              priorityId: null
+              tagIds:
+                - "{{ steps.setup_tag.res.body.id }}"
     test: current.res.status == 200 && current.res.body.title == "e2e-task-updated"
+
+  update_task_clear_tags:
+    desc: PUT /tasks/{id} - tagIds 空配列でタグ全削除
+    req:
+      /tasks/{{ steps.create_task.res.body.id }}:
+        put:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+          body:
+            application/json:
+              title: "e2e-task-updated"
+              memo: null
+              dueDate: null
+              statusId: "{{ steps.setup_status.res.body.id }}"
+              priorityId: null
+              tagIds: []
+    test: current.res.status == 200 && len(current.res.body.tagIds) == 0
+
+  get_task_verify_clear:
+    desc: GET /tasks/{id} - クリア後の DB 状態を確認
+    req:
+      /tasks/{{ steps.create_task.res.body.id }}:
+        get:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+    test: current.res.status == 200 && current.res.body.memo == null && len(current.res.body.tagIds) == 0
 
   delete_task:
     desc: DELETE /tasks/{id} - タスク削除

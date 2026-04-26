@@ -28,11 +28,8 @@ class StatusRepositoryImpl implements StatusRepository {
   }
 
   @override
-  Future<void> updateStatus({required String id, required String name, int? sortOrder}) async {
-    await _api.updateStatus(id, {
-      'name': name,
-      if (sortOrder != null) 'displayOrder': sortOrder,
-    });
+  Future<void> updateStatus({required String id, required String name, required int displayOrder}) async {
+    await _api.updateStatus(id, {'name': name, 'displayOrder': displayOrder});
   }
 
   @override
@@ -41,9 +38,9 @@ class StatusRepositoryImpl implements StatusRepository {
   }
 
   @override
-  Future<void> reorderStatuses(List<String> orderedIds) async {
-    for (var i = 0; i < orderedIds.length; i++) {
-      await _api.updateStatus(orderedIds[i], {'displayOrder': i});
+  Future<void> reorderStatuses(List<Status> ordered) async {
+    for (var i = 0; i < ordered.length; i++) {
+      await _api.updateStatus(ordered[i].id, {'name': ordered[i].name, 'displayOrder': i});
     }
   }
 }

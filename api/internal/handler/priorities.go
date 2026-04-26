@@ -56,20 +56,11 @@ func (h *Handler) PriorityOpsUpdate(ctx context.Context, req *api.UpdatePriority
 		return nil, errBadRequest("invalid priority id")
 	}
 
-	var name *string
-	if v, ok := req.Name.Get(); ok {
-		name = &v
-	}
-	var order *int32
-	if v, ok := req.DisplayOrder.Get(); ok {
-		order = &v
-	}
-
 	row, err := h.q.UpdatePriority(ctx, repository.UpdatePriorityParams{
 		ID:           id,
 		UserID:       userID,
-		Name:         name,
-		DisplayOrder: order,
+		Name:         req.Name,
+		DisplayOrder: req.DisplayOrder,
 	})
 	if err != nil {
 		return nil, errNotFound("priority not found")

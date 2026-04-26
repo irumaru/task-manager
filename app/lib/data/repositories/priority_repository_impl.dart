@@ -28,11 +28,8 @@ class PriorityRepositoryImpl implements PriorityRepository {
   }
 
   @override
-  Future<void> updatePriority({required String id, required String name, int? sortOrder}) async {
-    await _api.updatePriority(id, {
-      'name': name,
-      if (sortOrder != null) 'displayOrder': sortOrder,
-    });
+  Future<void> updatePriority({required String id, required String name, required int displayOrder}) async {
+    await _api.updatePriority(id, {'name': name, 'displayOrder': displayOrder});
   }
 
   @override
@@ -41,9 +38,9 @@ class PriorityRepositoryImpl implements PriorityRepository {
   }
 
   @override
-  Future<void> reorderPriorities(List<String> orderedIds) async {
-    for (var i = 0; i < orderedIds.length; i++) {
-      await _api.updatePriority(orderedIds[i], {'displayOrder': i});
+  Future<void> reorderPriorities(List<Priority> ordered) async {
+    for (var i = 0; i < ordered.length; i++) {
+      await _api.updatePriority(ordered[i].id, {'name': ordered[i].name, 'displayOrder': i});
     }
   }
 }
