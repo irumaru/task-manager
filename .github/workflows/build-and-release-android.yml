@@ -1,0 +1,213 @@
+name: build-and-release/client
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment"
+        type: choice
+        options:
+          - dev
+          - prod
+        default: dev
+
+concurrency: client-android-${{ github.event.inputs.environment }}
+
+jobs:
+  calc_tag:
+    runs-on: ubuntu-latest
+    outputs:
+      tagName: ${{ steps.calc.outputs.tagName }}
+      versionCode: ${{ steps.calc.outputs.versionCode }}
+    steps:
+      - id: calc
+        name: Calculate release tag
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const per_page = 100;
+            const d = new Date();
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const datePart = `${year}.${month}${day}`;
+            let page = 1;
+            let max = 0;
+            while (true) {
+              const res = await github.rest.repos.listTags({ owner, repo, per_page, page });
+              if (!res || !res.data || res.data.length === 0) break;
+              for (const t of res.data) {
+                const m = t.name.match(new RegExp(`^client-v${year}\\.${month}${day}\\.(\\d+)$`));
+                if (m) {
+                  const n = parseInt(m[1], 10);
+                  if (n > max) max = n;
+                }
+              }
+              if (res.data.length < per_page) break;
+              page += 1;
+            }
+            const next = max + 1;
+            const tagName = `client-v${datePart}.${next}`;
+            const yy = year % 100;
+            const mm = d.getMonth() + 1;
+            const dd = d.getDate();
+            const versionCode = yy * 10000000 + mm * 100000 + dd * 1000 + next;
+            core.setOutput('tagName', tagName);
+            core.setOutput('versionCode', String(versionCode));
+            console.log(`Calculated tag ${tagName}, versionCode ${versionCode}`);
+
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      platforms: ${{ steps.set.outputs.platforms }}
+    steps:
+      - id: set
+        # To add Windows builds in the future, append {"platform":"windows","runner":"windows-latest"} here
+        run: |
+          echo 'platforms=[{"platform":"android","runner":"ubuntu-latest"}]' >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: [calc_tag, prepare]
+    runs-on: ${{ matrix.runner }}
+    environment: ${{ github.event.inputs.environment }}
+    strategy:
+      matrix:
+        include: ${{ fromJson(needs.prepare.outputs.platforms) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Java
+        if: matrix.platform == 'android'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Restore keystore
+        if: matrix.platform == 'android'
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > app/android/app/upload-keystore.jks
+          cat > app/android/key.properties <<EOF
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          storeFile=upload-keystore.jks
+          EOF
+
+      - name: Flutter pub get
+        working-directory: app
+        run: flutter pub get
+
+      - name: Build AAB (Android)
+        if: matrix.platform == 'android'
+        working-directory: app
+        run: |
+          flutter build appbundle --release \
+            --build-number=${{ needs.calc_tag.outputs.versionCode }} \
+            --dart-define=API_BASE_URL=${{ secrets.API_BASE_URL }} \
+            --dart-define=GOOGLE_OAUTH_CLIENT_ID=${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+
+      - name: Upload AAB artifact
+        if: matrix.platform == 'android'
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-aab
+          path: app/build/app/outputs/bundle/release/app-release.aab
+
+  play_upload:
+    needs: [build, calc_tag]
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Download AAB
+        uses: actions/download-artifact@v4
+        with:
+          name: app-release-aab
+
+      - name: Upload to Google Play Internal Track
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: net.irumaru.taskmanager
+          releaseFiles: app-release.aab
+          track: internal
+          status: completed
+          releaseName: ${{ needs.calc_tag.outputs.tagName }}
+
+  create_release:
+    needs: [build, calc_tag, play_upload]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download AAB
+        uses: actions/download-artifact@v4
+        with:
+          name: app-release-aab
+
+      - name: Create CalVer tag and GitHub Release
+        uses: actions/github-script@v8
+        env:
+          TAG_NAME: ${{ needs.calc_tag.outputs.tagName }}
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const sha = context.sha;
+            const tagName = process.env.TAG_NAME;
+            console.log(`Creating tag ${tagName} at ${sha}`);
+            await github.rest.git.createRef({ owner, repo, ref: `refs/tags/${tagName}`, sha });
+
+            const tagsRes = await github.rest.repos.listTags({ owner, repo, per_page: 10 });
+            const tags = tagsRes.data.map(t => t.name).filter(t => t !== tagName && t.startsWith('client-v'));
+            const previousTag = tags.length > 0 ? tags[0] : null;
+
+            let releaseBody = '';
+            if (previousTag) {
+              const compareRes = await github.rest.repos.compareCommits({
+                owner, repo, base: previousTag, head: sha,
+              });
+              const commits = compareRes.data.commits;
+              if (commits.length > 0) {
+                releaseBody += `## Changes since [${previousTag}](https://github.com/${owner}/${repo}/releases/tag/${previousTag})\n\n`;
+                for (const c of commits) {
+                  const msg = c.commit.message.split('\n')[0];
+                  releaseBody += `- ${msg} ([${c.sha.substring(0, 7)}](https://github.com/${owner}/${repo}/commit/${c.sha}))\n`;
+                }
+                releaseBody += `\n[Full diff](https://github.com/${owner}/${repo}/compare/${previousTag}...${tagName})\n`;
+              } else {
+                releaseBody += `No changes since previous release [${previousTag}](https://github.com/${owner}/${repo}/releases/tag/${previousTag}).\n`;
+              }
+            } else {
+              releaseBody = 'First release.';
+            }
+
+            await github.rest.repos.createRelease({
+              owner, repo,
+              tag_name: tagName,
+              name: tagName,
+              body: releaseBody,
+              draft: false,
+              prerelease: true,
+              target_commitish: sha,
+            });
+            console.log(`Release ${tagName} created`);
+
+      - name: Attach AAB to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.calc_tag.outputs.tagName }}
+          files: app-release.aab
