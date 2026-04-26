@@ -6,6 +6,7 @@ import (
 	"task-manager/api/internal/api"
 	"task-manager/api/internal/auth"
 	"task-manager/api/internal/repository"
+	"task-manager/api/internal/websocket"
 
 	"github.com/google/uuid"
 )
@@ -42,6 +43,7 @@ func (h *Handler) PriorityOpsCreate(ctx context.Context, req *api.CreatePriority
 	if err != nil {
 		return nil, err
 	}
+	h.hub.Broadcast(userID, websocket.Event{Type: "priority.changed", Payload: map[string]any{}})
 	return toAPIPriority(row), nil
 }
 
@@ -65,6 +67,7 @@ func (h *Handler) PriorityOpsUpdate(ctx context.Context, req *api.UpdatePriority
 	if err != nil {
 		return nil, errNotFound("priority not found")
 	}
+	h.hub.Broadcast(userID, websocket.Event{Type: "priority.changed", Payload: map[string]any{}})
 	return toAPIPriority(row), nil
 }
 
@@ -79,5 +82,9 @@ func (h *Handler) PriorityOpsDelete(ctx context.Context, params api.PriorityOpsD
 		return errBadRequest("invalid priority id")
 	}
 
-	return h.q.DeletePriority(ctx, repository.DeletePriorityParams{ID: id, UserID: userID})
+	if err := h.q.DeletePriority(ctx, repository.DeletePriorityParams{ID: id, UserID: userID}); err != nil {
+		return err
+	}
+	h.hub.Broadcast(userID, websocket.Event{Type: "priority.changed", Payload: map[string]any{}})
+	return nil
 }

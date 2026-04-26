@@ -6,6 +6,7 @@ import (
 	"task-manager/api/internal/api"
 	"task-manager/api/internal/auth"
 	"task-manager/api/internal/repository"
+	"task-manager/api/internal/websocket"
 
 	"github.com/google/uuid"
 )
@@ -42,6 +43,7 @@ func (h *Handler) StatusOpsCreate(ctx context.Context, req *api.CreateStatusRequ
 	if err != nil {
 		return nil, err
 	}
+	h.hub.Broadcast(userID, websocket.Event{Type: "status.changed", Payload: map[string]any{}})
 	return toAPIStatus(row), nil
 }
 
@@ -65,6 +67,7 @@ func (h *Handler) StatusOpsUpdate(ctx context.Context, req *api.UpdateStatusRequ
 	if err != nil {
 		return nil, errNotFound("status not found")
 	}
+	h.hub.Broadcast(userID, websocket.Event{Type: "status.changed", Payload: map[string]any{}})
 	return toAPIStatus(row), nil
 }
 
@@ -79,5 +82,9 @@ func (h *Handler) StatusOpsDelete(ctx context.Context, params api.StatusOpsDelet
 		return errBadRequest("invalid status id")
 	}
 
-	return h.q.DeleteStatus(ctx, repository.DeleteStatusParams{ID: id, UserID: userID})
+	if err := h.q.DeleteStatus(ctx, repository.DeleteStatusParams{ID: id, UserID: userID}); err != nil {
+		return err
+	}
+	h.hub.Broadcast(userID, websocket.Event{Type: "status.changed", Payload: map[string]any{}})
+	return nil
 }
