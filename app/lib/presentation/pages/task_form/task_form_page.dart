@@ -77,12 +77,9 @@ class _TaskFormPageState extends ConsumerState<TaskFormPage> {
         id: widget.task!.id,
         title: _titleController.text.trim(),
         memo: memo.isEmpty ? null : memo,
-        clearMemo: memo.isEmpty,
         dueDate: _dueDate,
-        clearDueDate: _dueDate == null,
         priorityId: _priorityId,
-        clearPriority: _priorityId == null,
-        statusId: _statusId,
+        statusId: _statusId!,
         tagIds: tagIds,
       );
     } else {

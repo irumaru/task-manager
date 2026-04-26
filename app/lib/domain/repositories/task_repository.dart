@@ -60,16 +60,12 @@ abstract class TaskRepository {
 
   Future<Task> updateTask({
     required String id,
-    String? title,
-    String? memo,
-    bool clearMemo,
-    DateTime? dueDate,
-    bool clearDueDate,
-    String? priorityId,
-    bool clearPriority,
-    String? statusId,
-    bool clearStatus,
-    List<String> tagIds,
+    required String title,
+    required String? memo,
+    required DateTime? dueDate,
+    required String statusId,
+    required String? priorityId,
+    required List<String> tagIds,
   });
 
   Future<void> deleteTask(String id);

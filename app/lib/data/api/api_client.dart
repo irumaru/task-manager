@@ -150,10 +150,10 @@ class ApiClient {
     });
   }
 
-  /// PATCH /statuses/:id
+  /// PUT /statuses/:id
   Future<Map<String, dynamic>> updateStatus(String id, Map<String, dynamic> body) {
     return _handle(() async {
-      final response = await _dio.patch('/statuses/$id', data: body);
+      final response = await _dio.put('/statuses/$id', data: body);
       return response.data as Map<String, dynamic>;
     });
   }
@@ -183,10 +183,10 @@ class ApiClient {
     });
   }
 
-  /// PATCH /tags/:id
+  /// PUT /tags/:id
   Future<Map<String, dynamic>> updateTag(String id, Map<String, dynamic> body) {
     return _handle(() async {
-      final response = await _dio.patch('/tags/$id', data: body);
+      final response = await _dio.put('/tags/$id', data: body);
       return response.data as Map<String, dynamic>;
     });
   }
