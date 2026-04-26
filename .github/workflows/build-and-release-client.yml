@@ -142,7 +142,7 @@ jobs:
           packageName: net.irumaru.taskmanager
           releaseFiles: app-release.aab
           track: internal
-          status: completed
+          status: draft
           releaseName: ${{ needs.calc_tag.outputs.tagName }}
 
   create_release:
