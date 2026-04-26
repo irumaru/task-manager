@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/models/wish_label.dart';
 import 'api_provider.dart';
+import 'wish_provider.dart';
 
 class WishLabelNotifier extends AsyncNotifier<List<WishLabel>> {
   @override
@@ -28,6 +29,9 @@ class WishLabelNotifier extends AsyncNotifier<List<WishLabel>> {
   Future<void> delete(String id) async {
     await ref.read(wishLabelRepositoryProvider).deleteWishLabel(id);
     ref.invalidateSelf();
+    if (ref.read(selectedWishLabelFilterProvider) == id) {
+      ref.read(selectedWishLabelFilterProvider.notifier).select(null);
+    }
   }
 }
 
