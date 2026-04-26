@@ -57,7 +57,7 @@ func main() {
 	// -----------------------------------------------------------------------
 	// HTTP handlers (ogen)
 	// -----------------------------------------------------------------------
-	h := handler.New(q, jwtSvc, hub, googleClientID, googleClientSecret)
+	h := handler.New(pool, q, jwtSvc, hub, googleClientID, googleClientSecret)
 	sec := auth.NewSecurityHandler(jwtSvc)
 
 	srv, err := api.NewServer(h, sec)

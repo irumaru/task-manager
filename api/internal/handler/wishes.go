@@ -76,7 +76,15 @@ func (h *Handler) WishOpsCreate(ctx context.Context, req *api.CreateWishRequest)
 		detail = &v
 	}
 
-	wish, err := h.q.CreateWish(ctx, repository.CreateWishParams{
+	tx, err := h.pool.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+
+	qtx := h.q.WithTx(tx)
+
+	wish, err := qtx.CreateWish(ctx, repository.CreateWishParams{
 		UserID: userID,
 		Title:  req.Title,
 		Detail: detail,
@@ -86,8 +94,8 @@ func (h *Handler) WishOpsCreate(ctx context.Context, req *api.CreateWishRequest)
 	}
 
 	if len(labelIDs) > 0 {
-		if err := h.q.ReplaceWishLabels(ctx, repository.ReplaceWishLabelsParams{
-			WishID:   wish.ID,
+		if err := qtx.ReplaceWishLabels(ctx, repository.ReplaceWishLabelsParams{
+			WishID:  wish.ID,
 			Column2: labelIDs,
 		}); err != nil {
 			if isFKViolation(err) {
@@ -95,6 +103,10 @@ func (h *Handler) WishOpsCreate(ctx context.Context, req *api.CreateWishRequest)
 			}
 			return nil, err
 		}
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, err
 	}
 
 	result := toAPIWishFromWish(wish, labelIDs)
@@ -131,7 +143,15 @@ func (h *Handler) WishOpsUpdate(ctx context.Context, req *api.UpdateWishRequest,
 		detail = &v
 	}
 
-	wish, err := h.q.UpdateWish(ctx, repository.UpdateWishParams{
+	tx, err := h.pool.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+
+	qtx := h.q.WithTx(tx)
+
+	wish, err := qtx.UpdateWish(ctx, repository.UpdateWishParams{
 		ID:     id,
 		UserID: userID,
 		Title:  req.Title,
@@ -141,13 +161,13 @@ func (h *Handler) WishOpsUpdate(ctx context.Context, req *api.UpdateWishRequest,
 		return nil, errNotFound("wish not found")
 	}
 
-	if err := h.q.ClearWishLabels(ctx, wish.ID); err != nil {
+	if err := qtx.ClearWishLabels(ctx, wish.ID); err != nil {
 		return nil, err
 	}
 
 	if len(labelIDs) > 0 {
-		if err := h.q.ReplaceWishLabels(ctx, repository.ReplaceWishLabelsParams{
-			WishID:   wish.ID,
+		if err := qtx.ReplaceWishLabels(ctx, repository.ReplaceWishLabelsParams{
+			WishID:  wish.ID,
 			Column2: labelIDs,
 		}); err != nil {
 			if isFKViolation(err) {
@@ -155,6 +175,10 @@ func (h *Handler) WishOpsUpdate(ctx context.Context, req *api.UpdateWishRequest,
 			}
 			return nil, err
 		}
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, err
 	}
 
 	result := toAPIWishFromWish(wish, labelIDs)

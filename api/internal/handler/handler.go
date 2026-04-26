@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/ogen-go/ogen/ogenerrors"
 
 	"task-manager/api/internal/api"
@@ -15,6 +16,7 @@ import (
 
 // Handler implements api.Handler.
 type Handler struct {
+	pool                *pgxpool.Pool
 	q                   *repository.Queries
 	jwt                 *auth.JWTService
 	hub                 websocket.Hub
@@ -22,8 +24,8 @@ type Handler struct {
 	googleClientSecret  string
 }
 
-func New(q *repository.Queries, jwt *auth.JWTService, hub websocket.Hub, googleClientID, googleClientSecret string) *Handler {
-	return &Handler{q: q, jwt: jwt, hub: hub, googleClientID: googleClientID, googleClientSecret: googleClientSecret}
+func New(pool *pgxpool.Pool, q *repository.Queries, jwt *auth.JWTService, hub websocket.Hub, googleClientID, googleClientSecret string) *Handler {
+	return &Handler{pool: pool, q: q, jwt: jwt, hub: hub, googleClientID: googleClientID, googleClientSecret: googleClientSecret}
 }
 
 // NewError converts an error returned by a handler method into the ogen error response.
