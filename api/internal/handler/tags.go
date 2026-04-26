@@ -6,6 +6,7 @@ import (
 	"task-manager/api/internal/api"
 	"task-manager/api/internal/auth"
 	"task-manager/api/internal/repository"
+	"task-manager/api/internal/websocket"
 
 	"github.com/google/uuid"
 )
@@ -41,6 +42,7 @@ func (h *Handler) TagOpsCreate(ctx context.Context, req *api.CreateTagRequest) (
 	if err != nil {
 		return nil, err
 	}
+	h.hub.Broadcast(userID, websocket.Event{Type: "tag.changed", Payload: map[string]any{}})
 	return toAPITag(row), nil
 }
 
@@ -63,6 +65,7 @@ func (h *Handler) TagOpsUpdate(ctx context.Context, req *api.UpdateTagRequest, p
 	if err != nil {
 		return nil, errNotFound("tag not found")
 	}
+	h.hub.Broadcast(userID, websocket.Event{Type: "tag.changed", Payload: map[string]any{}})
 	return toAPITag(row), nil
 }
 
@@ -77,5 +80,9 @@ func (h *Handler) TagOpsDelete(ctx context.Context, params api.TagOpsDeleteParam
 		return errBadRequest("invalid tag id")
 	}
 
-	return h.q.DeleteTag(ctx, repository.DeleteTagParams{ID: id, UserID: userID})
+	if err := h.q.DeleteTag(ctx, repository.DeleteTagParams{ID: id, UserID: userID}); err != nil {
+		return err
+	}
+	h.hub.Broadcast(userID, websocket.Event{Type: "tag.changed", Payload: map[string]any{}})
+	return nil
 }

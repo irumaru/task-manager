@@ -6,6 +6,7 @@ import (
 	"task-manager/api/internal/api"
 	"task-manager/api/internal/auth"
 	"task-manager/api/internal/repository"
+	"task-manager/api/internal/websocket"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -87,6 +88,7 @@ func (h *Handler) TaskOpsCreate(ctx context.Context, req *api.CreateTaskRequest)
 
 	result := toAPITaskFromTask(task)
 	result.TagIds = req.TagIds
+	h.hub.Broadcast(userID, websocket.Event{Type: "task.changed", Payload: map[string]any{}})
 	return &result, nil
 }
 
@@ -177,6 +179,7 @@ func (h *Handler) TaskOpsUpdate(ctx context.Context, req *api.UpdateTaskRequest,
 
 	result := toAPITaskFromTask(task)
 	result.TagIds = req.TagIds
+	h.hub.Broadcast(userID, websocket.Event{Type: "task.changed", Payload: map[string]any{}})
 	return &result, nil
 }
 
@@ -191,5 +194,9 @@ func (h *Handler) TaskOpsDelete(ctx context.Context, params api.TaskOpsDeletePar
 		return errBadRequest("invalid task id")
 	}
 
-	return h.q.DeleteTask(ctx, repository.DeleteTaskParams{ID: id, UserID: userID})
+	if err := h.q.DeleteTask(ctx, repository.DeleteTaskParams{ID: id, UserID: userID}); err != nil {
+		return err
+	}
+	h.hub.Broadcast(userID, websocket.Event{Type: "task.changed", Payload: map[string]any{}})
+	return nil
 }
