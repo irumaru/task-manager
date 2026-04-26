@@ -86,36 +86,16 @@ func TestUpdateStatus(t *testing.T) {
 	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
 	created := testfactory.CreateStatus(t, pool, testfactory.StatusParams{UserID: user.ID, Name: "Old Name", DisplayOrder: 1})
 
-	newName := "New Name"
-	newOrder := int32(5)
 	q := repository.New(pool)
 	updated, err := q.UpdateStatus(t.Context(), repository.UpdateStatusParams{
 		ID:           created.ID,
 		UserID:       user.ID,
-		Name:         &newName,
-		DisplayOrder: &newOrder,
+		Name:         "New Name",
+		DisplayOrder: int32(5),
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "New Name", updated.Name)
 	assert.Equal(t, int32(5), updated.DisplayOrder)
-}
-
-func TestUpdateStatus_PartialUpdate(t *testing.T) {
-	pool := testutils.SetupTestDB(t)
-	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
-	created := testfactory.CreateStatus(t, pool, testfactory.StatusParams{UserID: user.ID, Name: "Original", DisplayOrder: 3})
-
-	// update only name, leave display_order unchanged (COALESCE)
-	newName := "Renamed"
-	q := repository.New(pool)
-	updated, err := q.UpdateStatus(t.Context(), repository.UpdateStatusParams{
-		ID:     created.ID,
-		UserID: user.ID,
-		Name:   &newName,
-	})
-	require.NoError(t, err)
-	assert.Equal(t, "Renamed", updated.Name)
-	assert.Equal(t, int32(3), updated.DisplayOrder)
 }
 
 func TestDeleteStatus(t *testing.T) {

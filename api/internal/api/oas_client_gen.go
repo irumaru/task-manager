@@ -66,7 +66,7 @@ type Invoker interface {
 	PriorityOpsList(ctx context.Context) (*PriorityList, error)
 	// PriorityOpsUpdate invokes PriorityOps_update operation.
 	//
-	// PATCH /priorities/{id}
+	// PUT /priorities/{id}
 	PriorityOpsUpdate(ctx context.Context, request *UpdatePriorityRequest, params PriorityOpsUpdateParams) (*Priority, error)
 	// StatusOpsCreate invokes StatusOps_create operation.
 	//
@@ -82,7 +82,7 @@ type Invoker interface {
 	StatusOpsList(ctx context.Context) (*StatusList, error)
 	// StatusOpsUpdate invokes StatusOps_update operation.
 	//
-	// PATCH /statuses/{id}
+	// PUT /statuses/{id}
 	StatusOpsUpdate(ctx context.Context, request *UpdateStatusRequest, params StatusOpsUpdateParams) (*Status, error)
 	// TagOpsCreate invokes TagOps_create operation.
 	//
@@ -98,7 +98,7 @@ type Invoker interface {
 	TagOpsList(ctx context.Context) (*TagList, error)
 	// TagOpsUpdate invokes TagOps_update operation.
 	//
-	// PATCH /tags/{id}
+	// PUT /tags/{id}
 	TagOpsUpdate(ctx context.Context, request *UpdateTagRequest, params TagOpsUpdateParams) (*Tag, error)
 	// TaskOpsCreate invokes TaskOps_create operation.
 	//
@@ -128,7 +128,7 @@ type Invoker interface {
 	//
 	// Update a task.
 	//
-	// PATCH /tasks/{id}
+	// PUT /tasks/{id}
 	TaskOpsUpdate(ctx context.Context, request *UpdateTaskRequest, params TaskOpsUpdateParams) (*Task, error)
 	// WishLabelOpsCreate invokes WishLabelOps_create operation.
 	//
@@ -882,7 +882,7 @@ func (c *Client) sendPriorityOpsList(ctx context.Context) (res *PriorityList, er
 
 // PriorityOpsUpdate invokes PriorityOps_update operation.
 //
-// PATCH /priorities/{id}
+// PUT /priorities/{id}
 func (c *Client) PriorityOpsUpdate(ctx context.Context, request *UpdatePriorityRequest, params PriorityOpsUpdateParams) (*Priority, error) {
 	res, err := c.sendPriorityOpsUpdate(ctx, request, params)
 	return res, err
@@ -891,7 +891,7 @@ func (c *Client) PriorityOpsUpdate(ctx context.Context, request *UpdatePriorityR
 func (c *Client) sendPriorityOpsUpdate(ctx context.Context, request *UpdatePriorityRequest, params PriorityOpsUpdateParams) (res *Priority, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("PriorityOps_update"),
-		semconv.HTTPRequestMethodKey.String("PATCH"),
+		semconv.HTTPRequestMethodKey.String("PUT"),
 		semconv.URLTemplateKey.String("/priorities/{id}"),
 	}
 	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
@@ -948,7 +948,7 @@ func (c *Client) sendPriorityOpsUpdate(ctx context.Context, request *UpdatePrior
 	uri.AddPathParts(u, pathParts[:]...)
 
 	stage = "EncodeRequest"
-	r, err := ht.NewRequest(ctx, "PATCH", u)
+	r, err := ht.NewRequest(ctx, "PUT", u)
 	if err != nil {
 		return res, errors.Wrap(err, "create request")
 	}
@@ -1344,7 +1344,7 @@ func (c *Client) sendStatusOpsList(ctx context.Context) (res *StatusList, err er
 
 // StatusOpsUpdate invokes StatusOps_update operation.
 //
-// PATCH /statuses/{id}
+// PUT /statuses/{id}
 func (c *Client) StatusOpsUpdate(ctx context.Context, request *UpdateStatusRequest, params StatusOpsUpdateParams) (*Status, error) {
 	res, err := c.sendStatusOpsUpdate(ctx, request, params)
 	return res, err
@@ -1353,7 +1353,7 @@ func (c *Client) StatusOpsUpdate(ctx context.Context, request *UpdateStatusReque
 func (c *Client) sendStatusOpsUpdate(ctx context.Context, request *UpdateStatusRequest, params StatusOpsUpdateParams) (res *Status, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("StatusOps_update"),
-		semconv.HTTPRequestMethodKey.String("PATCH"),
+		semconv.HTTPRequestMethodKey.String("PUT"),
 		semconv.URLTemplateKey.String("/statuses/{id}"),
 	}
 	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
@@ -1410,7 +1410,7 @@ func (c *Client) sendStatusOpsUpdate(ctx context.Context, request *UpdateStatusR
 	uri.AddPathParts(u, pathParts[:]...)
 
 	stage = "EncodeRequest"
-	r, err := ht.NewRequest(ctx, "PATCH", u)
+	r, err := ht.NewRequest(ctx, "PUT", u)
 	if err != nil {
 		return res, errors.Wrap(err, "create request")
 	}
@@ -1806,7 +1806,7 @@ func (c *Client) sendTagOpsList(ctx context.Context) (res *TagList, err error) {
 
 // TagOpsUpdate invokes TagOps_update operation.
 //
-// PATCH /tags/{id}
+// PUT /tags/{id}
 func (c *Client) TagOpsUpdate(ctx context.Context, request *UpdateTagRequest, params TagOpsUpdateParams) (*Tag, error) {
 	res, err := c.sendTagOpsUpdate(ctx, request, params)
 	return res, err
@@ -1815,7 +1815,7 @@ func (c *Client) TagOpsUpdate(ctx context.Context, request *UpdateTagRequest, pa
 func (c *Client) sendTagOpsUpdate(ctx context.Context, request *UpdateTagRequest, params TagOpsUpdateParams) (res *Tag, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("TagOps_update"),
-		semconv.HTTPRequestMethodKey.String("PATCH"),
+		semconv.HTTPRequestMethodKey.String("PUT"),
 		semconv.URLTemplateKey.String("/tags/{id}"),
 	}
 	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
@@ -1872,7 +1872,7 @@ func (c *Client) sendTagOpsUpdate(ctx context.Context, request *UpdateTagRequest
 	uri.AddPathParts(u, pathParts[:]...)
 
 	stage = "EncodeRequest"
-	r, err := ht.NewRequest(ctx, "PATCH", u)
+	r, err := ht.NewRequest(ctx, "PUT", u)
 	if err != nil {
 		return res, errors.Wrap(err, "create request")
 	}
@@ -2401,7 +2401,7 @@ func (c *Client) sendTaskOpsList(ctx context.Context) (res *TaskList, err error)
 //
 // Update a task.
 //
-// PATCH /tasks/{id}
+// PUT /tasks/{id}
 func (c *Client) TaskOpsUpdate(ctx context.Context, request *UpdateTaskRequest, params TaskOpsUpdateParams) (*Task, error) {
 	res, err := c.sendTaskOpsUpdate(ctx, request, params)
 	return res, err
@@ -2410,7 +2410,7 @@ func (c *Client) TaskOpsUpdate(ctx context.Context, request *UpdateTaskRequest, 
 func (c *Client) sendTaskOpsUpdate(ctx context.Context, request *UpdateTaskRequest, params TaskOpsUpdateParams) (res *Task, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("TaskOps_update"),
-		semconv.HTTPRequestMethodKey.String("PATCH"),
+		semconv.HTTPRequestMethodKey.String("PUT"),
 		semconv.URLTemplateKey.String("/tasks/{id}"),
 	}
 	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
@@ -2467,7 +2467,7 @@ func (c *Client) sendTaskOpsUpdate(ctx context.Context, request *UpdateTaskReque
 	uri.AddPathParts(u, pathParts[:]...)
 
 	stage = "EncodeRequest"
-	r, err := ht.NewRequest(ctx, "PATCH", u)
+	r, err := ht.NewRequest(ctx, "PUT", u)
 	if err != nil {
 		return res, errors.Wrap(err, "create request")
 	}

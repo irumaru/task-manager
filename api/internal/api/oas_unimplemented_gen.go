@@ -72,7 +72,7 @@ func (UnimplementedHandler) PriorityOpsList(ctx context.Context) (r *PriorityLis
 
 // PriorityOpsUpdate implements PriorityOps_update operation.
 //
-// PATCH /priorities/{id}
+// PUT /priorities/{id}
 func (UnimplementedHandler) PriorityOpsUpdate(ctx context.Context, req *UpdatePriorityRequest, params PriorityOpsUpdateParams) (r *Priority, _ error) {
 	return r, ht.ErrNotImplemented
 }
@@ -100,7 +100,7 @@ func (UnimplementedHandler) StatusOpsList(ctx context.Context) (r *StatusList, _
 
 // StatusOpsUpdate implements StatusOps_update operation.
 //
-// PATCH /statuses/{id}
+// PUT /statuses/{id}
 func (UnimplementedHandler) StatusOpsUpdate(ctx context.Context, req *UpdateStatusRequest, params StatusOpsUpdateParams) (r *Status, _ error) {
 	return r, ht.ErrNotImplemented
 }
@@ -128,7 +128,7 @@ func (UnimplementedHandler) TagOpsList(ctx context.Context) (r *TagList, _ error
 
 // TagOpsUpdate implements TagOps_update operation.
 //
-// PATCH /tags/{id}
+// PUT /tags/{id}
 func (UnimplementedHandler) TagOpsUpdate(ctx context.Context, req *UpdateTagRequest, params TagOpsUpdateParams) (r *Tag, _ error) {
 	return r, ht.ErrNotImplemented
 }
@@ -173,7 +173,7 @@ func (UnimplementedHandler) TaskOpsList(ctx context.Context) (r *TaskList, _ err
 //
 // Update a task.
 //
-// PATCH /tasks/{id}
+// PUT /tasks/{id}
 func (UnimplementedHandler) TaskOpsUpdate(ctx context.Context, req *UpdateTaskRequest, params TaskOpsUpdateParams) (r *Task, _ error) {
 	return r, ht.ErrNotImplemented
 }

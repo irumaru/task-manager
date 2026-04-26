@@ -56,20 +56,11 @@ func (h *Handler) StatusOpsUpdate(ctx context.Context, req *api.UpdateStatusRequ
 		return nil, errBadRequest("invalid status id")
 	}
 
-	var name *string
-	if v, ok := req.Name.Get(); ok {
-		name = &v
-	}
-	var order *int32
-	if v, ok := req.DisplayOrder.Get(); ok {
-		order = &v
-	}
-
 	row, err := h.q.UpdateStatus(ctx, repository.UpdateStatusParams{
 		ID:           id,
 		UserID:       userID,
-		Name:         name,
-		DisplayOrder: order,
+		Name:         req.Name,
+		DisplayOrder: req.DisplayOrder,
 	})
 	if err != nil {
 		return nil, errNotFound("status not found")

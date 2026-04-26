@@ -198,11 +198,11 @@ func (q *Queries) SetTaskTags(ctx context.Context, taskID uuid.UUID) error {
 
 const updateTask = `-- name: UpdateTask :one
 UPDATE tasks SET
-    title       = COALESCE($3,       title),
-    memo        = COALESCE($4,        memo),
-    due_date    = COALESCE($5,    due_date),
-    status_id   = COALESCE($6,   status_id),
-    priority_id = COALESCE($7, priority_id),
+    title       = $3,
+    memo        = $4,
+    due_date    = $5,
+    status_id   = $6,
+    priority_id = $7,
     updated_at  = NOW()
 WHERE id = $1 AND user_id = $2
 RETURNING id, user_id, title, memo, due_date, status_id, priority_id, created_at, updated_at
@@ -211,10 +211,10 @@ RETURNING id, user_id, title, memo, due_date, status_id, priority_id, created_at
 type UpdateTaskParams struct {
 	ID         uuid.UUID          `json:"id"`
 	UserID     uuid.UUID          `json:"user_id"`
-	Title      *string            `json:"title"`
+	Title      string             `json:"title"`
 	Memo       *string            `json:"memo"`
 	DueDate    pgtype.Timestamptz `json:"due_date"`
-	StatusID   uuid.NullUUID      `json:"status_id"`
+	StatusID   uuid.UUID          `json:"status_id"`
 	PriorityID uuid.NullUUID      `json:"priority_id"`
 }
 

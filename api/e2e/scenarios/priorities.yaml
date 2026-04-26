@@ -25,15 +25,16 @@ steps:
     test: current.res.status == 200 && len(current.res.body.items) >= 1
 
   update_priority:
-    desc: PATCH /priorities/{id} - 優先度更新
+    desc: PUT /priorities/{id} - 優先度更新（全フィールド）
     req:
       /priorities/{{ steps.create_priority.res.body.id }}:
-        patch:
+        put:
           headers:
             Authorization: "Bearer {{ vars.token }}"
           body:
             application/json:
               name: "e2e-priority-updated"
+              displayOrder: 1
     test: current.res.status == 200 && current.res.body.name == "e2e-priority-updated"
 
   delete_priority:

@@ -107,8 +107,8 @@ func (q *Queries) ListStatuses(ctx context.Context, userID uuid.UUID) ([]Status,
 
 const updateStatus = `-- name: UpdateStatus :one
 UPDATE statuses SET
-    name          = COALESCE($3,          name),
-    display_order = COALESCE($4, display_order),
+    name          = $3,
+    display_order = $4,
     updated_at    = NOW()
 WHERE id = $1 AND user_id = $2
 RETURNING id, user_id, name, display_order, created_at, updated_at
@@ -117,8 +117,8 @@ RETURNING id, user_id, name, display_order, created_at, updated_at
 type UpdateStatusParams struct {
 	ID           uuid.UUID `json:"id"`
 	UserID       uuid.UUID `json:"user_id"`
-	Name         *string   `json:"name"`
-	DisplayOrder *int32    `json:"display_order"`
+	Name         string    `json:"name"`
+	DisplayOrder int32     `json:"display_order"`
 }
 
 func (q *Queries) UpdateStatus(ctx context.Context, arg UpdateStatusParams) (Status, error) {

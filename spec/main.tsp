@@ -120,13 +120,14 @@ model CreateTaskRequest {
   tagIds?: string[];
 }
 
+// PUT semantics: full replacement. All fields required.
 model UpdateTaskRequest {
-  title?: string;
-  memo?: string | null;
-  dueDate?: utcDateTime | null;
-  statusId?: string;
-  priorityId?: string | null;
-  tagIds?: string[];
+  title: string;
+  memo: string | null;
+  dueDate: utcDateTime | null;
+  statusId: string;
+  priorityId: string | null;
+  tagIds: string[];
 }
 
 model TaskList {
@@ -150,7 +151,7 @@ interface TaskOps {
   @doc("Get a task by ID")
   get(@path id: string): Task | ApiError;
 
-  @patch
+  @put
   @route("{id}")
   @doc("Update a task")
   update(@path id: string, @body body: UpdateTaskRequest): Task | ApiError;
@@ -180,9 +181,10 @@ model CreateStatusRequest {
   displayOrder: int32;
 }
 
+// PUT semantics: full replacement. All fields required.
 model UpdateStatusRequest {
-  name?: string;
-  displayOrder?: int32;
+  name: string;
+  displayOrder: int32;
 }
 
 @route("/statuses")
@@ -192,7 +194,7 @@ interface StatusOps {
   @get list(): StatusList | ApiError;
   @post create(@body body: CreateStatusRequest): Status | ApiError;
 
-  @patch
+  @put
   @route("{id}")
   update(@path id: string, @body body: UpdateStatusRequest): Status | ApiError;
 
@@ -220,9 +222,10 @@ model CreatePriorityRequest {
   displayOrder: int32;
 }
 
+// PUT semantics: full replacement. All fields required.
 model UpdatePriorityRequest {
-  name?: string;
-  displayOrder?: int32;
+  name: string;
+  displayOrder: int32;
 }
 
 @route("/priorities")
@@ -232,7 +235,7 @@ interface PriorityOps {
   @get list(): PriorityList | ApiError;
   @post create(@body body: CreatePriorityRequest): Priority | ApiError;
 
-  @patch
+  @put
   @route("{id}")
   update(@path id: string, @body body: UpdatePriorityRequest): Priority | ApiError;
 
@@ -258,8 +261,9 @@ model CreateTagRequest {
   name: string;
 }
 
+// PUT semantics: full replacement. All fields required.
 model UpdateTagRequest {
-  name?: string;
+  name: string;
 }
 
 @route("/tags")
@@ -269,7 +273,7 @@ interface TagOps {
   @get list(): TagList | ApiError;
   @post create(@body body: CreateTagRequest): Tag | ApiError;
 
-  @patch
+  @put
   @route("{id}")
   update(@path id: string, @body body: UpdateTagRequest): Tag | ApiError;
 

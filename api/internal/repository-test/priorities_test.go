@@ -87,35 +87,16 @@ func TestUpdatePriority(t *testing.T) {
 	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
 	created := testfactory.CreatePriority(t, pool, testfactory.PriorityParams{UserID: user.ID, Name: "Normal", DisplayOrder: 2})
 
-	newName := "Critical"
-	newOrder := int32(1)
 	q := repository.New(pool)
 	updated, err := q.UpdatePriority(t.Context(), repository.UpdatePriorityParams{
 		ID:           created.ID,
 		UserID:       user.ID,
-		Name:         &newName,
-		DisplayOrder: &newOrder,
+		Name:         "Critical",
+		DisplayOrder: int32(1),
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "Critical", updated.Name)
 	assert.Equal(t, int32(1), updated.DisplayOrder)
-}
-
-func TestUpdatePriority_PartialUpdate(t *testing.T) {
-	pool := testutils.SetupTestDB(t)
-	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
-	created := testfactory.CreatePriority(t, pool, testfactory.PriorityParams{UserID: user.ID, Name: "Original", DisplayOrder: 5})
-
-	newName := "Renamed"
-	q := repository.New(pool)
-	updated, err := q.UpdatePriority(t.Context(), repository.UpdatePriorityParams{
-		ID:     created.ID,
-		UserID: user.ID,
-		Name:   &newName,
-	})
-	require.NoError(t, err)
-	assert.Equal(t, "Renamed", updated.Name)
-	assert.Equal(t, int32(5), updated.DisplayOrder) // unchanged
 }
 
 func TestDeletePriority(t *testing.T) {

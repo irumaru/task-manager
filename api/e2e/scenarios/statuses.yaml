@@ -25,15 +25,16 @@ steps:
     test: current.res.status == 200 && len(current.res.body.items) >= 1
 
   update_status:
-    desc: PATCH /statuses/{id} - ステータス更新
+    desc: PUT /statuses/{id} - ステータス更新（全フィールド）
     req:
       /statuses/{{ steps.create_status.res.body.id }}:
-        patch:
+        put:
           headers:
             Authorization: "Bearer {{ vars.token }}"
           body:
             application/json:
               name: "e2e-status-updated"
+              displayOrder: 1
     test: current.res.status == 200 && current.res.body.name == "e2e-status-updated"
 
   delete_status:

@@ -1242,13 +1242,13 @@ func (s *Server) handlePriorityOpsListRequest(args [0]string, argsEscaped bool, 
 
 // handlePriorityOpsUpdateRequest handles PriorityOps_update operation.
 //
-// PATCH /priorities/{id}
+// PUT /priorities/{id}
 func (s *Server) handlePriorityOpsUpdateRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("PriorityOps_update"),
-		semconv.HTTPRequestMethodKey.String("PATCH"),
+		semconv.HTTPRequestMethodKey.String("PUT"),
 		semconv.HTTPRouteKey.String("/priorities/{id}"),
 	}
 	// Add attributes from config.
@@ -2034,13 +2034,13 @@ func (s *Server) handleStatusOpsListRequest(args [0]string, argsEscaped bool, w 
 
 // handleStatusOpsUpdateRequest handles StatusOps_update operation.
 //
-// PATCH /statuses/{id}
+// PUT /statuses/{id}
 func (s *Server) handleStatusOpsUpdateRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("StatusOps_update"),
-		semconv.HTTPRequestMethodKey.String("PATCH"),
+		semconv.HTTPRequestMethodKey.String("PUT"),
 		semconv.HTTPRouteKey.String("/statuses/{id}"),
 	}
 	// Add attributes from config.
@@ -2826,13 +2826,13 @@ func (s *Server) handleTagOpsListRequest(args [0]string, argsEscaped bool, w htt
 
 // handleTagOpsUpdateRequest handles TagOps_update operation.
 //
-// PATCH /tags/{id}
+// PUT /tags/{id}
 func (s *Server) handleTagOpsUpdateRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("TagOps_update"),
-		semconv.HTTPRequestMethodKey.String("PATCH"),
+		semconv.HTTPRequestMethodKey.String("PUT"),
 		semconv.HTTPRouteKey.String("/tags/{id}"),
 	}
 	// Add attributes from config.
@@ -3826,13 +3826,13 @@ func (s *Server) handleTaskOpsListRequest(args [0]string, argsEscaped bool, w ht
 //
 // Update a task.
 //
-// PATCH /tasks/{id}
+// PUT /tasks/{id}
 func (s *Server) handleTaskOpsUpdateRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	statusWriter := &codeRecorder{ResponseWriter: w}
 	w = statusWriter
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("TaskOps_update"),
-		semconv.HTTPRequestMethodKey.String("PATCH"),
+		semconv.HTTPRequestMethodKey.String("PUT"),
 		semconv.HTTPRouteKey.String("/tasks/{id}"),
 	}
 	// Add attributes from config.
