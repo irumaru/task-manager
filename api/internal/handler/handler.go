@@ -65,3 +65,7 @@ func errBadRequest(msg string) error {
 func errUnauthorized(msg string) error {
 	return &statusError{code: http.StatusUnauthorized, err: errors.New(msg)}
 }
+
+func errConflict(msg string) error {
+	return &statusError{code: http.StatusConflict, err: errors.New(msg)}
+}

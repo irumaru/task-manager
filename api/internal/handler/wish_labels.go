@@ -40,6 +40,9 @@ func (h *Handler) WishLabelOpsCreate(ctx context.Context, req *api.CreateWishLab
 		Name:   req.Name,
 	})
 	if err != nil {
+		if isUniqueViolation(err) {
+			return nil, errConflict("wish_label name already exists")
+		}
 		return nil, err
 	}
 
@@ -65,6 +68,9 @@ func (h *Handler) WishLabelOpsUpdate(ctx context.Context, req *api.UpdateWishLab
 		Name:   req.Name,
 	})
 	if err != nil {
+		if isUniqueViolation(err) {
+			return nil, errConflict("wish_label name already exists")
+		}
 		return nil, errNotFound("wish_label not found")
 	}
 

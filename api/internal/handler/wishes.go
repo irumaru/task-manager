@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	"task-manager/api/internal/api"
@@ -198,5 +199,13 @@ func isFKViolation(err error) bool {
 		return pgErr.Code == "23503"
 	}
 	_ = pgErr
+	return false
+}
+
+func isUniqueViolation(err error) bool {
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		return pgErr.Code == "23505"
+	}
 	return false
 }
