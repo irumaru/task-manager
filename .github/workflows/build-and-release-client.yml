@@ -171,8 +171,14 @@ jobs:
             console.log(`Creating tag ${tagName} at ${sha}`);
             await github.rest.git.createRef({ owner, repo, ref: `refs/tags/${tagName}`, sha });
 
-            const tagsRes = await github.rest.repos.listTags({ owner, repo, per_page: 10 });
-            const tags = tagsRes.data.map(t => t.name).filter(t => t !== tagName && t.startsWith('client-v'));
+            const allTags = await github.paginate(github.rest.repos.listTags, {
+              owner,
+              repo,
+              per_page: 100,
+            });
+            const tags = allTags
+              .map(t => t.name)
+              .filter(t => t !== tagName && t.startsWith('client-v'));
             const previousTag = tags.length > 0 ? tags[0] : null;
 
             let releaseBody = '';
