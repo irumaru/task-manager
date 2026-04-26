@@ -14,6 +14,9 @@ class WishRepositoryImpl implements WishRepository {
         labelIds: (json['labelIds'] as List<dynamic>? ?? [])
             .map((e) => e as String)
             .toList(),
+        archivedAt: json['archivedAt'] != null
+            ? DateTime.parse(json['archivedAt'] as String)
+            : null,
         createdAt: DateTime.parse(json['createdAt'] as String),
         updatedAt: DateTime.parse(json['updatedAt'] as String),
       );
@@ -45,11 +48,13 @@ class WishRepositoryImpl implements WishRepository {
     required String title,
     required String? detail,
     required List<String> labelIds,
+    required DateTime? archivedAt,
   }) async {
     final body = <String, dynamic>{
       'title': title,
       'detail': detail,
       'labelIds': labelIds,
+      'archivedAt': archivedAt?.toUtc().toIso8601String(),
     };
     final json = await _api.updateWish(id, body);
     return _toDomain(json);
