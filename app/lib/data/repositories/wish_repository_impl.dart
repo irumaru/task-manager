@@ -32,7 +32,7 @@ class WishRepositoryImpl implements WishRepository {
   }) async {
     final body = <String, dynamic>{
       'title': title,
-      'detail': ?detail,
+      if (detail != null) 'detail': detail,
       'labelIds': labelIds,
     };
     final json = await _api.createWish(body);
