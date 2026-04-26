@@ -144,7 +144,7 @@ jobs:
             /DAppVersion="${{ needs.calc_tag.outputs.tagName }}" `
             /DOutputBaseFilename="${{ vars.INNO_OUTPUT_BASENAME }}-${{ needs.calc_tag.outputs.tagName }}" `
             /DSourceDir="..\..\build\windows\x64\runner\Release" `
-            /DOutputDir="..\..\..\dist" `
+            /DOutputDir="..\..\dist" `
             app\windows\installer\installer.iss
 
       - name: Upload Windows installer artifact
