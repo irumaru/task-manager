@@ -18,7 +18,7 @@
   #define SourceDir "..\..\build\windows\x64\runner\Release"
 #endif
 #ifndef OutputDir
-  #define OutputDir "..\..\..\dist"
+  #define OutputDir "..\..\dist"
 #endif
 
 [Setup]

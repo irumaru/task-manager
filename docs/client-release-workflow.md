@@ -90,7 +90,7 @@ runs-on: `${{ matrix.runner }}`
        /DAppVersion="${{ needs.calc_tag.outputs.tagName }}" `
        /DOutputBaseFilename="${{ vars.INNO_OUTPUT_BASENAME }}-${{ needs.calc_tag.outputs.tagName }}" `
        /DSourceDir="..\..\build\windows\x64\runner\Release" `
-       /DOutputDir="..\..\..\dist" `
+       /DOutputDir="..\..\dist" `
        app\windows\installer\installer.iss
      ```
 3. `actions/upload-artifact@v4` で `app/dist/*.exe` をアップロード（artifact name: `windows-installer`）。
