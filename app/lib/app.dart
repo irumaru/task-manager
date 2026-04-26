@@ -33,7 +33,7 @@ class App extends ConsumerWidget {
           AuthStatus.unknown => const _Splash(),
         },
         loading: () => const _Splash(),
-        error: (_, __) => const LoginPage(),
+        error: (_, _) => const LoginPage(),
       ),
     );
   }
