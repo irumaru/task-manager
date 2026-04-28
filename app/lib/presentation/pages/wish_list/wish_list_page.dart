@@ -4,36 +4,23 @@ import '../../../presentation/providers/wish_provider.dart';
 import '../wish_form/wish_form_page.dart';
 import '../../widgets/empty_state.dart';
 import 'widgets/label_filter_dropdown.dart';
-import 'widgets/swipeable_wish_card.dart';
-import 'wish_archive_page.dart';
+import 'widgets/wish_card.dart';
 
 class WishListPage extends ConsumerWidget {
   const WishListPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final activeAsync = ref.watch(activeWishesProvider);
+    final filteredAsync = ref.watch(filteredWishesProvider);
     final selectedLabelId = ref.watch(selectedWishLabelFilterProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('やりたいこと'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.inventory_2_outlined),
-            tooltip: 'アーカイブ',
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const WishArchivePage()),
-            ),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('やりたいこと')),
       body: Column(
         children: [
           const LabelFilterDropdown(),
           Expanded(
-            child: activeAsync.when(
+            child: filteredAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Center(child: Text('エラー: $e')),
               data: (wishes) {
@@ -49,9 +36,15 @@ class WishListPage extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   itemCount: wishes.length,
                   itemBuilder: (context, index) {
-                    return SwipeableWishCard(
-                      wish: wishes[index],
-                      archiveMode: false,
+                    final wish = wishes[index];
+                    return WishCard(
+                      wish: wish,
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => WishFormPage(wish: wish),
+                        ),
+                      ),
                     );
                   },
                 );

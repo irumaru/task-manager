@@ -22,7 +22,7 @@ func (q *Queries) ClearWishLabels(ctx context.Context, wishID uuid.UUID) error {
 }
 
 const createWish = `-- name: CreateWish :one
-INSERT INTO wishes (user_id, title, detail) VALUES ($1, $2, $3) RETURNING id, user_id, title, detail, archived_at, created_at, updated_at
+INSERT INTO wishes (user_id, title, detail) VALUES ($1, $2, $3) RETURNING id, user_id, title, detail, created_at, updated_at
 `
 
 type CreateWishParams struct {
@@ -39,7 +39,6 @@ func (q *Queries) CreateWish(ctx context.Context, arg CreateWishParams) (Wish, e
 		&i.UserID,
 		&i.Title,
 		&i.Detail,
-		&i.ArchivedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -62,7 +61,7 @@ func (q *Queries) DeleteWish(ctx context.Context, arg DeleteWishParams) error {
 
 const getWish = `-- name: GetWish :one
 SELECT
-    w.id, w.user_id, w.title, w.detail, w.archived_at, w.created_at, w.updated_at,
+    w.id, w.user_id, w.title, w.detail, w.created_at, w.updated_at,
     COALESCE(
         ARRAY_AGG(a.wish_label_id) FILTER (WHERE a.wish_label_id IS NOT NULL),
         '{}'
@@ -79,14 +78,13 @@ type GetWishParams struct {
 }
 
 type GetWishRow struct {
-	ID         uuid.UUID          `json:"id"`
-	UserID     uuid.UUID          `json:"user_id"`
-	Title      string             `json:"title"`
-	Detail     *string            `json:"detail"`
-	ArchivedAt pgtype.Timestamptz `json:"archived_at"`
-	CreatedAt  pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
-	LabelIds   []uuid.UUID        `json:"label_ids"`
+	ID        uuid.UUID          `json:"id"`
+	UserID    uuid.UUID          `json:"user_id"`
+	Title     string             `json:"title"`
+	Detail    *string            `json:"detail"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
+	LabelIds  []uuid.UUID        `json:"label_ids"`
 }
 
 func (q *Queries) GetWish(ctx context.Context, arg GetWishParams) (GetWishRow, error) {
@@ -97,7 +95,6 @@ func (q *Queries) GetWish(ctx context.Context, arg GetWishParams) (GetWishRow, e
 		&i.UserID,
 		&i.Title,
 		&i.Detail,
-		&i.ArchivedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.LabelIds,
@@ -107,7 +104,7 @@ func (q *Queries) GetWish(ctx context.Context, arg GetWishParams) (GetWishRow, e
 
 const listWishes = `-- name: ListWishes :many
 SELECT
-    w.id, w.user_id, w.title, w.detail, w.archived_at, w.created_at, w.updated_at,
+    w.id, w.user_id, w.title, w.detail, w.created_at, w.updated_at,
     COALESCE(
         ARRAY_AGG(a.wish_label_id) FILTER (WHERE a.wish_label_id IS NOT NULL),
         '{}'
@@ -120,14 +117,13 @@ ORDER BY w.created_at DESC
 `
 
 type ListWishesRow struct {
-	ID         uuid.UUID          `json:"id"`
-	UserID     uuid.UUID          `json:"user_id"`
-	Title      string             `json:"title"`
-	Detail     *string            `json:"detail"`
-	ArchivedAt pgtype.Timestamptz `json:"archived_at"`
-	CreatedAt  pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
-	LabelIds   []uuid.UUID        `json:"label_ids"`
+	ID        uuid.UUID          `json:"id"`
+	UserID    uuid.UUID          `json:"user_id"`
+	Title     string             `json:"title"`
+	Detail    *string            `json:"detail"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
+	LabelIds  []uuid.UUID        `json:"label_ids"`
 }
 
 func (q *Queries) ListWishes(ctx context.Context, userID uuid.UUID) ([]ListWishesRow, error) {
@@ -144,7 +140,6 @@ func (q *Queries) ListWishes(ctx context.Context, userID uuid.UUID) ([]ListWishe
 			&i.UserID,
 			&i.Title,
 			&i.Detail,
-			&i.ArchivedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.LabelIds,
@@ -178,31 +173,28 @@ func (q *Queries) ReplaceWishLabels(ctx context.Context, arg ReplaceWishLabelsPa
 
 const updateWish = `-- name: UpdateWish :one
 UPDATE wishes SET
-    title       = $3,
-    detail      = $4,
-    archived_at = $5,
-    updated_at  = NOW()
+    title      = $3,
+    detail     = $4,
+    updated_at = NOW()
 WHERE id = $1 AND user_id = $2
-RETURNING id, user_id, title, detail, archived_at, created_at, updated_at
+RETURNING id, user_id, title, detail, created_at, updated_at
 `
 
 type UpdateWishParams struct {
-	ID         uuid.UUID          `json:"id"`
-	UserID     uuid.UUID          `json:"user_id"`
-	Title      string             `json:"title"`
-	Detail     *string            `json:"detail"`
-	ArchivedAt pgtype.Timestamptz `json:"archived_at"`
+	ID     uuid.UUID `json:"id"`
+	UserID uuid.UUID `json:"user_id"`
+	Title  string    `json:"title"`
+	Detail *string   `json:"detail"`
 }
 
-// PUT semantics: full replacement. Client always sends title, detail, archived_at.
-// archived_at: NULL = 通常状態、値あり = アーカイブ済み。
+// PUT semantics: full replacement. Client always sends title and detail
+// (detail can be NULL to clear).
 func (q *Queries) UpdateWish(ctx context.Context, arg UpdateWishParams) (Wish, error) {
 	row := q.db.QueryRow(ctx, updateWish,
 		arg.ID,
 		arg.UserID,
 		arg.Title,
 		arg.Detail,
-		arg.ArchivedAt,
 	)
 	var i Wish
 	err := row.Scan(
@@ -210,7 +202,6 @@ func (q *Queries) UpdateWish(ctx context.Context, arg UpdateWishParams) (Wish, e
 		&i.UserID,
 		&i.Title,
 		&i.Detail,
-		&i.ArchivedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
