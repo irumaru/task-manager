@@ -12,7 +12,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (h *Handler) WishOpsList(ctx context.Context) (*api.WishList, error) {
@@ -152,17 +151,11 @@ func (h *Handler) WishOpsUpdate(ctx context.Context, req *api.UpdateWishRequest,
 
 	qtx := h.q.WithTx(tx)
 
-	var archivedAt pgtype.Timestamptz
-	if t, ok := req.ArchivedAt.Get(); ok {
-		archivedAt = pgtype.Timestamptz{Time: t, Valid: true}
-	}
-
 	wish, err := qtx.UpdateWish(ctx, repository.UpdateWishParams{
-		ID:         id,
-		UserID:     userID,
-		Title:      req.Title,
-		Detail:     detail,
-		ArchivedAt: archivedAt,
+		ID:     id,
+		UserID: userID,
+		Title:  req.Title,
+		Detail: detail,
 	})
 	if err != nil {
 		return nil, errNotFound("wish not found")

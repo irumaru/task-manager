@@ -7,14 +7,8 @@ import '../../../providers/wish_label_provider.dart';
 class WishCard extends ConsumerWidget {
   final Wish wish;
   final VoidCallback onTap;
-  final bool archiveMode;
 
-  const WishCard({
-    super.key,
-    required this.wish,
-    required this.onTap,
-    this.archiveMode = false,
-  });
+  const WishCard({super.key, required this.wish, required this.onTap});
 
   String _relativeTime(DateTime dt) {
     final diff = DateTime.now().difference(dt);
@@ -31,10 +25,6 @@ class WishCard extends ConsumerWidget {
         .where((WishLabel l) => wish.labelIds.contains(l.id))
         .toList();
 
-    final timeLabel = archiveMode && wish.archivedAt != null
-        ? '達成: ${_relativeTime(wish.archivedAt!)}'
-        : _relativeTime(wish.createdAt);
-
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: InkWell(
@@ -42,9 +32,7 @@ class WishCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(12),
-          child: SizedBox(
-            width: double.infinity,
-            child: Column(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
@@ -81,13 +69,12 @@ class WishCard extends ConsumerWidget {
               ],
               const SizedBox(height: 4),
               Text(
-                timeLabel,
+                _relativeTime(wish.updatedAt),
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: Theme.of(context).colorScheme.outline,
                     ),
               ),
             ],
-            ),
           ),
         ),
       ),

@@ -48,7 +48,7 @@ steps:
     test: current.res.status == 200 && current.res.body.id == steps.create_wish.res.body.id && current.res.body.title == "e2e-wish" && current.res.body.detail == "some detail"
 
   update_wish:
-    desc: PUT /wishes/{id} - 全置換（detail を null にする、archivedAt は null のまま）
+    desc: PUT /wishes/{id} - 全置換（detail を null にする）
     req:
       /wishes/{{ steps.create_wish.res.body.id }}:
         put:
@@ -59,38 +59,7 @@ steps:
               title: "e2e-wish-updated"
               detail: null
               labelIds: []
-              archivedAt: null
-    test: current.res.status == 200 && current.res.body.title == "e2e-wish-updated" && len(current.res.body.labelIds) == 0 && current.res.body.archivedAt == null
-
-  archive_wish:
-    desc: PUT /wishes/{id} - アーカイブ（archivedAt に時刻を設定）
-    req:
-      /wishes/{{ steps.create_wish.res.body.id }}:
-        put:
-          headers:
-            Authorization: "Bearer {{ vars.token }}"
-          body:
-            application/json:
-              title: "e2e-wish-updated"
-              detail: null
-              labelIds: []
-              archivedAt: "2026-01-01T00:00:00Z"
-    test: current.res.status == 200 && current.res.body.archivedAt != null
-
-  restore_wish:
-    desc: PUT /wishes/{id} - 復元（archivedAt を null に戻す）
-    req:
-      /wishes/{{ steps.create_wish.res.body.id }}:
-        put:
-          headers:
-            Authorization: "Bearer {{ vars.token }}"
-          body:
-            application/json:
-              title: "e2e-wish-updated"
-              detail: null
-              labelIds: []
-              archivedAt: null
-    test: current.res.status == 200 && current.res.body.archivedAt == null
+    test: current.res.status == 200 && current.res.body.title == "e2e-wish-updated" && len(current.res.body.labelIds) == 0
 
   delete_wish:
     desc: DELETE /wishes/{id} - やりたいこと削除

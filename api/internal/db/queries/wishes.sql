@@ -27,13 +27,12 @@ GROUP BY w.id;
 INSERT INTO wishes (user_id, title, detail) VALUES ($1, $2, $3) RETURNING *;
 
 -- name: UpdateWish :one
--- PUT semantics: full replacement. Client always sends title, detail, archived_at.
--- archived_at: NULL = 通常状態、値あり = アーカイブ済み。
+-- PUT semantics: full replacement. Client always sends title and detail
+-- (detail can be NULL to clear).
 UPDATE wishes SET
-    title       = $3,
-    detail      = $4,
-    archived_at = $5,
-    updated_at  = NOW()
+    title      = $3,
+    detail     = $4,
+    updated_at = NOW()
 WHERE id = $1 AND user_id = $2
 RETURNING *;
 
