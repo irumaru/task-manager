@@ -114,8 +114,8 @@ jobs:
         run: |
           flutter build appbundle --release \
             --build-number=${{ needs.calc_tag.outputs.versionCode }} \
-            --dart-define=API_BASE_URL=${{ secrets.API_BASE_URL }} \
-            --dart-define=GOOGLE_OAUTH_CLIENT_ID=${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+            --dart-define=API_BASE_URL=${{ vars.API_BASE_URL }} \
+            --dart-define=GOOGLE_OAUTH_CLIENT_ID=${{ vars.GOOGLE_OAUTH_CLIENT_ID }}
 
       - name: Upload AAB artifact
         if: matrix.platform == 'android'
@@ -130,15 +130,15 @@ jobs:
         shell: pwsh
         run: |
           flutter build windows --release `
-            --dart-define=API_BASE_URL=${{ secrets.API_BASE_URL }} `
-            --dart-define=GOOGLE_OAUTH_CLIENT_ID=${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+            --dart-define=API_BASE_URL=${{ vars.API_BASE_URL }} `
+            --dart-define=GOOGLE_OAUTH_CLIENT_ID=${{ vars.GOOGLE_OAUTH_CLIENT_ID }}
 
       - name: Build Inno Setup installer
         if: matrix.platform == 'windows'
         shell: pwsh
         run: |
           iscc `
-            /DAppId="${{ secrets.INNO_APP_ID }}" `
+            /DAppId="${{ vars.INNO_APP_ID }}" `
             /DAppName="${{ vars.INNO_APP_NAME }}" `
             /DInstallDirName="${{ vars.INNO_INSTALL_DIR_NAME }}" `
             /DAppVersion="${{ needs.calc_tag.outputs.tagName }}" `
