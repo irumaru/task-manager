@@ -2,7 +2,7 @@
 go   = '1.26.2'
 sqlc = '1.30.0'
 atlas = '1.1.0'
-node = '24.14.0'
+node = '24.15.0'
 pnpm = '10.33.2'
 
 "go:github.com/ogen-go/ogen/cmd/ogen"  = '1.20.3'
