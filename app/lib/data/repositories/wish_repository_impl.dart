@@ -14,13 +14,16 @@ class WishRepositoryImpl implements WishRepository {
         labelIds: (json['labelIds'] as List<dynamic>? ?? [])
             .map((e) => e as String)
             .toList(),
+        archivedAt: json['archivedAt'] != null
+            ? DateTime.parse(json['archivedAt'] as String)
+            : null,
         createdAt: DateTime.parse(json['createdAt'] as String),
         updatedAt: DateTime.parse(json['updatedAt'] as String),
       );
 
   @override
-  Future<List<Wish>> getWishes() async {
-    final items = await _api.getWishes();
+  Future<List<Wish>> getWishes({bool includeArchived = false}) async {
+    final items = await _api.getWishes(includeArchived: includeArchived);
     return items.map((json) => _toDomain(json as Map<String, dynamic>)).toList();
   }
 
@@ -58,5 +61,17 @@ class WishRepositoryImpl implements WishRepository {
   @override
   Future<void> deleteWish(String id) async {
     await _api.deleteWish(id);
+  }
+
+  @override
+  Future<Wish> archiveWish(String id) async {
+    final json = await _api.archiveWish(id);
+    return _toDomain(json);
+  }
+
+  @override
+  Future<Wish> unarchiveWish(String id) async {
+    final json = await _api.unarchiveWish(id);
+    return _toDomain(json);
   }
 }

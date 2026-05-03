@@ -92,6 +92,16 @@ class _WishFormPageState extends ConsumerState<WishFormPage> {
     }
   }
 
+  Future<void> _toggleArchive() async {
+    final notifier = ref.read(wishNotifierProvider.notifier);
+    if (widget.wish!.isArchived) {
+      await notifier.unarchiveWish(widget.wish!.id);
+    } else {
+      await notifier.archiveWish(widget.wish!.id);
+    }
+    if (mounted) Navigator.pop(context);
+  }
+
   Future<void> _delete() async {
     final confirmed = await showConfirmDialog(
       context,
@@ -136,12 +146,20 @@ class _WishFormPageState extends ConsumerState<WishFormPage> {
       appBar: AppBar(
         title: Text(_isEditing ? 'やりたいことを編集' : 'やりたいことを追加'),
         actions: [
-          if (_isEditing)
+          if (_isEditing) ...[
+            IconButton(
+              icon: Icon(widget.wish!.isArchived
+                  ? Icons.unarchive_outlined
+                  : Icons.archive_outlined),
+              tooltip: widget.wish!.isArchived ? 'アーカイブ解除' : 'アーカイブ',
+              onPressed: _toggleArchive,
+            ),
             IconButton(
               icon: const Icon(Icons.delete_outline),
               onPressed: _delete,
               color: Colors.red,
             ),
+          ],
         ],
       ),
       body: FutureBuilder(
