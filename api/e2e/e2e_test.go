@@ -4,12 +4,16 @@ import (
 	"context"
 	"os"
 	"testing"
+	"time"
 
 	"task-manager/api/internal/auth"
 	"task-manager/api/internal/bootstrap"
 	"task-manager/api/internal/repository"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/k1LoW/runn"
+	"github.com/stretchr/testify/require"
 )
 
 func TestE2E(t *testing.T) {
@@ -26,9 +30,15 @@ func TestE2E(t *testing.T) {
 
 	// テスト用ユーザーを作成 (UpsertUser なので冪等)
 	q := repository.New(pool)
+	userID, err := uuid.NewV7()
+	require.NoError(t, err)
+	now := time.Now()
 	user, err := q.UpsertUser(t.Context(), repository.UpsertUserParams{
+		ID:          userID,
 		Email:       "e2e-test@example.com",
 		DisplayName: "E2E Test User",
+		CreatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+		UpdatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
 	})
 	if err != nil {
 		t.Fatalf("UpsertUser: %v", err)
