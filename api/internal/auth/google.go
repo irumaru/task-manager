@@ -47,7 +47,7 @@ func ExchangeGoogleCode(ctx context.Context, code, redirectURI, clientID, client
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
@@ -73,7 +73,7 @@ func VerifyGoogleIDToken(ctx context.Context, idToken string) (*GoogleUserInfo, 
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)

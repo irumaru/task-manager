@@ -44,7 +44,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("db: bootstrap: %v", err)
 	}
-	defer pool.Close()
 
 	q := repository.New(pool)
 
@@ -62,6 +61,7 @@ func main() {
 
 	srv, err := api.NewServer(h, sec)
 	if err != nil {
+		pool.Close()
 		log.Fatalf("ogen: new server: %v", err)
 	}
 
@@ -76,6 +76,7 @@ func main() {
 
 	log.Printf("listening on :%s", port)
 	if err := http.ListenAndServe(":"+port, mux); err != nil {
+		pool.Close()
 		log.Fatalf("http: %v", err)
 	}
 }

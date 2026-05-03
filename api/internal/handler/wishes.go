@@ -82,7 +82,7 @@ func (h *Handler) WishOpsCreate(ctx context.Context, req *api.CreateWishRequest)
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	qtx := h.q.WithTx(tx)
 
@@ -159,7 +159,7 @@ func (h *Handler) WishOpsUpdate(ctx context.Context, req *api.UpdateWishRequest,
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	qtx := h.q.WithTx(tx)
 

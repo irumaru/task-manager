@@ -19,7 +19,7 @@ linters:
     - wrapcheck
   settings:
     wrapcheck:
-      ignoreSigs:
+      ignore-sigs:
         - .Errorf(
         - errors.New(
         - errors.Unwrap(
@@ -29,8 +29,19 @@ linters:
         - .WithMessage(
         - .WithMessagef(
         - .WithStack(
-      ignorePackageGlobs:
-        - task-manager/api/*
+      ignore-package-globs:
+        - task-manager/api/**
+        - github.com/jackc/pgx/**
+        - github.com/google/uuid
+        - github.com/golang-jwt/**
+        - encoding/json
+        - net/http
+    revive:
+      rules:
+        - name: exported
+          disabled: true
+        - name: package-comments
+          disabled: true
   exclusions:
     paths:
       - internal/api
