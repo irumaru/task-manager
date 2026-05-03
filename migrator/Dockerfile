@@ -1,4 +1,4 @@
-FROM arigaio/atlas:1.1.6
+FROM arigaio/atlas:1.2.0
 
 WORKDIR /data
 
