@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"task-manager/api/internal/api"
@@ -21,7 +22,7 @@ func (h *Handler) WishLabelOpsList(ctx context.Context) (*api.WishLabelList, err
 
 	rows, err := h.q.ListWishLabels(ctx, userID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to list wish labels: %w", err)
 	}
 
 	items := make([]api.WishLabel, len(rows))
@@ -39,7 +40,7 @@ func (h *Handler) WishLabelOpsCreate(ctx context.Context, req *api.CreateWishLab
 
 	labelID, err := uuid.NewV7()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to generate wish label id: %w", err)
 	}
 
 	now := time.Now()
@@ -55,7 +56,7 @@ func (h *Handler) WishLabelOpsCreate(ctx context.Context, req *api.CreateWishLab
 		if isUniqueViolation(err) {
 			return nil, errConflict("wish_label name already exists")
 		}
-		return nil, err
+		return nil, fmt.Errorf("failed to create wish label: %w", err)
 	}
 
 	result := toAPIWishLabel(row)
@@ -104,7 +105,7 @@ func (h *Handler) WishLabelOpsDelete(ctx context.Context, params api.WishLabelOp
 	}
 
 	if err := h.q.DeleteWishLabel(ctx, repository.DeleteWishLabelParams{ID: id, UserID: userID}); err != nil {
-		return err
+		return fmt.Errorf("failed to delete wish label: %w", err)
 	}
 
 	h.hub.Broadcast(userID, websocket.Event{Type: "wish_label.changed", Payload: map[string]any{}})

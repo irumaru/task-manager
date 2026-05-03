@@ -9,15 +9,15 @@ import (
 )
 
 func toAPIUser(u repository.User) *api.UserProfile {
-	avatarUrl := api.NilString{Null: true}
+	avatarURL := api.NilString{Null: true}
 	if u.AvatarUrl != nil {
-		avatarUrl.SetTo(*u.AvatarUrl)
+		avatarURL.SetTo(*u.AvatarUrl)
 	}
 	return &api.UserProfile{
 		ID:          u.ID.String(),
 		Email:       u.Email,
 		DisplayName: u.DisplayName,
-		AvatarUrl:   avatarUrl,
+		AvatarUrl:   avatarURL,
 	}
 }
 
@@ -115,23 +115,16 @@ func uuidSliceToStrings(ids []uuid.UUID) []string {
 	return out
 }
 
-func pgtzFromPtr(t *pgtype.Timestamptz) pgtype.Timestamptz {
-	if t == nil {
-		return pgtype.Timestamptz{}
-	}
-	return *t
-}
-
 func toAPIWishLabel(l repository.WishLabel) *api.WishLabel {
 	return &api.WishLabel{ID: l.ID.String(), Name: l.Name}
 }
 
-func toAPIWish(id uuid.UUID, userID uuid.UUID, title string, detail *string, createdAt, updatedAt pgtype.Timestamptz, labelIds []uuid.UUID) api.Wish {
+func toAPIWish(id uuid.UUID, userID uuid.UUID, title string, detail *string, createdAt, updatedAt pgtype.Timestamptz, labelIDs []uuid.UUID) api.Wish {
 	return api.Wish{
 		ID:        id.String(),
 		Title:     title,
 		Detail:    nilStringFromPtr(detail),
-		LabelIds:  uuidSliceToStrings(labelIds),
+		LabelIds:  uuidSliceToStrings(labelIDs),
 		CreatedAt: createdAt.Time,
 		UpdatedAt: updatedAt.Time,
 	}
@@ -145,6 +138,6 @@ func toAPIWishFromGetRow(row repository.GetWishRow) api.Wish {
 	return toAPIWish(row.ID, row.UserID, row.Title, row.Detail, row.CreatedAt, row.UpdatedAt, row.LabelIds)
 }
 
-func toAPIWishFromWish(w repository.Wish, labelIds []uuid.UUID) api.Wish {
-	return toAPIWish(w.ID, w.UserID, w.Title, w.Detail, w.CreatedAt, w.UpdatedAt, labelIds)
+func toAPIWishFromWish(w repository.Wish, labelIDs []uuid.UUID) api.Wish {
+	return toAPIWish(w.ID, w.UserID, w.Title, w.Detail, w.CreatedAt, w.UpdatedAt, labelIDs)
 }

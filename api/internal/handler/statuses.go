@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"task-manager/api/internal/api"
@@ -21,7 +22,7 @@ func (h *Handler) StatusOpsList(ctx context.Context) (*api.StatusList, error) {
 
 	rows, err := h.q.ListStatuses(ctx, userID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to list statuses: %w", err)
 	}
 
 	items := make([]api.Status, len(rows))
@@ -39,7 +40,7 @@ func (h *Handler) StatusOpsCreate(ctx context.Context, req *api.CreateStatusRequ
 
 	statusID, err := uuid.NewV7()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to generate status id: %w", err)
 	}
 
 	now := time.Now()
@@ -53,7 +54,7 @@ func (h *Handler) StatusOpsCreate(ctx context.Context, req *api.CreateStatusRequ
 		UpdatedAt:    pgtype.Timestamptz{Time: now, Valid: true},
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create status: %w", err)
 	}
 	h.hub.Broadcast(userID, websocket.Event{Type: "status.changed", Payload: map[string]any{}})
 	return toAPIStatus(row), nil
@@ -96,7 +97,7 @@ func (h *Handler) StatusOpsDelete(ctx context.Context, params api.StatusOpsDelet
 	}
 
 	if err := h.q.DeleteStatus(ctx, repository.DeleteStatusParams{ID: id, UserID: userID}); err != nil {
-		return err
+		return fmt.Errorf("failed to delete status: %w", err)
 	}
 	h.hub.Broadcast(userID, websocket.Event{Type: "status.changed", Payload: map[string]any{}})
 	return nil

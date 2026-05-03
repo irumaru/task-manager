@@ -35,7 +35,11 @@ func (j *JWTService) Issue(userID uuid.UUID, email string) (string, error) {
 		Email:  email,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(j.secret)
+	t, err := token.SignedString(j.secret)
+	if err != nil {
+		return "", fmt.Errorf("failed to sign JWT token: %w", err)
+	}
+	return t, nil
 }
 
 func (j *JWTService) Verify(tokenStr string) (*Claims, error) {

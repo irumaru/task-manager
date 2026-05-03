@@ -16,12 +16,12 @@ import (
 
 // Handler implements api.Handler.
 type Handler struct {
-	pool                *pgxpool.Pool
-	q                   *repository.Queries
-	jwt                 *auth.JWTService
-	hub                 websocket.Hub
-	googleClientID      string
-	googleClientSecret  string
+	pool               *pgxpool.Pool
+	q                  *repository.Queries
+	jwt                *auth.JWTService
+	hub                websocket.Hub
+	googleClientID     string
+	googleClientSecret string
 }
 
 func New(pool *pgxpool.Pool, q *repository.Queries, jwt *auth.JWTService, hub websocket.Hub, googleClientID, googleClientSecret string) *Handler {

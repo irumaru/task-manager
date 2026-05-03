@@ -53,7 +53,7 @@ func (c *Conn) Run() {
 	c.hub.Register(c.userID, c)
 	defer func() {
 		c.hub.Unregister(c.userID, c)
-		c.ws.Close()
+		_ = c.ws.Close()
 	}()
 
 	go c.writePump()
