@@ -4,8 +4,6 @@
 CREATE SCHEMA IF NOT EXISTS taskmanager;
 SET search_path TO taskmanager;
 
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-
 CREATE TABLE users (
     id           UUID        PRIMARY KEY,
     email        TEXT        NOT NULL UNIQUE,
