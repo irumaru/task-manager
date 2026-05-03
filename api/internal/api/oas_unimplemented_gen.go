@@ -206,6 +206,13 @@ func (UnimplementedHandler) WishLabelOpsUpdate(ctx context.Context, req *UpdateW
 	return r, ht.ErrNotImplemented
 }
 
+// WishOpsArchive implements WishOps_archive operation.
+//
+// POST /wishes/{id}/archive
+func (UnimplementedHandler) WishOpsArchive(ctx context.Context, params WishOpsArchiveParams) (r *Wish, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // WishOpsCreate implements WishOps_create operation.
 //
 // POST /wishes
@@ -230,7 +237,14 @@ func (UnimplementedHandler) WishOpsGet(ctx context.Context, params WishOpsGetPar
 // WishOpsList implements WishOps_list operation.
 //
 // GET /wishes
-func (UnimplementedHandler) WishOpsList(ctx context.Context) (r *WishList, _ error) {
+func (UnimplementedHandler) WishOpsList(ctx context.Context, params WishOpsListParams) (r *WishList, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// WishOpsUnarchive implements WishOps_unarchive operation.
+//
+// POST /wishes/{id}/unarchive
+func (UnimplementedHandler) WishOpsUnarchive(ctx context.Context, params WishOpsUnarchiveParams) (r *Wish, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

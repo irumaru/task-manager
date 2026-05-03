@@ -201,10 +201,29 @@ class ApiClient {
   // ─── Wishes ───
 
   /// GET /wishes
-  Future<List<dynamic>> getWishes() {
+  Future<List<dynamic>> getWishes({bool includeArchived = false}) {
     return _handle(() async {
-      final response = await _dio.get('/wishes');
+      final response = await _dio.get(
+        '/wishes',
+        queryParameters: includeArchived ? {'includeArchived': 'true'} : null,
+      );
       return response.data['items'] as List<dynamic>;
+    });
+  }
+
+  /// POST /wishes/:id/archive
+  Future<Map<String, dynamic>> archiveWish(String id) {
+    return _handle(() async {
+      final response = await _dio.post('/wishes/$id/archive');
+      return response.data as Map<String, dynamic>;
+    });
+  }
+
+  /// POST /wishes/:id/unarchive
+  Future<Map<String, dynamic>> unarchiveWish(String id) {
+    return _handle(() async {
+      final response = await _dio.post('/wishes/$id/unarchive');
+      return response.data as Map<String, dynamic>;
     });
   }
 

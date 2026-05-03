@@ -729,6 +729,71 @@ func decodeWishLabelOpsUpdateParams(args [1]string, argsEscaped bool, r *http.Re
 	return params, nil
 }
 
+// WishOpsArchiveParams is parameters of WishOps_archive operation.
+type WishOpsArchiveParams struct {
+	ID string
+}
+
+func unpackWishOpsArchiveParams(packed middleware.Parameters) (params WishOpsArchiveParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "id",
+			In:   "path",
+		}
+		params.ID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeWishOpsArchiveParams(args [1]string, argsEscaped bool, r *http.Request) (params WishOpsArchiveParams, _ error) {
+	// Decode path: id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.ID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
 // WishOpsDeleteParams is parameters of WishOps_delete operation.
 type WishOpsDeleteParams struct {
 	ID string
@@ -811,6 +876,135 @@ func unpackWishOpsGetParams(packed middleware.Parameters) (params WishOpsGetPara
 }
 
 func decodeWishOpsGetParams(args [1]string, argsEscaped bool, r *http.Request) (params WishOpsGetParams, _ error) {
+	// Decode path: id.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "id",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToString(val)
+				if err != nil {
+					return err
+				}
+
+				params.ID = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "id",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// WishOpsListParams is parameters of WishOps_list operation.
+type WishOpsListParams struct {
+	IncludeArchived OptBool `json:",omitempty,omitzero"`
+}
+
+func unpackWishOpsListParams(packed middleware.Parameters) (params WishOpsListParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "includeArchived",
+			In:   "query",
+		}
+		if v, ok := packed[key]; ok {
+			params.IncludeArchived = v.(OptBool)
+		}
+	}
+	return params
+}
+
+func decodeWishOpsListParams(args [0]string, argsEscaped bool, r *http.Request) (params WishOpsListParams, _ error) {
+	q := uri.NewQueryDecoder(r.URL.Query())
+	// Decode query: includeArchived.
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "includeArchived",
+			Style:   uri.QueryStyleForm,
+			Explode: false,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				var paramsDotIncludeArchivedVal bool
+				if err := func() error {
+					val, err := d.DecodeValue()
+					if err != nil {
+						return err
+					}
+
+					c, err := conv.ToBool(val)
+					if err != nil {
+						return err
+					}
+
+					paramsDotIncludeArchivedVal = c
+					return nil
+				}(); err != nil {
+					return err
+				}
+				params.IncludeArchived.SetTo(paramsDotIncludeArchivedVal)
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "includeArchived",
+			In:   "query",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
+// WishOpsUnarchiveParams is parameters of WishOps_unarchive operation.
+type WishOpsUnarchiveParams struct {
+	ID string
+}
+
+func unpackWishOpsUnarchiveParams(packed middleware.Parameters) (params WishOpsUnarchiveParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "id",
+			In:   "path",
+		}
+		params.ID = packed[key].(string)
+	}
+	return params
+}
+
+func decodeWishOpsUnarchiveParams(args [1]string, argsEscaped bool, r *http.Request) (params WishOpsUnarchiveParams, _ error) {
 	// Decode path: id.
 	if err := func() error {
 		param := args[0]

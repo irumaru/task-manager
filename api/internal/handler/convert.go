@@ -119,25 +119,30 @@ func toAPIWishLabel(l repository.WishLabel) *api.WishLabel {
 	return &api.WishLabel{ID: l.ID.String(), Name: l.Name}
 }
 
-func toAPIWish(id uuid.UUID, userID uuid.UUID, title string, detail *string, createdAt, updatedAt pgtype.Timestamptz, labelIDs []uuid.UUID) api.Wish {
+func toAPIWish(id uuid.UUID, userID uuid.UUID, title string, detail *string, archivedAt, createdAt, updatedAt pgtype.Timestamptz, labelIDs []uuid.UUID) api.Wish {
 	return api.Wish{
-		ID:        id.String(),
-		Title:     title,
-		Detail:    nilStringFromPtr(detail),
-		LabelIds:  uuidSliceToStrings(labelIDs),
-		CreatedAt: createdAt.Time,
-		UpdatedAt: updatedAt.Time,
+		ID:         id.String(),
+		Title:      title,
+		Detail:     nilStringFromPtr(detail),
+		ArchivedAt: nilDateTimeFromPgtz(archivedAt),
+		LabelIds:   uuidSliceToStrings(labelIDs),
+		CreatedAt:  createdAt.Time,
+		UpdatedAt:  updatedAt.Time,
 	}
 }
 
 func toAPIWishFromRow(row repository.ListWishesRow) api.Wish {
-	return toAPIWish(row.ID, row.UserID, row.Title, row.Detail, row.CreatedAt, row.UpdatedAt, row.LabelIds)
+	return toAPIWish(row.ID, row.UserID, row.Title, row.Detail, row.ArchivedAt, row.CreatedAt, row.UpdatedAt, row.LabelIds)
+}
+
+func toAPIWishFromIncludingArchivedRow(row repository.ListWishesIncludingArchivedRow) api.Wish {
+	return toAPIWish(row.ID, row.UserID, row.Title, row.Detail, row.ArchivedAt, row.CreatedAt, row.UpdatedAt, row.LabelIds)
 }
 
 func toAPIWishFromGetRow(row repository.GetWishRow) api.Wish {
-	return toAPIWish(row.ID, row.UserID, row.Title, row.Detail, row.CreatedAt, row.UpdatedAt, row.LabelIds)
+	return toAPIWish(row.ID, row.UserID, row.Title, row.Detail, row.ArchivedAt, row.CreatedAt, row.UpdatedAt, row.LabelIds)
 }
 
 func toAPIWishFromWish(w repository.Wish, labelIDs []uuid.UUID) api.Wish {
-	return toAPIWish(w.ID, w.UserID, w.Title, w.Detail, w.CreatedAt, w.UpdatedAt, labelIDs)
+	return toAPIWish(w.ID, w.UserID, w.Title, w.Detail, w.ArchivedAt, w.CreatedAt, w.UpdatedAt, labelIDs)
 }

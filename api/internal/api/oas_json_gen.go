@@ -3415,6 +3415,10 @@ func (s *Wish) encodeFields(e *jx.Encoder) {
 		e.ArrEnd()
 	}
 	{
+		e.FieldStart("archivedAt")
+		s.ArchivedAt.Encode(e, json.EncodeDateTime)
+	}
+	{
 		e.FieldStart("createdAt")
 		json.EncodeDateTime(e, s.CreatedAt)
 	}
@@ -3424,13 +3428,14 @@ func (s *Wish) encodeFields(e *jx.Encoder) {
 	}
 }
 
-var jsonFieldsNameOfWish = [6]string{
+var jsonFieldsNameOfWish = [7]string{
 	0: "id",
 	1: "title",
 	2: "detail",
 	3: "labelIds",
-	4: "createdAt",
-	5: "updatedAt",
+	4: "archivedAt",
+	5: "createdAt",
+	6: "updatedAt",
 }
 
 // Decode decodes Wish from json.
@@ -3496,8 +3501,18 @@ func (s *Wish) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"labelIds\"")
 			}
-		case "createdAt":
+		case "archivedAt":
 			requiredBitSet[0] |= 1 << 4
+			if err := func() error {
+				if err := s.ArchivedAt.Decode(d, json.DecodeDateTime); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"archivedAt\"")
+			}
+		case "createdAt":
+			requiredBitSet[0] |= 1 << 5
 			if err := func() error {
 				v, err := json.DecodeDateTime(d)
 				s.CreatedAt = v
@@ -3509,7 +3524,7 @@ func (s *Wish) Decode(d *jx.Decoder) error {
 				return errors.Wrap(err, "decode field \"createdAt\"")
 			}
 		case "updatedAt":
-			requiredBitSet[0] |= 1 << 5
+			requiredBitSet[0] |= 1 << 6
 			if err := func() error {
 				v, err := json.DecodeDateTime(d)
 				s.UpdatedAt = v
@@ -3530,7 +3545,7 @@ func (s *Wish) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00111111,
+		0b01111111,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.

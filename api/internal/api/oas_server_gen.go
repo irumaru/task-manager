@@ -126,6 +126,10 @@ type Handler interface {
 	//
 	// PUT /wish-labels/{id}
 	WishLabelOpsUpdate(ctx context.Context, req *UpdateWishLabelRequest, params WishLabelOpsUpdateParams) (*WishLabel, error)
+	// WishOpsArchive implements WishOps_archive operation.
+	//
+	// POST /wishes/{id}/archive
+	WishOpsArchive(ctx context.Context, params WishOpsArchiveParams) (*Wish, error)
 	// WishOpsCreate implements WishOps_create operation.
 	//
 	// POST /wishes
@@ -141,7 +145,11 @@ type Handler interface {
 	// WishOpsList implements WishOps_list operation.
 	//
 	// GET /wishes
-	WishOpsList(ctx context.Context) (*WishList, error)
+	WishOpsList(ctx context.Context, params WishOpsListParams) (*WishList, error)
+	// WishOpsUnarchive implements WishOps_unarchive operation.
+	//
+	// POST /wishes/{id}/unarchive
+	WishOpsUnarchive(ctx context.Context, params WishOpsUnarchiveParams) (*Wish, error)
 	// WishOpsUpdate implements WishOps_update operation.
 	//
 	// PUT /wishes/{id}

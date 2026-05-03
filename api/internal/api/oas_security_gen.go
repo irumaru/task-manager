@@ -57,10 +57,12 @@ var operationRolesBearerAuth = map[string][]string{
 	WishLabelOpsDeleteOperation: []string{},
 	WishLabelOpsListOperation:   []string{},
 	WishLabelOpsUpdateOperation: []string{},
+	WishOpsArchiveOperation:     []string{},
 	WishOpsCreateOperation:      []string{},
 	WishOpsDeleteOperation:      []string{},
 	WishOpsGetOperation:         []string{},
 	WishOpsListOperation:        []string{},
+	WishOpsUnarchiveOperation:   []string{},
 	WishOpsUpdateOperation:      []string{},
 }
 

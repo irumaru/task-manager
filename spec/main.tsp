@@ -291,6 +291,7 @@ model Wish {
   title: string;
   detail: string | null;
   labelIds: string[];
+  archivedAt: utcDateTime | null;
   createdAt: utcDateTime;
   updatedAt: utcDateTime;
 }
@@ -314,11 +315,14 @@ model UpdateWishRequest {
 @tag("Wishes")
 @useAuth(BearerAuth)
 interface WishOps {
-  @get list(): WishList | ApiError;
+  @get list(@query includeArchived?: boolean): WishList | ApiError;
   @post create(@body body: CreateWishRequest): Wish | ApiError;
   @get  @route("{id}") get(@path id: string): Wish | ApiError;
   @put  @route("{id}") update(@path id: string, @body body: UpdateWishRequest): Wish | ApiError;
   @delete @route("{id}") delete(@path id: string): void | ApiError;
+
+  @post @route("{id}/archive")   archive(@path id: string):   Wish | ApiError;
+  @post @route("{id}/unarchive") unarchive(@path id: string): Wish | ApiError;
 }
 
 // ---------------------------------------------------------------------------

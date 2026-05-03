@@ -15,7 +15,22 @@ class WishListPage extends ConsumerWidget {
     final selectedLabelId = ref.watch(selectedWishLabelFilterProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('やりたいこと')),
+      appBar: AppBar(
+        title: const Text('やりたいこと'),
+        actions: [
+          Consumer(
+            builder: (context, ref, _) {
+              final showArchived = ref.watch(showArchivedProvider);
+              return IconButton(
+                icon: Icon(showArchived ? Icons.archive : Icons.archive_outlined),
+                tooltip: showArchived ? 'アーカイブを隠す' : 'アーカイブを表示',
+                onPressed: () =>
+                    ref.read(showArchivedProvider.notifier).toggle(),
+              );
+            },
+          ),
+        ],
+      ),
       body: Column(
         children: [
           const LabelFilterDropdown(),

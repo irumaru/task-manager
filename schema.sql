@@ -61,12 +61,13 @@ CREATE TABLE task_tags (
 );
 
 CREATE TABLE wishes (
-    id         UUID        PRIMARY KEY,
-    user_id    UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    title      TEXT        NOT NULL,
-    detail     TEXT,
-    created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ NOT NULL
+    id          UUID        PRIMARY KEY,
+    user_id     UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title       TEXT        NOT NULL,
+    detail      TEXT,
+    archived_at TIMESTAMPTZ,
+    created_at  TIMESTAMPTZ NOT NULL,
+    updated_at  TIMESTAMPTZ NOT NULL
 );
 
 CREATE TABLE wish_labels (

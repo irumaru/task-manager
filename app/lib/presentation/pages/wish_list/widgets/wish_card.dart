@@ -25,7 +25,10 @@ class WishCard extends ConsumerWidget {
         .where((WishLabel l) => wish.labelIds.contains(l.id))
         .toList();
 
-    return Card(
+    final isArchived = wish.isArchived;
+    return Opacity(
+      opacity: isArchived ? 0.55 : 1.0,
+      child: Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: InkWell(
         onTap: onTap,
@@ -35,12 +38,22 @@ class WishCard extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                wish.title,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold),
+              Row(
+                children: [
+                  if (isArchived) ...[
+                    const Icon(Icons.archive_outlined, size: 16),
+                    const SizedBox(width: 4),
+                  ],
+                  Expanded(
+                    child: Text(
+                      wish.title,
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
               ),
               if (wish.detail != null && wish.detail!.isNotEmpty) ...[
                 const SizedBox(height: 4),
@@ -78,6 +91,7 @@ class WishCard extends ConsumerWidget {
           ),
         ),
       ),
+    ),
     );
   }
 }

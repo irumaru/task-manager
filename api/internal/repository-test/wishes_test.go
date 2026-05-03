@@ -189,6 +189,113 @@ func TestWishLabel_CascadeOnWishDelete(t *testing.T) {
 	assert.Equal(t, label.ID, got.ID)
 }
 
+func TestArchiveWish_SetsArchivedAt(t *testing.T) {
+	pool := testutils.SetupTestDB(t)
+	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
+	wish := testfactory.CreateWish(t, pool, testfactory.WishParams{UserID: user.ID})
+
+	q := repository.New(pool)
+	now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
+	_, err := q.ArchiveWish(t.Context(), repository.ArchiveWishParams{
+		ID:         wish.ID,
+		UserID:     user.ID,
+		ArchivedAt: now,
+	})
+	require.NoError(t, err)
+
+	got, err := q.GetWish(t.Context(), repository.GetWishParams{ID: wish.ID, UserID: user.ID})
+	require.NoError(t, err)
+	require.True(t, got.ArchivedAt.Valid)
+}
+
+func TestUnarchiveWish_ClearsArchivedAt(t *testing.T) {
+	pool := testutils.SetupTestDB(t)
+	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
+	wish := testfactory.CreateWish(t, pool, testfactory.WishParams{UserID: user.ID})
+
+	q := repository.New(pool)
+	now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
+	_, err := q.ArchiveWish(t.Context(), repository.ArchiveWishParams{ID: wish.ID, UserID: user.ID, ArchivedAt: now})
+	require.NoError(t, err)
+
+	_, err = q.UnarchiveWish(t.Context(), repository.UnarchiveWishParams{ID: wish.ID, UserID: user.ID, UpdatedAt: now})
+	require.NoError(t, err)
+
+	got, err := q.GetWish(t.Context(), repository.GetWishParams{ID: wish.ID, UserID: user.ID})
+	require.NoError(t, err)
+	assert.False(t, got.ArchivedAt.Valid)
+}
+
+func TestArchiveWish_IsIdempotent(t *testing.T) {
+	pool := testutils.SetupTestDB(t)
+	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
+	wish := testfactory.CreateWish(t, pool, testfactory.WishParams{UserID: user.ID})
+
+	q := repository.New(pool)
+	now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
+	_, err := q.ArchiveWish(t.Context(), repository.ArchiveWishParams{ID: wish.ID, UserID: user.ID, ArchivedAt: now})
+	require.NoError(t, err)
+
+	_, err = q.ArchiveWish(t.Context(), repository.ArchiveWishParams{ID: wish.ID, UserID: user.ID, ArchivedAt: now})
+	require.NoError(t, err)
+}
+
+func TestListWishes_ExcludesArchived(t *testing.T) {
+	pool := testutils.SetupTestDB(t)
+	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
+	wish := testfactory.CreateWish(t, pool, testfactory.WishParams{UserID: user.ID, Title: "visible"})
+	archived := testfactory.CreateWish(t, pool, testfactory.WishParams{UserID: user.ID, Title: "archived"})
+
+	q := repository.New(pool)
+	now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
+	_, err := q.ArchiveWish(t.Context(), repository.ArchiveWishParams{ID: archived.ID, UserID: user.ID, ArchivedAt: now})
+	require.NoError(t, err)
+
+	wishes, err := q.ListWishes(t.Context(), user.ID)
+	require.NoError(t, err)
+	require.Len(t, wishes, 1)
+	assert.Equal(t, wish.ID, wishes[0].ID)
+}
+
+func TestListWishesIncludingArchived_IncludesAll(t *testing.T) {
+	pool := testutils.SetupTestDB(t)
+	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
+	testfactory.CreateWish(t, pool, testfactory.WishParams{UserID: user.ID, Title: "visible"})
+	archived := testfactory.CreateWish(t, pool, testfactory.WishParams{UserID: user.ID, Title: "archived"})
+
+	q := repository.New(pool)
+	now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
+	_, err := q.ArchiveWish(t.Context(), repository.ArchiveWishParams{ID: archived.ID, UserID: user.ID, ArchivedAt: now})
+	require.NoError(t, err)
+
+	wishes, err := q.ListWishesIncludingArchived(t.Context(), user.ID)
+	require.NoError(t, err)
+	assert.Len(t, wishes, 2)
+}
+
+func TestListWishesIncludingArchived_ArchivedAtBottom(t *testing.T) {
+	pool := testutils.SetupTestDB(t)
+	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
+
+	early := pgtype.Timestamptz{Time: time.Now().Add(-2 * time.Second), Valid: true}
+	late := pgtype.Timestamptz{Time: time.Now().Add(-1 * time.Second), Valid: true}
+
+	first := testfactory.CreateWish(t, pool, testfactory.WishParams{UserID: user.ID, Title: "first", CreatedAt: early, UpdatedAt: early})
+	second := testfactory.CreateWish(t, pool, testfactory.WishParams{UserID: user.ID, Title: "second", CreatedAt: late, UpdatedAt: late})
+
+	q := repository.New(pool)
+	now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
+	_, err := q.ArchiveWish(t.Context(), repository.ArchiveWishParams{ID: first.ID, UserID: user.ID, ArchivedAt: now})
+	require.NoError(t, err)
+
+	wishes, err := q.ListWishesIncludingArchived(t.Context(), user.ID)
+	require.NoError(t, err)
+	require.Len(t, wishes, 2)
+	// 未アーカイブの second が先頭、アーカイブ済みの first が末尾
+	assert.Equal(t, second.ID, wishes[0].ID)
+	assert.Equal(t, first.ID, wishes[1].ID)
+}
+
 func TestWishLabel_CascadeOnWishLabelDelete(t *testing.T) {
 	pool := testutils.SetupTestDB(t)
 	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})

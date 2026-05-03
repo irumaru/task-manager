@@ -13,8 +13,19 @@ final selectedWishLabelFilterProvider =
     NotifierProvider<SelectedWishLabelFilterNotifier, String?>(
         SelectedWishLabelFilterNotifier.new);
 
+class ShowArchivedNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void toggle() => state = !state;
+}
+
+final showArchivedProvider =
+    NotifierProvider<ShowArchivedNotifier, bool>(ShowArchivedNotifier.new);
+
 final wishesProvider = FutureProvider<List<Wish>>((ref) {
-  return ref.watch(wishRepositoryProvider).getWishes();
+  final showArchived = ref.watch(showArchivedProvider);
+  return ref.watch(wishRepositoryProvider).getWishes(includeArchived: showArchived);
 });
 
 final filteredWishesProvider = Provider<AsyncValue<List<Wish>>>((ref) {
@@ -60,6 +71,16 @@ class WishNotifier extends AsyncNotifier<void> {
 
   Future<void> deleteWish(String id) async {
     await ref.read(wishRepositoryProvider).deleteWish(id);
+    ref.invalidate(wishesProvider);
+  }
+
+  Future<void> archiveWish(String id) async {
+    await ref.read(wishRepositoryProvider).archiveWish(id);
+    ref.invalidate(wishesProvider);
+  }
+
+  Future<void> unarchiveWish(String id) async {
+    await ref.read(wishRepositoryProvider).unarchiveWish(id);
     ref.invalidate(wishesProvider);
   }
 }
