@@ -397,3 +397,27 @@ class TaskFilter {
 | DBスキーマ変更 | `api/db/schema.sql` を編集 → `atlas migrate diff` でマイグレーションファイルを自動生成 |
 | 新しい WebSocket イベント | Go `hub.go` にイベント種別追加 → Flutter `websocket_provider.dart` に処理追加 |
 | マルチサーバー対応 | `websocket/redis_hub.go` を実装し `main.go` で `LocalHub` と差し替え |
+
+---
+
+## 12. 設計上の主な判断
+
+### コード生成の境界
+
+| 領域 | 方針 | 理由 |
+|---|---|---|
+| Go サーバー（API 型・ハンドラ IF） | `ogen` で OpenAPI から自動生成 | 型安全・ボイラープレート削減 |
+| Go DB アクセス | `sqlc` で SQL から自動生成 | 型安全な SQL |
+| Flutter API クライアント | **手書きの `dio` クライアント** | `openapi-generator-cli` の dart-dio が Dart 3.8+ と互換性問題があるため採用せず。エンドポイントは 5 リソース × CRUD で小規模なので手書きで十分 |
+
+### ID 生成
+
+UUID はすべて **アプリケーション側で生成**（Go サーバー内で生成し DB に INSERT）。SQL の `gen_random_uuid()` や `NOW()` は使用せず、サーバーアプリケーション層で生成する。これによりテスト・デバッグでの予測可能性が上がる。
+
+### 認証
+
+Google OAuth は **ブラウザ経由（`url_launcher`）** で実装。`google_sign_in` パッケージは採用していない。デスクトップ含む全プラットフォームで統一フローを取れることが理由。
+
+### 更新系 API は PUT で全置換
+
+タスク・優先度・ステータス・タグの更新は PATCH ではなく **PUT で全フィールド置換**。クライアントが「変更したいフィールドだけ送る」ロジックを持たなくて済むため、実装が単純化される。
