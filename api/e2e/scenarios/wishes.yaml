@@ -68,6 +68,8 @@ steps:
         post:
           headers:
             Authorization: "Bearer {{ vars.token }}"
+          body:
+            application/json: {}
     test: current.res.status == 200 && current.res.body.archivedAt != null
 
   list_default_excludes_archived:
@@ -99,6 +101,8 @@ steps:
         post:
           headers:
             Authorization: "Bearer {{ vars.token }}"
+          body:
+            application/json: {}
     test: current.res.status == 200 && current.res.body.archivedAt == null
 
   list_default_includes_after_unarchive:
