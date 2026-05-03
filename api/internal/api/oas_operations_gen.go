@@ -31,9 +31,11 @@ const (
 	WishLabelOpsDeleteOperation         OperationName = "WishLabelOpsDelete"
 	WishLabelOpsListOperation           OperationName = "WishLabelOpsList"
 	WishLabelOpsUpdateOperation         OperationName = "WishLabelOpsUpdate"
+	WishOpsArchiveOperation             OperationName = "WishOpsArchive"
 	WishOpsCreateOperation              OperationName = "WishOpsCreate"
 	WishOpsDeleteOperation              OperationName = "WishOpsDelete"
 	WishOpsGetOperation                 OperationName = "WishOpsGet"
 	WishOpsListOperation                OperationName = "WishOpsList"
+	WishOpsUnarchiveOperation           OperationName = "WishOpsUnarchive"
 	WishOpsUpdateOperation              OperationName = "WishOpsUpdate"
 )

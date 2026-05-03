@@ -13,26 +13,102 @@ import (
 	"task-manager/api/internal/websocket"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-func (h *Handler) WishOpsList(ctx context.Context) (*api.WishList, error) {
+func (h *Handler) WishOpsList(ctx context.Context, params api.WishOpsListParams) (*api.WishList, error) {
 	userID, err := auth.UserIDFromContext(ctx)
 	if err != nil {
 		return nil, errUnauthorized("unauthenticated")
+	}
+
+	if params.IncludeArchived.Value {
+		rows, err := h.q.ListWishesIncludingArchived(ctx, userID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list wishes: %w", err)
+		}
+		items := make([]api.Wish, len(rows))
+		for i, row := range rows {
+			items[i] = toAPIWishFromIncludingArchivedRow(row)
+		}
+		return &api.WishList{Items: items}, nil
 	}
 
 	rows, err := h.q.ListWishes(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list wishes: %w", err)
 	}
-
 	items := make([]api.Wish, len(rows))
 	for i, row := range rows {
 		items[i] = toAPIWishFromRow(row)
 	}
 	return &api.WishList{Items: items}, nil
+}
+
+func (h *Handler) WishOpsArchive(ctx context.Context, params api.WishOpsArchiveParams) (*api.Wish, error) {
+	userID, err := auth.UserIDFromContext(ctx)
+	if err != nil {
+		return nil, errUnauthorized("unauthenticated")
+	}
+
+	id, err := uuid.Parse(params.ID)
+	if err != nil {
+		return nil, errBadRequest("invalid wish id")
+	}
+
+	now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
+	if _, err := h.q.ArchiveWish(ctx, repository.ArchiveWishParams{
+		ID:         id,
+		UserID:     userID,
+		ArchivedAt: now,
+	}); errors.Is(err, pgx.ErrNoRows) {
+		return nil, errNotFound("wish not found")
+	} else if err != nil {
+		return nil, fmt.Errorf("failed to archive wish: %w", err)
+	}
+
+	got, err := h.q.GetWish(ctx, repository.GetWishParams{ID: id, UserID: userID})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get wish after archive: %w", err)
+	}
+
+	h.hub.Broadcast(userID, websocket.Event{Type: "wish.changed", Payload: map[string]any{}})
+	result := toAPIWishFromGetRow(got)
+	return &result, nil
+}
+
+func (h *Handler) WishOpsUnarchive(ctx context.Context, params api.WishOpsUnarchiveParams) (*api.Wish, error) {
+	userID, err := auth.UserIDFromContext(ctx)
+	if err != nil {
+		return nil, errUnauthorized("unauthenticated")
+	}
+
+	id, err := uuid.Parse(params.ID)
+	if err != nil {
+		return nil, errBadRequest("invalid wish id")
+	}
+
+	now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
+	if _, err := h.q.UnarchiveWish(ctx, repository.UnarchiveWishParams{
+		ID:        id,
+		UserID:    userID,
+		UpdatedAt: now,
+	}); errors.Is(err, pgx.ErrNoRows) {
+		return nil, errNotFound("wish not found")
+	} else if err != nil {
+		return nil, fmt.Errorf("failed to unarchive wish: %w", err)
+	}
+
+	got, err := h.q.GetWish(ctx, repository.GetWishParams{ID: id, UserID: userID})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get wish after unarchive: %w", err)
+	}
+
+	h.hub.Broadcast(userID, websocket.Event{Type: "wish.changed", Payload: map[string]any{}})
+	result := toAPIWishFromGetRow(got)
+	return &result, nil
 }
 
 func (h *Handler) WishOpsGet(ctx context.Context, params api.WishOpsGetParams) (*api.Wish, error) {

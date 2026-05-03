@@ -146,6 +146,10 @@ type Invoker interface {
 	//
 	// PUT /wish-labels/{id}
 	WishLabelOpsUpdate(ctx context.Context, request *UpdateWishLabelRequest, params WishLabelOpsUpdateParams) (*WishLabel, error)
+	// WishOpsArchive invokes WishOps_archive operation.
+	//
+	// POST /wishes/{id}/archive
+	WishOpsArchive(ctx context.Context, params WishOpsArchiveParams) (*Wish, error)
 	// WishOpsCreate invokes WishOps_create operation.
 	//
 	// POST /wishes
@@ -161,7 +165,11 @@ type Invoker interface {
 	// WishOpsList invokes WishOps_list operation.
 	//
 	// GET /wishes
-	WishOpsList(ctx context.Context) (*WishList, error)
+	WishOpsList(ctx context.Context, params WishOpsListParams) (*WishList, error)
+	// WishOpsUnarchive invokes WishOps_unarchive operation.
+	//
+	// POST /wishes/{id}/unarchive
+	WishOpsUnarchive(ctx context.Context, params WishOpsUnarchiveParams) (*Wish, error)
 	// WishOpsUpdate invokes WishOps_update operation.
 	//
 	// PUT /wishes/{id}
@@ -2987,6 +2995,130 @@ func (c *Client) sendWishLabelOpsUpdate(ctx context.Context, request *UpdateWish
 	return result, nil
 }
 
+// WishOpsArchive invokes WishOps_archive operation.
+//
+// POST /wishes/{id}/archive
+func (c *Client) WishOpsArchive(ctx context.Context, params WishOpsArchiveParams) (*Wish, error) {
+	res, err := c.sendWishOpsArchive(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendWishOpsArchive(ctx context.Context, params WishOpsArchiveParams) (res *Wish, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("WishOps_archive"),
+		semconv.HTTPRequestMethodKey.String("POST"),
+		semconv.URLTemplateKey.String("/wishes/{id}/archive"),
+	}
+	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, WishOpsArchiveOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [3]string
+	pathParts[0] = "/wishes/"
+	{
+		// Encode "id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.ID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/archive"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "POST", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			stage = "Security:BearerAuth"
+			switch err := c.securityBearerAuth(ctx, WishOpsArchiveOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"BearerAuth\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodeWishOpsArchiveResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
 // WishOpsCreate invokes WishOps_create operation.
 //
 // POST /wishes
@@ -3344,12 +3476,12 @@ func (c *Client) sendWishOpsGet(ctx context.Context, params WishOpsGetParams) (r
 // WishOpsList invokes WishOps_list operation.
 //
 // GET /wishes
-func (c *Client) WishOpsList(ctx context.Context) (*WishList, error) {
-	res, err := c.sendWishOpsList(ctx)
+func (c *Client) WishOpsList(ctx context.Context, params WishOpsListParams) (*WishList, error) {
+	res, err := c.sendWishOpsList(ctx, params)
 	return res, err
 }
 
-func (c *Client) sendWishOpsList(ctx context.Context) (res *WishList, err error) {
+func (c *Client) sendWishOpsList(ctx context.Context, params WishOpsListParams) (res *WishList, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("WishOps_list"),
 		semconv.HTTPRequestMethodKey.String("GET"),
@@ -3389,6 +3521,27 @@ func (c *Client) sendWishOpsList(ctx context.Context) (res *WishList, err error)
 	var pathParts [1]string
 	pathParts[0] = "/wishes"
 	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeQueryParams"
+	q := uri.NewQueryEncoder()
+	{
+		// Encode "includeArchived" parameter.
+		cfg := uri.QueryParameterEncodingConfig{
+			Name:    "includeArchived",
+			Style:   uri.QueryStyleForm,
+			Explode: false,
+		}
+
+		if err := q.EncodeParam(cfg, func(e uri.Encoder) error {
+			if val, ok := params.IncludeArchived.Get(); ok {
+				return e.EncodeValue(conv.BoolToString(val))
+			}
+			return nil
+		}); err != nil {
+			return res, errors.Wrap(err, "encode query")
+		}
+	}
+	u.RawQuery = q.Values().Encode()
 
 	stage = "EncodeRequest"
 	r, err := ht.NewRequest(ctx, "GET", u)
@@ -3439,6 +3592,130 @@ func (c *Client) sendWishOpsList(ctx context.Context) (res *WishList, err error)
 
 	stage = "DecodeResponse"
 	result, err := decodeWishOpsListResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// WishOpsUnarchive invokes WishOps_unarchive operation.
+//
+// POST /wishes/{id}/unarchive
+func (c *Client) WishOpsUnarchive(ctx context.Context, params WishOpsUnarchiveParams) (*Wish, error) {
+	res, err := c.sendWishOpsUnarchive(ctx, params)
+	return res, err
+}
+
+func (c *Client) sendWishOpsUnarchive(ctx context.Context, params WishOpsUnarchiveParams) (res *Wish, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("WishOps_unarchive"),
+		semconv.HTTPRequestMethodKey.String("POST"),
+		semconv.URLTemplateKey.String("/wishes/{id}/unarchive"),
+	}
+	otelAttrs = append(otelAttrs, c.cfg.Attributes...)
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, WishOpsUnarchiveOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [3]string
+	pathParts[0] = "/wishes/"
+	{
+		// Encode "id" parameter.
+		e := uri.NewPathEncoder(uri.PathEncoderConfig{
+			Param:   "id",
+			Style:   uri.PathStyleSimple,
+			Explode: false,
+		})
+		if err := func() error {
+			return e.EncodeValue(conv.StringToString(params.ID))
+		}(); err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		encoded, err := e.Result()
+		if err != nil {
+			return res, errors.Wrap(err, "encode path")
+		}
+		pathParts[1] = encoded
+	}
+	pathParts[2] = "/unarchive"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "POST", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			stage = "Security:BearerAuth"
+			switch err := c.securityBearerAuth(ctx, WishOpsUnarchiveOperation, r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"BearerAuth\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	body := resp.Body
+	defer body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodeWishOpsUnarchiveResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

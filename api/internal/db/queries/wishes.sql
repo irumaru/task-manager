@@ -1,4 +1,19 @@
 -- name: ListWishes :many
+-- 未アーカイブのみ
+SELECT
+    w.*,
+    COALESCE(
+        ARRAY_AGG(a.wish_label_id) FILTER (WHERE a.wish_label_id IS NOT NULL),
+        '{}'
+    )::uuid[] AS label_ids
+FROM wishes w
+LEFT JOIN wish_label_assignments a ON a.wish_id = w.id
+WHERE w.user_id = $1 AND w.archived_at IS NULL
+GROUP BY w.id
+ORDER BY w.created_at DESC;
+
+-- name: ListWishesIncludingArchived :many
+-- アーカイブ済みも含む全件。アーカイブ済みは末尾、未アーカイブは created_at DESC で並べる。
 SELECT
     w.*,
     COALESCE(
@@ -9,7 +24,19 @@ FROM wishes w
 LEFT JOIN wish_label_assignments a ON a.wish_id = w.id
 WHERE w.user_id = $1
 GROUP BY w.id
-ORDER BY w.created_at DESC;
+ORDER BY (w.archived_at IS NOT NULL), w.created_at DESC;
+
+-- name: ArchiveWish :one
+UPDATE wishes
+SET archived_at = $3, updated_at = $3
+WHERE id = $1 AND user_id = $2
+RETURNING id;
+
+-- name: UnarchiveWish :one
+UPDATE wishes
+SET archived_at = NULL, updated_at = $3
+WHERE id = $1 AND user_id = $2
+RETURNING id;
 
 -- name: GetWish :one
 SELECT

@@ -61,6 +61,57 @@ steps:
               labelIds: []
     test: current.res.status == 200 && current.res.body.title == "e2e-wish-updated" && len(current.res.body.labelIds) == 0
 
+  archive_wish:
+    desc: POST /wishes/{id}/archive - アーカイブ
+    req:
+      /wishes/{{ steps.create_wish.res.body.id }}/archive:
+        post:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+    test: current.res.status == 200 && current.res.body.archivedAt != null
+
+  list_default_excludes_archived:
+    desc: GET /wishes - デフォルト一覧にアーカイブ済みが含まれないこと
+    req:
+      /wishes:
+        get:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+    test: |
+      current.res.status == 200 &&
+      items(current.res.body.items).filter(w, w.id == steps.create_wish.res.body.id).size() == 0
+
+  list_with_archived:
+    desc: GET /wishes?includeArchived=true - アーカイブ済みも含めて返ること
+    req:
+      /wishes?includeArchived=true:
+        get:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+    test: |
+      current.res.status == 200 &&
+      items(current.res.body.items).filter(w, w.id == steps.create_wish.res.body.id).size() == 1
+
+  unarchive_wish:
+    desc: POST /wishes/{id}/unarchive - アーカイブ解除
+    req:
+      /wishes/{{ steps.create_wish.res.body.id }}/unarchive:
+        post:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+    test: current.res.status == 200 && current.res.body.archivedAt == null
+
+  list_default_includes_after_unarchive:
+    desc: GET /wishes - アーカイブ解除後は通常一覧に戻ること
+    req:
+      /wishes:
+        get:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+    test: |
+      current.res.status == 200 &&
+      items(current.res.body.items).filter(w, w.id == steps.create_wish.res.body.id).size() == 1
+
   delete_wish:
     desc: DELETE /wishes/{id} - やりたいこと削除
     req:
