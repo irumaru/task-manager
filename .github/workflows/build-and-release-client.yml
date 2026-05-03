@@ -25,7 +25,7 @@ jobs:
     steps:
       - id: calc
         name: Calculate release tag
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const owner = context.repo.owner;
@@ -194,7 +194,7 @@ jobs:
           path: windows-installer
 
       - name: Create CalVer tag and GitHub Release
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           TAG_NAME: ${{ needs.calc_tag.outputs.tagName }}
         with:
