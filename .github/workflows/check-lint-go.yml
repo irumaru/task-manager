@@ -1,0 +1,24 @@
+name: lint-go
+
+on:
+  pull_request:
+    paths:
+      - 'api/**'
+      - '.mise.toml'
+      - '.github/workflows/lint-go.yml'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Install mise
+        uses: jdx/mise-action@v4
+        with:
+          install: true
+          cache: true
+      - name: go mod download
+        run: cd api && go mod download
+      - name: Run golangci-lint
+        run: mise run lint

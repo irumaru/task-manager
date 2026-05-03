@@ -6,6 +6,7 @@ node = '24.14.0'
 pnpm = '10.32.1'
 
 "go:github.com/ogen-go/ogen/cmd/ogen"  = '1.20.1'
+"aqua:golangci/golangci-lint"          = '2.12.1'
 
 [tasks."db:migrate"]
 description = "データベースのマイグレーションを実行します。"
@@ -35,6 +36,10 @@ run = "sqlc generate -f ./api/sqlc.yaml"
 [tasks."gen:tsp"]
 description = "TypeSpecのコード生成を実行します。"
 run = "cd spec && pnpm exec -- tsp compile ."
+
+[tasks."lint"]
+description = "Goコードのlintを実行します。"
+run = "cd api && golangci-lint run"
 
 [tasks."clean"]
 description = "生成されたコードを削除します。"
