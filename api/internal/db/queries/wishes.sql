@@ -24,7 +24,7 @@ WHERE w.id = $1 AND w.user_id = $2
 GROUP BY w.id;
 
 -- name: CreateWish :one
-INSERT INTO wishes (user_id, title, detail) VALUES ($1, $2, $3) RETURNING *;
+INSERT INTO wishes (id, user_id, title, detail, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;
 
 -- name: UpdateWish :one
 -- PUT semantics: full replacement. Client always sends title and detail
@@ -32,7 +32,7 @@ INSERT INTO wishes (user_id, title, detail) VALUES ($1, $2, $3) RETURNING *;
 UPDATE wishes SET
     title      = $3,
     detail     = $4,
-    updated_at = NOW()
+    updated_at = $5
 WHERE id = $1 AND user_id = $2
 RETURNING *;
 

@@ -19,12 +19,20 @@ func TestCreateTask(t *testing.T) {
 	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
 	status := testfactory.CreateStatus(t, pool, testfactory.StatusParams{UserID: user.ID})
 
+	taskID, err := uuid.NewV7()
+	assert.NoError(t, err)
+	now := time.Now()
+
 	task := testfactory.CreateTask(t, pool, testfactory.TaskParams{
-		UserID:   user.ID,
-		Title:    "My Task",
-		StatusID: status.ID,
+		ID:        taskID,
+		UserID:    user.ID,
+		Title:     "My Task",
+		StatusID:  status.ID,
+		CreatedAt: pgtype.Timestamptz{Time: now, Valid: true},
+		UpdatedAt: pgtype.Timestamptz{Time: now, Valid: true},
 	})
 
+	assert.Equal(t, taskID, task.ID)
 	assert.Equal(t, "My Task", task.Title)
 	assert.Equal(t, status.ID, task.StatusID)
 	assert.Equal(t, user.ID, task.UserID)

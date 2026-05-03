@@ -13,28 +13,34 @@ import (
 )
 
 const createTask = `-- name: CreateTask :one
-INSERT INTO tasks (user_id, title, memo, due_date, status_id, priority_id)
-VALUES ($1, $2, $3, $4, $5, $6)
+INSERT INTO tasks (id, user_id, title, memo, due_date, status_id, priority_id, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 RETURNING id, user_id, title, memo, due_date, status_id, priority_id, created_at, updated_at
 `
 
 type CreateTaskParams struct {
+	ID         uuid.UUID          `json:"id"`
 	UserID     uuid.UUID          `json:"user_id"`
 	Title      string             `json:"title"`
 	Memo       *string            `json:"memo"`
 	DueDate    pgtype.Timestamptz `json:"due_date"`
 	StatusID   uuid.UUID          `json:"status_id"`
 	PriorityID uuid.NullUUID      `json:"priority_id"`
+	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
 }
 
 func (q *Queries) CreateTask(ctx context.Context, arg CreateTaskParams) (Task, error) {
 	row := q.db.QueryRow(ctx, createTask,
+		arg.ID,
 		arg.UserID,
 		arg.Title,
 		arg.Memo,
 		arg.DueDate,
 		arg.StatusID,
 		arg.PriorityID,
+		arg.CreatedAt,
+		arg.UpdatedAt,
 	)
 	var i Task
 	err := row.Scan(
@@ -203,7 +209,7 @@ UPDATE tasks SET
     due_date    = $5,
     status_id   = $6,
     priority_id = $7,
-    updated_at  = NOW()
+    updated_at  = $8
 WHERE id = $1 AND user_id = $2
 RETURNING id, user_id, title, memo, due_date, status_id, priority_id, created_at, updated_at
 `
@@ -216,6 +222,7 @@ type UpdateTaskParams struct {
 	DueDate    pgtype.Timestamptz `json:"due_date"`
 	StatusID   uuid.UUID          `json:"status_id"`
 	PriorityID uuid.NullUUID      `json:"priority_id"`
+	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
 }
 
 func (q *Queries) UpdateTask(ctx context.Context, arg UpdateTaskParams) (Task, error) {
@@ -227,6 +234,7 @@ func (q *Queries) UpdateTask(ctx context.Context, arg UpdateTaskParams) (Task, e
 		arg.DueDate,
 		arg.StatusID,
 		arg.PriorityID,
+		arg.UpdatedAt,
 	)
 	var i Task
 	err := row.Scan(

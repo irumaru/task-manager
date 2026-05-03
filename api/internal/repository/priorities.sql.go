@@ -9,22 +9,33 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createPriority = `-- name: CreatePriority :one
-INSERT INTO priorities (user_id, name, display_order)
-VALUES ($1, $2, $3)
+INSERT INTO priorities (id, user_id, name, display_order, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING id, user_id, name, display_order, created_at, updated_at
 `
 
 type CreatePriorityParams struct {
-	UserID       uuid.UUID `json:"user_id"`
-	Name         string    `json:"name"`
-	DisplayOrder int32     `json:"display_order"`
+	ID           uuid.UUID          `json:"id"`
+	UserID       uuid.UUID          `json:"user_id"`
+	Name         string             `json:"name"`
+	DisplayOrder int32              `json:"display_order"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
 
 func (q *Queries) CreatePriority(ctx context.Context, arg CreatePriorityParams) (Priority, error) {
-	row := q.db.QueryRow(ctx, createPriority, arg.UserID, arg.Name, arg.DisplayOrder)
+	row := q.db.QueryRow(ctx, createPriority,
+		arg.ID,
+		arg.UserID,
+		arg.Name,
+		arg.DisplayOrder,
+		arg.CreatedAt,
+		arg.UpdatedAt,
+	)
 	var i Priority
 	err := row.Scan(
 		&i.ID,
@@ -109,16 +120,17 @@ const updatePriority = `-- name: UpdatePriority :one
 UPDATE priorities SET
     name          = $3,
     display_order = $4,
-    updated_at    = NOW()
+    updated_at    = $5
 WHERE id = $1 AND user_id = $2
 RETURNING id, user_id, name, display_order, created_at, updated_at
 `
 
 type UpdatePriorityParams struct {
-	ID           uuid.UUID `json:"id"`
-	UserID       uuid.UUID `json:"user_id"`
-	Name         string    `json:"name"`
-	DisplayOrder int32     `json:"display_order"`
+	ID           uuid.UUID          `json:"id"`
+	UserID       uuid.UUID          `json:"user_id"`
+	Name         string             `json:"name"`
+	DisplayOrder int32              `json:"display_order"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
 
 func (q *Queries) UpdatePriority(ctx context.Context, arg UpdatePriorityParams) (Priority, error) {
@@ -127,6 +139,7 @@ func (q *Queries) UpdatePriority(ctx context.Context, arg UpdatePriorityParams) 
 		arg.UserID,
 		arg.Name,
 		arg.DisplayOrder,
+		arg.UpdatedAt,
 	)
 	var i Priority
 	err := row.Scan(

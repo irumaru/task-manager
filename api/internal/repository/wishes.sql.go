@@ -22,17 +22,27 @@ func (q *Queries) ClearWishLabels(ctx context.Context, wishID uuid.UUID) error {
 }
 
 const createWish = `-- name: CreateWish :one
-INSERT INTO wishes (user_id, title, detail) VALUES ($1, $2, $3) RETURNING id, user_id, title, detail, created_at, updated_at
+INSERT INTO wishes (id, user_id, title, detail, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, user_id, title, detail, created_at, updated_at
 `
 
 type CreateWishParams struct {
-	UserID uuid.UUID `json:"user_id"`
-	Title  string    `json:"title"`
-	Detail *string   `json:"detail"`
+	ID        uuid.UUID          `json:"id"`
+	UserID    uuid.UUID          `json:"user_id"`
+	Title     string             `json:"title"`
+	Detail    *string            `json:"detail"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 }
 
 func (q *Queries) CreateWish(ctx context.Context, arg CreateWishParams) (Wish, error) {
-	row := q.db.QueryRow(ctx, createWish, arg.UserID, arg.Title, arg.Detail)
+	row := q.db.QueryRow(ctx, createWish,
+		arg.ID,
+		arg.UserID,
+		arg.Title,
+		arg.Detail,
+		arg.CreatedAt,
+		arg.UpdatedAt,
+	)
 	var i Wish
 	err := row.Scan(
 		&i.ID,
@@ -175,16 +185,17 @@ const updateWish = `-- name: UpdateWish :one
 UPDATE wishes SET
     title      = $3,
     detail     = $4,
-    updated_at = NOW()
+    updated_at = $5
 WHERE id = $1 AND user_id = $2
 RETURNING id, user_id, title, detail, created_at, updated_at
 `
 
 type UpdateWishParams struct {
-	ID     uuid.UUID `json:"id"`
-	UserID uuid.UUID `json:"user_id"`
-	Title  string    `json:"title"`
-	Detail *string   `json:"detail"`
+	ID        uuid.UUID          `json:"id"`
+	UserID    uuid.UUID          `json:"user_id"`
+	Title     string             `json:"title"`
+	Detail    *string            `json:"detail"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 }
 
 // PUT semantics: full replacement. Client always sends title and detail
@@ -195,6 +206,7 @@ func (q *Queries) UpdateWish(ctx context.Context, arg UpdateWishParams) (Wish, e
 		arg.UserID,
 		arg.Title,
 		arg.Detail,
+		arg.UpdatedAt,
 	)
 	var i Wish
 	err := row.Scan(

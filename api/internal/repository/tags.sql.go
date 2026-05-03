@@ -9,21 +9,31 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createTag = `-- name: CreateTag :one
-INSERT INTO tags (user_id, name)
-VALUES ($1, $2)
+INSERT INTO tags (id, user_id, name, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING id, user_id, name, created_at, updated_at
 `
 
 type CreateTagParams struct {
-	UserID uuid.UUID `json:"user_id"`
-	Name   string    `json:"name"`
+	ID        uuid.UUID          `json:"id"`
+	UserID    uuid.UUID          `json:"user_id"`
+	Name      string             `json:"name"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 }
 
 func (q *Queries) CreateTag(ctx context.Context, arg CreateTagParams) (Tag, error) {
-	row := q.db.QueryRow(ctx, createTag, arg.UserID, arg.Name)
+	row := q.db.QueryRow(ctx, createTag,
+		arg.ID,
+		arg.UserID,
+		arg.Name,
+		arg.CreatedAt,
+		arg.UpdatedAt,
+	)
 	var i Tag
 	err := row.Scan(
 		&i.ID,
@@ -104,19 +114,25 @@ func (q *Queries) ListTags(ctx context.Context, userID uuid.UUID) ([]Tag, error)
 const updateTag = `-- name: UpdateTag :one
 UPDATE tags SET
     name       = $3,
-    updated_at = NOW()
+    updated_at = $4
 WHERE id = $1 AND user_id = $2
 RETURNING id, user_id, name, created_at, updated_at
 `
 
 type UpdateTagParams struct {
-	ID     uuid.UUID `json:"id"`
-	UserID uuid.UUID `json:"user_id"`
-	Name   string    `json:"name"`
+	ID        uuid.UUID          `json:"id"`
+	UserID    uuid.UUID          `json:"user_id"`
+	Name      string             `json:"name"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 }
 
 func (q *Queries) UpdateTag(ctx context.Context, arg UpdateTagParams) (Tag, error) {
-	row := q.db.QueryRow(ctx, updateTag, arg.ID, arg.UserID, arg.Name)
+	row := q.db.QueryRow(ctx, updateTag,
+		arg.ID,
+		arg.UserID,
+		arg.Name,
+		arg.UpdatedAt,
+	)
 	var i Tag
 	err := row.Scan(
 		&i.ID,
