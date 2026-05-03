@@ -9,17 +9,17 @@ importers:
   spec:
     dependencies:
       '@typespec/compiler':
-        specifier: 1.10.0
-        version: 1.10.0
+        specifier: 1.11.0
+        version: 1.11.0
       '@typespec/http':
         specifier: 1.10.0
-        version: 1.10.0(@typespec/compiler@1.10.0)
+        version: 1.10.0(@typespec/compiler@1.11.0)
       '@typespec/openapi3':
         specifier: 1.10.0
-        version: 1.10.0(@typespec/compiler@1.10.0)(@typespec/http@1.10.0(@typespec/compiler@1.10.0))(@typespec/openapi@1.10.0(@typespec/compiler@1.10.0)(@typespec/http@1.10.0(@typespec/compiler@1.10.0)))
+        version: 1.10.0(@typespec/compiler@1.11.0)(@typespec/http@1.10.0(@typespec/compiler@1.11.0))(@typespec/openapi@1.10.0(@typespec/compiler@1.11.0)(@typespec/http@1.10.0(@typespec/compiler@1.11.0)))
       '@typespec/rest':
         specifier: 0.80.0
-        version: 0.80.0(@typespec/compiler@1.10.0)(@typespec/http@1.10.0(@typespec/compiler@1.10.0))
+        version: 0.80.0(@typespec/compiler@1.11.0)(@typespec/http@1.10.0(@typespec/compiler@1.11.0))
 
 packages:
 
@@ -211,8 +211,8 @@ packages:
     peerDependencies:
       '@typespec/compiler': ^1.10.0
 
-  '@typespec/compiler@1.10.0':
-    resolution: {integrity: sha512-R6BATDkughntPpaxeESJF+wxma5PEjgmnnKvH0/ByqUH8VyhIckQWE9kkP0Uc/EJ0o0VYhe8qCwWQvV70k5lTw==}
+  '@typespec/compiler@1.11.0':
+    resolution: {integrity: sha512-4vuWtoepc4rYJ81K+P7xn2ByXIRhBM40rfzAGnpagNuGSVHuKEC6lqJqs3ePvhCpnxiYAC8XWpaOi+BEDzyhnQ==}
     engines: {node: '>=20.0.0'}
     hasBin: true
 
@@ -704,11 +704,11 @@ snapshots:
 
   '@sindresorhus/merge-streams@4.0.0': {}
 
-  '@typespec/asset-emitter@0.79.1(@typespec/compiler@1.10.0)':
+  '@typespec/asset-emitter@0.79.1(@typespec/compiler@1.11.0)':
     dependencies:
-      '@typespec/compiler': 1.10.0
+      '@typespec/compiler': 1.11.0
 
-  '@typespec/compiler@1.10.0':
+  '@typespec/compiler@1.11.0':
     dependencies:
       '@babel/code-frame': 7.29.0
       '@inquirer/prompts': 8.3.0
@@ -730,30 +730,30 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
-  '@typespec/http@1.10.0(@typespec/compiler@1.10.0)':
+  '@typespec/http@1.10.0(@typespec/compiler@1.11.0)':
     dependencies:
-      '@typespec/compiler': 1.10.0
+      '@typespec/compiler': 1.11.0
 
-  '@typespec/openapi3@1.10.0(@typespec/compiler@1.10.0)(@typespec/http@1.10.0(@typespec/compiler@1.10.0))(@typespec/openapi@1.10.0(@typespec/compiler@1.10.0)(@typespec/http@1.10.0(@typespec/compiler@1.10.0)))':
+  '@typespec/openapi3@1.10.0(@typespec/compiler@1.11.0)(@typespec/http@1.10.0(@typespec/compiler@1.11.0))(@typespec/openapi@1.10.0(@typespec/compiler@1.11.0)(@typespec/http@1.10.0(@typespec/compiler@1.11.0)))':
     dependencies:
       '@scalar/json-magic': 0.11.7
       '@scalar/openapi-parser': 0.24.17
       '@scalar/openapi-types': 0.5.4
-      '@typespec/asset-emitter': 0.79.1(@typespec/compiler@1.10.0)
-      '@typespec/compiler': 1.10.0
-      '@typespec/http': 1.10.0(@typespec/compiler@1.10.0)
-      '@typespec/openapi': 1.10.0(@typespec/compiler@1.10.0)(@typespec/http@1.10.0(@typespec/compiler@1.10.0))
+      '@typespec/asset-emitter': 0.79.1(@typespec/compiler@1.11.0)
+      '@typespec/compiler': 1.11.0
+      '@typespec/http': 1.10.0(@typespec/compiler@1.11.0)
+      '@typespec/openapi': 1.10.0(@typespec/compiler@1.11.0)(@typespec/http@1.10.0(@typespec/compiler@1.11.0))
       yaml: 2.8.2
 
-  '@typespec/openapi@1.10.0(@typespec/compiler@1.10.0)(@typespec/http@1.10.0(@typespec/compiler@1.10.0))':
+  '@typespec/openapi@1.10.0(@typespec/compiler@1.11.0)(@typespec/http@1.10.0(@typespec/compiler@1.11.0))':
     dependencies:
-      '@typespec/compiler': 1.10.0
-      '@typespec/http': 1.10.0(@typespec/compiler@1.10.0)
+      '@typespec/compiler': 1.11.0
+      '@typespec/http': 1.10.0(@typespec/compiler@1.11.0)
 
-  '@typespec/rest@0.80.0(@typespec/compiler@1.10.0)(@typespec/http@1.10.0(@typespec/compiler@1.10.0))':
+  '@typespec/rest@0.80.0(@typespec/compiler@1.11.0)(@typespec/http@1.10.0(@typespec/compiler@1.11.0))':
     dependencies:
-      '@typespec/compiler': 1.10.0
-      '@typespec/http': 1.10.0(@typespec/compiler@1.10.0)
+      '@typespec/compiler': 1.11.0
+      '@typespec/http': 1.10.0(@typespec/compiler@1.11.0)
 
   ajv-draft-04@1.0.0(ajv@8.18.0):
     optionalDependencies:
