@@ -39,13 +39,13 @@ func ExchangeGoogleCode(ctx context.Context, code, redirectURI, clientID, client
 		"https://oauth2.googleapis.com/token",
 		strings.NewReader(data.Encode()))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create token exchange request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to send token exchange request: %w", err)
 	}
 	defer func() { _ = resp.Body.Close() }()
 
@@ -56,7 +56,7 @@ func ExchangeGoogleCode(ctx context.Context, code, redirectURI, clientID, client
 
 	var tokenResp googleTokenResponse
 	if err := json.NewDecoder(resp.Body).Decode(&tokenResp); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to decode token exchange response: %w", err)
 	}
 
 	return VerifyGoogleIDToken(ctx, tokenResp.IDToken)
@@ -66,12 +66,12 @@ func ExchangeGoogleCode(ctx context.Context, code, redirectURI, clientID, client
 func VerifyGoogleIDToken(ctx context.Context, idToken string) (*GoogleUserInfo, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, tokenInfoURL+idToken, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create token verify request: %w", err)
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to send token verify request: %w", err)
 	}
 	defer func() { _ = resp.Body.Close() }()
 
@@ -82,7 +82,7 @@ func VerifyGoogleIDToken(ctx context.Context, idToken string) (*GoogleUserInfo, 
 
 	var info GoogleUserInfo
 	if err := json.NewDecoder(resp.Body).Decode(&info); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to decode token verify response: %w", err)
 	}
 	if info.Email == "" {
 		return nil, fmt.Errorf("google token missing email claim")

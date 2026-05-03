@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -24,7 +25,7 @@ func (h *Handler) WishOpsList(ctx context.Context) (*api.WishList, error) {
 
 	rows, err := h.q.ListWishes(ctx, userID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to list wishes: %w", err)
 	}
 
 	items := make([]api.Wish, len(rows))
@@ -80,7 +81,7 @@ func (h *Handler) WishOpsCreate(ctx context.Context, req *api.CreateWishRequest)
 
 	tx, err := h.pool.Begin(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
 
@@ -88,7 +89,7 @@ func (h *Handler) WishOpsCreate(ctx context.Context, req *api.CreateWishRequest)
 
 	wishID, err := uuid.NewV7()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to generate wish id: %w", err)
 	}
 
 	now := time.Now()
@@ -102,7 +103,7 @@ func (h *Handler) WishOpsCreate(ctx context.Context, req *api.CreateWishRequest)
 		UpdatedAt: pgtype.Timestamptz{Time: now, Valid: true},
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create wish: %w", err)
 	}
 
 	if len(labelIDs) > 0 {
@@ -113,12 +114,12 @@ func (h *Handler) WishOpsCreate(ctx context.Context, req *api.CreateWishRequest)
 			if isFKViolation(err) {
 				return nil, errBadRequest("one or more label_ids do not exist")
 			}
-			return nil, err
+			return nil, fmt.Errorf("failed to replace wish labels: %w", err)
 		}
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
 	result := toAPIWishFromWish(wish, labelIDs)
@@ -157,7 +158,7 @@ func (h *Handler) WishOpsUpdate(ctx context.Context, req *api.UpdateWishRequest,
 
 	tx, err := h.pool.Begin(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
 
@@ -175,7 +176,7 @@ func (h *Handler) WishOpsUpdate(ctx context.Context, req *api.UpdateWishRequest,
 	}
 
 	if err := qtx.ClearWishLabels(ctx, wish.ID); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to clear wish labels: %w", err)
 	}
 
 	if len(labelIDs) > 0 {
@@ -186,12 +187,12 @@ func (h *Handler) WishOpsUpdate(ctx context.Context, req *api.UpdateWishRequest,
 			if isFKViolation(err) {
 				return nil, errBadRequest("one or more label_ids do not exist")
 			}
-			return nil, err
+			return nil, fmt.Errorf("failed to replace wish labels: %w", err)
 		}
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
 	result := toAPIWishFromWish(wish, labelIDs)
@@ -211,7 +212,7 @@ func (h *Handler) WishOpsDelete(ctx context.Context, params api.WishOpsDeletePar
 	}
 
 	if err := h.q.DeleteWish(ctx, repository.DeleteWishParams{ID: id, UserID: userID}); err != nil {
-		return err
+		return fmt.Errorf("failed to delete wish: %w", err)
 	}
 
 	h.hub.Broadcast(userID, websocket.Event{Type: "wish.changed", Payload: map[string]any{}})

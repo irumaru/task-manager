@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"task-manager/api/internal/api"
@@ -21,7 +22,7 @@ func (h *Handler) TaskOpsList(ctx context.Context) (*api.TaskList, error) {
 
 	rows, err := h.q.ListTasks(ctx, userID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to list tasks: %w", err)
 	}
 
 	items := make([]api.Task, len(rows))
@@ -63,7 +64,7 @@ func (h *Handler) TaskOpsCreate(ctx context.Context, req *api.CreateTaskRequest)
 
 	taskID, err := uuid.NewV7()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to generate task id: %w", err)
 	}
 
 	now := time.Now()
@@ -80,7 +81,7 @@ func (h *Handler) TaskOpsCreate(ctx context.Context, req *api.CreateTaskRequest)
 		UpdatedAt:  pgtype.Timestamptz{Time: now, Valid: true},
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create task: %w", err)
 	}
 
 	// Insert tag associations
@@ -93,7 +94,7 @@ func (h *Handler) TaskOpsCreate(ctx context.Context, req *api.CreateTaskRequest)
 			TaskID: taskID,
 			TagID:  tagID,
 		}); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to insert task tag: %w", err)
 		}
 	}
 
@@ -174,7 +175,7 @@ func (h *Handler) TaskOpsUpdate(ctx context.Context, req *api.UpdateTaskRequest,
 
 	// PUT semantics: always replace all tag associations
 	if err := h.q.SetTaskTags(ctx, task.ID); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to set task tags: %w", err)
 	}
 	for _, tagIDStr := range req.TagIds {
 		tagID, err := uuid.Parse(tagIDStr)
@@ -185,7 +186,7 @@ func (h *Handler) TaskOpsUpdate(ctx context.Context, req *api.UpdateTaskRequest,
 			TaskID: task.ID,
 			TagID:  tagID,
 		}); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to insert task tag: %w", err)
 		}
 	}
 
@@ -207,7 +208,7 @@ func (h *Handler) TaskOpsDelete(ctx context.Context, params api.TaskOpsDeletePar
 	}
 
 	if err := h.q.DeleteTask(ctx, repository.DeleteTaskParams{ID: id, UserID: userID}); err != nil {
-		return err
+		return fmt.Errorf("failed to delete task: %w", err)
 	}
 	h.hub.Broadcast(userID, websocket.Event{Type: "task.changed", Payload: map[string]any{}})
 	return nil

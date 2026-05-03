@@ -29,13 +29,6 @@ linters:
         - .WithMessage(
         - .WithMessagef(
         - .WithStack(
-      ignore-package-globs:
-        - task-manager/api/**
-        - github.com/jackc/pgx/**
-        - github.com/google/uuid
-        - github.com/golang-jwt/**
-        - encoding/json
-        - net/http
     revive:
       rules:
         - name: exported

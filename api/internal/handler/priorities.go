@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"task-manager/api/internal/api"
@@ -21,7 +22,7 @@ func (h *Handler) PriorityOpsList(ctx context.Context) (*api.PriorityList, error
 
 	rows, err := h.q.ListPriorities(ctx, userID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to list priorities: %w", err)
 	}
 
 	items := make([]api.Priority, len(rows))
@@ -39,7 +40,7 @@ func (h *Handler) PriorityOpsCreate(ctx context.Context, req *api.CreatePriority
 
 	priorityID, err := uuid.NewV7()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to generate priority id: %w", err)
 	}
 
 	now := time.Now()
@@ -53,7 +54,7 @@ func (h *Handler) PriorityOpsCreate(ctx context.Context, req *api.CreatePriority
 		UpdatedAt:    pgtype.Timestamptz{Time: now, Valid: true},
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create priority: %w", err)
 	}
 	h.hub.Broadcast(userID, websocket.Event{Type: "priority.changed", Payload: map[string]any{}})
 	return toAPIPriority(row), nil
@@ -96,7 +97,7 @@ func (h *Handler) PriorityOpsDelete(ctx context.Context, params api.PriorityOpsD
 	}
 
 	if err := h.q.DeletePriority(ctx, repository.DeletePriorityParams{ID: id, UserID: userID}); err != nil {
-		return err
+		return fmt.Errorf("failed to delete priority: %w", err)
 	}
 	h.hub.Broadcast(userID, websocket.Event{Type: "priority.changed", Payload: map[string]any{}})
 	return nil

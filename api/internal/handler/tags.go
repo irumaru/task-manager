@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"task-manager/api/internal/api"
@@ -21,7 +22,7 @@ func (h *Handler) TagOpsList(ctx context.Context) (*api.TagList, error) {
 
 	rows, err := h.q.ListTags(ctx, userID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to list tags: %w", err)
 	}
 
 	items := make([]api.Tag, len(rows))
@@ -39,7 +40,7 @@ func (h *Handler) TagOpsCreate(ctx context.Context, req *api.CreateTagRequest) (
 
 	tagID, err := uuid.NewV7()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to generate tag id: %w", err)
 	}
 
 	now := time.Now()
@@ -52,7 +53,7 @@ func (h *Handler) TagOpsCreate(ctx context.Context, req *api.CreateTagRequest) (
 		UpdatedAt: pgtype.Timestamptz{Time: now, Valid: true},
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create tag: %w", err)
 	}
 	h.hub.Broadcast(userID, websocket.Event{Type: "tag.changed", Payload: map[string]any{}})
 	return toAPITag(row), nil
@@ -94,7 +95,7 @@ func (h *Handler) TagOpsDelete(ctx context.Context, params api.TagOpsDeleteParam
 	}
 
 	if err := h.q.DeleteTag(ctx, repository.DeleteTagParams{ID: id, UserID: userID}); err != nil {
-		return err
+		return fmt.Errorf("failed to delete tag: %w", err)
 	}
 	h.hub.Broadcast(userID, websocket.Event{Type: "tag.changed", Payload: map[string]any{}})
 	return nil

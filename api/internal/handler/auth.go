@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"time"
 
@@ -22,7 +23,7 @@ func (h *Handler) AuthOpsGoogleLogin(ctx context.Context, req *api.GoogleAuthReq
 
 	userID, err := uuid.NewV7()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to generate user id: %w", err)
 	}
 
 	now := time.Now()
@@ -36,12 +37,12 @@ func (h *Handler) AuthOpsGoogleLogin(ctx context.Context, req *api.GoogleAuthReq
 		UpdatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to upsert user: %w", err)
 	}
 
 	token, err := h.jwt.Issue(user.ID, user.Email)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to issue JWT: %w", err)
 	}
 
 	return &api.AuthResponse{
@@ -59,7 +60,7 @@ func (h *Handler) AuthOpsGoogleLoginWithCode(ctx context.Context, req *api.Googl
 
 	userID, err := uuid.NewV7()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to generate user id: %w", err)
 	}
 
 	now := time.Now()
@@ -73,12 +74,12 @@ func (h *Handler) AuthOpsGoogleLoginWithCode(ctx context.Context, req *api.Googl
 		UpdatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to upsert user: %w", err)
 	}
 
 	token, err := h.jwt.Issue(user.ID, user.Email)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to issue JWT: %w", err)
 	}
 
 	return &api.AuthResponse{
