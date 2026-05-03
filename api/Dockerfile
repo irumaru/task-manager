@@ -10,6 +10,8 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /server ./cmd/server
 
 FROM alpine:3.23.4
 
+RUN apk add --no-cache tzdata
+
 COPY --from=builder /server /server
 
 EXPOSE 8080
