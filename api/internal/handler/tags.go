@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"time"
 
 	"task-manager/api/internal/api"
 	"task-manager/api/internal/auth"
@@ -9,6 +10,7 @@ import (
 	"task-manager/api/internal/websocket"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (h *Handler) TagOpsList(ctx context.Context) (*api.TagList, error) {
@@ -35,9 +37,19 @@ func (h *Handler) TagOpsCreate(ctx context.Context, req *api.CreateTagRequest) (
 		return nil, errUnauthorized("unauthenticated")
 	}
 
+	tagID, err := uuid.NewV7()
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now()
+
 	row, err := h.q.CreateTag(ctx, repository.CreateTagParams{
-		UserID: userID,
-		Name:   req.Name,
+		ID:        tagID,
+		UserID:    userID,
+		Name:      req.Name,
+		CreatedAt: pgtype.Timestamptz{Time: now, Valid: true},
+		UpdatedAt: pgtype.Timestamptz{Time: now, Valid: true},
 	})
 	if err != nil {
 		return nil, err
@@ -58,9 +70,10 @@ func (h *Handler) TagOpsUpdate(ctx context.Context, req *api.UpdateTagRequest, p
 	}
 
 	row, err := h.q.UpdateTag(ctx, repository.UpdateTagParams{
-		ID:     id,
-		UserID: userID,
-		Name:   req.Name,
+		ID:        id,
+		UserID:    userID,
+		Name:      req.Name,
+		UpdatedAt: pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	})
 	if err != nil {
 		return nil, errNotFound("tag not found")

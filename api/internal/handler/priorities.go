@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"time"
 
 	"task-manager/api/internal/api"
 	"task-manager/api/internal/auth"
@@ -9,6 +10,7 @@ import (
 	"task-manager/api/internal/websocket"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (h *Handler) PriorityOpsList(ctx context.Context) (*api.PriorityList, error) {
@@ -35,10 +37,20 @@ func (h *Handler) PriorityOpsCreate(ctx context.Context, req *api.CreatePriority
 		return nil, errUnauthorized("unauthenticated")
 	}
 
+	priorityID, err := uuid.NewV7()
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now()
+
 	row, err := h.q.CreatePriority(ctx, repository.CreatePriorityParams{
+		ID:           priorityID,
 		UserID:       userID,
 		Name:         req.Name,
 		DisplayOrder: req.DisplayOrder,
+		CreatedAt:    pgtype.Timestamptz{Time: now, Valid: true},
+		UpdatedAt:    pgtype.Timestamptz{Time: now, Valid: true},
 	})
 	if err != nil {
 		return nil, err
@@ -63,6 +75,7 @@ func (h *Handler) PriorityOpsUpdate(ctx context.Context, req *api.UpdatePriority
 		UserID:       userID,
 		Name:         req.Name,
 		DisplayOrder: req.DisplayOrder,
+		UpdatedAt:    pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	})
 	if err != nil {
 		return nil, errNotFound("priority not found")

@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const getUserByEmail = `-- name: GetUserByEmail :one
@@ -48,23 +49,33 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
 }
 
 const upsertUser = `-- name: UpsertUser :one
-INSERT INTO users (email, display_name, avatar_url)
-VALUES ($1, $2, $3)
+INSERT INTO users (id, email, display_name, avatar_url, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6)
 ON CONFLICT (email) DO UPDATE
     SET display_name = EXCLUDED.display_name,
         avatar_url   = EXCLUDED.avatar_url,
-        updated_at   = NOW()
+        updated_at   = EXCLUDED.updated_at
 RETURNING id, email, display_name, avatar_url, created_at, updated_at
 `
 
 type UpsertUserParams struct {
-	Email       string  `json:"email"`
-	DisplayName string  `json:"display_name"`
-	AvatarUrl   *string `json:"avatar_url"`
+	ID          uuid.UUID          `json:"id"`
+	Email       string             `json:"email"`
+	DisplayName string             `json:"display_name"`
+	AvatarUrl   *string            `json:"avatar_url"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
 }
 
 func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, error) {
-	row := q.db.QueryRow(ctx, upsertUser, arg.Email, arg.DisplayName, arg.AvatarUrl)
+	row := q.db.QueryRow(ctx, upsertUser,
+		arg.ID,
+		arg.Email,
+		arg.DisplayName,
+		arg.AvatarUrl,
+		arg.CreatedAt,
+		arg.UpdatedAt,
+	)
 	var i User
 	err := row.Scan(
 		&i.ID,

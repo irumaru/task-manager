@@ -9,19 +9,29 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createWishLabel = `-- name: CreateWishLabel :one
-INSERT INTO wish_labels (user_id, name) VALUES ($1, $2) RETURNING id, user_id, name, created_at, updated_at
+INSERT INTO wish_labels (id, user_id, name, created_at, updated_at) VALUES ($1, $2, $3, $4, $5) RETURNING id, user_id, name, created_at, updated_at
 `
 
 type CreateWishLabelParams struct {
-	UserID uuid.UUID `json:"user_id"`
-	Name   string    `json:"name"`
+	ID        uuid.UUID          `json:"id"`
+	UserID    uuid.UUID          `json:"user_id"`
+	Name      string             `json:"name"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 }
 
 func (q *Queries) CreateWishLabel(ctx context.Context, arg CreateWishLabelParams) (WishLabel, error) {
-	row := q.db.QueryRow(ctx, createWishLabel, arg.UserID, arg.Name)
+	row := q.db.QueryRow(ctx, createWishLabel,
+		arg.ID,
+		arg.UserID,
+		arg.Name,
+		arg.CreatedAt,
+		arg.UpdatedAt,
+	)
 	var i WishLabel
 	err := row.Scan(
 		&i.ID,
@@ -102,20 +112,26 @@ func (q *Queries) ListWishLabels(ctx context.Context, userID uuid.UUID) ([]WishL
 const updateWishLabel = `-- name: UpdateWishLabel :one
 UPDATE wish_labels SET
     name       = $3,
-    updated_at = NOW()
+    updated_at = $4
 WHERE id = $1 AND user_id = $2
 RETURNING id, user_id, name, created_at, updated_at
 `
 
 type UpdateWishLabelParams struct {
-	ID     uuid.UUID `json:"id"`
-	UserID uuid.UUID `json:"user_id"`
-	Name   string    `json:"name"`
+	ID        uuid.UUID          `json:"id"`
+	UserID    uuid.UUID          `json:"user_id"`
+	Name      string             `json:"name"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 }
 
 // PUT semantics: full replacement.
 func (q *Queries) UpdateWishLabel(ctx context.Context, arg UpdateWishLabelParams) (WishLabel, error) {
-	row := q.db.QueryRow(ctx, updateWishLabel, arg.ID, arg.UserID, arg.Name)
+	row := q.db.QueryRow(ctx, updateWishLabel,
+		arg.ID,
+		arg.UserID,
+		arg.Name,
+		arg.UpdatedAt,
+	)
 	var i WishLabel
 	err := row.Scan(
 		&i.ID,

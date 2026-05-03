@@ -2,11 +2,14 @@ package repository_test
 
 import (
 	"testing"
+	"time"
 
 	"task-manager/api/internal/repository"
 	"task-manager/api/internal/testfactory"
 	"task-manager/api/internal/testutils"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -16,9 +19,16 @@ func TestCreateTag(t *testing.T) {
 	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
 	q := repository.New(pool)
 
+	id, err := uuid.NewV7()
+	require.NoError(t, err)
+	now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
+
 	tag, err := q.CreateTag(t.Context(), repository.CreateTagParams{
-		UserID: user.ID,
-		Name:   "bug",
+		ID:        id,
+		UserID:    user.ID,
+		Name:      "bug",
+		CreatedAt: now,
+		UpdatedAt: now,
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "bug", tag.Name)
@@ -87,9 +97,10 @@ func TestUpdateTag(t *testing.T) {
 
 	q := repository.New(pool)
 	updated, err := q.UpdateTag(t.Context(), repository.UpdateTagParams{
-		ID:     created.ID,
-		UserID: user.ID,
-		Name:   "new-name",
+		ID:        created.ID,
+		UserID:    user.ID,
+		Name:      "new-name",
+		UpdatedAt: pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "new-name", updated.Name)

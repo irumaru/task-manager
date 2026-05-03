@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"time"
 
 	"task-manager/api/internal/api"
 	"task-manager/api/internal/auth"
@@ -60,13 +61,23 @@ func (h *Handler) TaskOpsCreate(ctx context.Context, req *api.CreateTaskRequest)
 		memo = &v
 	}
 
+	taskID, err := uuid.NewV7()
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now()
+
 	task, err := h.q.CreateTask(ctx, repository.CreateTaskParams{
+		ID:         taskID,
 		UserID:     userID,
 		Title:      req.Title,
 		Memo:       memo,
 		DueDate:    dueDate,
 		StatusID:   statusID,
 		PriorityID: priorityID,
+		CreatedAt:  pgtype.Timestamptz{Time: now, Valid: true},
+		UpdatedAt:  pgtype.Timestamptz{Time: now, Valid: true},
 	})
 	if err != nil {
 		return nil, err
@@ -79,7 +90,7 @@ func (h *Handler) TaskOpsCreate(ctx context.Context, req *api.CreateTaskRequest)
 			return nil, errBadRequest("invalid tag_id: " + tagIDStr)
 		}
 		if err := h.q.InsertTaskTag(ctx, repository.InsertTaskTagParams{
-			TaskID: task.ID,
+			TaskID: taskID,
 			TagID:  tagID,
 		}); err != nil {
 			return nil, err
@@ -155,6 +166,7 @@ func (h *Handler) TaskOpsUpdate(ctx context.Context, req *api.UpdateTaskRequest,
 		DueDate:    dueDate,
 		StatusID:   statusID,
 		PriorityID: priorityID,
+		UpdatedAt:  pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	})
 	if err != nil {
 		return nil, errNotFound("task not found")

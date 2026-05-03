@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"time"
 
 	"task-manager/api/internal/api"
 	"task-manager/api/internal/auth"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (h *Handler) WishOpsList(ctx context.Context) (*api.WishList, error) {
@@ -84,10 +86,20 @@ func (h *Handler) WishOpsCreate(ctx context.Context, req *api.CreateWishRequest)
 
 	qtx := h.q.WithTx(tx)
 
+	wishID, err := uuid.NewV7()
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now()
+
 	wish, err := qtx.CreateWish(ctx, repository.CreateWishParams{
-		UserID: userID,
-		Title:  req.Title,
-		Detail: detail,
+		ID:        wishID,
+		UserID:    userID,
+		Title:     req.Title,
+		Detail:    detail,
+		CreatedAt: pgtype.Timestamptz{Time: now, Valid: true},
+		UpdatedAt: pgtype.Timestamptz{Time: now, Valid: true},
 	})
 	if err != nil {
 		return nil, err
@@ -152,10 +164,11 @@ func (h *Handler) WishOpsUpdate(ctx context.Context, req *api.UpdateWishRequest,
 	qtx := h.q.WithTx(tx)
 
 	wish, err := qtx.UpdateWish(ctx, repository.UpdateWishParams{
-		ID:     id,
-		UserID: userID,
-		Title:  req.Title,
-		Detail: detail,
+		ID:        id,
+		UserID:    userID,
+		Title:     req.Title,
+		Detail:    detail,
+		UpdatedAt: pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	})
 	if err != nil {
 		return nil, errNotFound("wish not found")

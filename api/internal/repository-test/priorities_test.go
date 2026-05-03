@@ -2,11 +2,14 @@ package repository_test
 
 import (
 	"testing"
+	"time"
 
 	"task-manager/api/internal/repository"
 	"task-manager/api/internal/testfactory"
 	"task-manager/api/internal/testutils"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -16,10 +19,17 @@ func TestCreatePriority(t *testing.T) {
 	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
 	q := repository.New(pool)
 
+	id, err := uuid.NewV7()
+	require.NoError(t, err)
+	now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
+
 	priority, err := q.CreatePriority(t.Context(), repository.CreatePriorityParams{
+		ID:           id,
 		UserID:       user.ID,
 		Name:         "High",
 		DisplayOrder: 1,
+		CreatedAt:    now,
+		UpdatedAt:    now,
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "High", priority.Name)
@@ -93,6 +103,7 @@ func TestUpdatePriority(t *testing.T) {
 		UserID:       user.ID,
 		Name:         "Critical",
 		DisplayOrder: int32(1),
+		UpdatedAt:    pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "Critical", updated.Name)

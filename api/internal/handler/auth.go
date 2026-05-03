@@ -3,10 +3,14 @@ package handler
 import (
 	"context"
 	"log/slog"
+	"time"
 
 	"task-manager/api/internal/api"
 	"task-manager/api/internal/auth"
 	"task-manager/api/internal/repository"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (h *Handler) AuthOpsGoogleLogin(ctx context.Context, req *api.GoogleAuthRequest) (*api.AuthResponse, error) {
@@ -16,10 +20,20 @@ func (h *Handler) AuthOpsGoogleLogin(ctx context.Context, req *api.GoogleAuthReq
 		return nil, errUnauthorized("invalid Google ID token")
 	}
 
+	userID, err := uuid.NewV7()
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now()
+
 	user, err := h.q.UpsertUser(ctx, repository.UpsertUserParams{
+		ID:          userID,
 		Email:       info.Email,
 		DisplayName: info.Name,
 		AvatarUrl:   nilPtr(info.Picture),
+		CreatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+		UpdatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
 	})
 	if err != nil {
 		return nil, err
@@ -43,10 +57,20 @@ func (h *Handler) AuthOpsGoogleLoginWithCode(ctx context.Context, req *api.Googl
 		return nil, errUnauthorized("invalid authorization code")
 	}
 
+	userID, err := uuid.NewV7()
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now()
+
 	user, err := h.q.UpsertUser(ctx, repository.UpsertUserParams{
+		ID:          userID,
 		Email:       info.Email,
 		DisplayName: info.Name,
 		AvatarUrl:   nilPtr(info.Picture),
+		CreatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+		UpdatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
 	})
 	if err != nil {
 		return nil, err

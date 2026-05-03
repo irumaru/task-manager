@@ -19,12 +19,20 @@ func TestCreateTask(t *testing.T) {
 	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
 	status := testfactory.CreateStatus(t, pool, testfactory.StatusParams{UserID: user.ID})
 
+	taskID, err := uuid.NewV7()
+	assert.NoError(t, err)
+	now := time.Now()
+
 	task := testfactory.CreateTask(t, pool, testfactory.TaskParams{
-		UserID:   user.ID,
-		Title:    "My Task",
-		StatusID: status.ID,
+		ID:        taskID,
+		UserID:    user.ID,
+		Title:     "My Task",
+		StatusID:  status.ID,
+		CreatedAt: pgtype.Timestamptz{Time: now, Valid: true},
+		UpdatedAt: pgtype.Timestamptz{Time: now, Valid: true},
 	})
 
+	assert.Equal(t, taskID, task.ID)
 	assert.Equal(t, "My Task", task.Title)
 	assert.Equal(t, status.ID, task.StatusID)
 	assert.Equal(t, user.ID, task.UserID)
@@ -130,10 +138,11 @@ func TestUpdateTask(t *testing.T) {
 
 	q := repository.New(pool)
 	updated, err := q.UpdateTask(t.Context(), repository.UpdateTaskParams{
-		ID:       task.ID,
-		UserID:   user.ID,
-		Title:    "New Title",
-		StatusID: status.ID,
+		ID:        task.ID,
+		UserID:    user.ID,
+		Title:     "New Title",
+		StatusID:  status.ID,
+		UpdatedAt: pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "New Title", updated.Title)
@@ -149,11 +158,12 @@ func TestUpdateTask_ClearMemo(t *testing.T) {
 
 	q := repository.New(pool)
 	updated, err := q.UpdateTask(t.Context(), repository.UpdateTaskParams{
-		ID:       task.ID,
-		UserID:   user.ID,
-		Title:    task.Title,
-		Memo:     nil,
-		StatusID: status.ID,
+		ID:        task.ID,
+		UserID:    user.ID,
+		Title:     task.Title,
+		Memo:      nil,
+		StatusID:  status.ID,
+		UpdatedAt: pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	})
 	require.NoError(t, err)
 	assert.Nil(t, updated.Memo)
@@ -173,6 +183,7 @@ func TestUpdateTask_ClearPriorityId(t *testing.T) {
 		Title:      task.Title,
 		StatusID:   status.ID,
 		PriorityID: uuid.NullUUID{Valid: false},
+		UpdatedAt:  pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	})
 	require.NoError(t, err)
 	assert.False(t, updated.PriorityID.Valid)
@@ -190,11 +201,12 @@ func TestUpdateTask_ClearDueDate(t *testing.T) {
 
 	q := repository.New(pool)
 	updated, err := q.UpdateTask(t.Context(), repository.UpdateTaskParams{
-		ID:       task.ID,
-		UserID:   user.ID,
-		Title:    task.Title,
-		StatusID: status.ID,
-		DueDate:  pgtype.Timestamptz{Valid: false},
+		ID:        task.ID,
+		UserID:    user.ID,
+		Title:     task.Title,
+		StatusID:  status.ID,
+		DueDate:   pgtype.Timestamptz{Valid: false},
+		UpdatedAt: pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	})
 	require.NoError(t, err)
 	assert.False(t, updated.DueDate.Valid)

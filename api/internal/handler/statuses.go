@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"time"
 
 	"task-manager/api/internal/api"
 	"task-manager/api/internal/auth"
@@ -9,6 +10,7 @@ import (
 	"task-manager/api/internal/websocket"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (h *Handler) StatusOpsList(ctx context.Context) (*api.StatusList, error) {
@@ -35,10 +37,20 @@ func (h *Handler) StatusOpsCreate(ctx context.Context, req *api.CreateStatusRequ
 		return nil, errUnauthorized("unauthenticated")
 	}
 
+	statusID, err := uuid.NewV7()
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now()
+
 	row, err := h.q.CreateStatus(ctx, repository.CreateStatusParams{
+		ID:           statusID,
 		UserID:       userID,
 		Name:         req.Name,
 		DisplayOrder: req.DisplayOrder,
+		CreatedAt:    pgtype.Timestamptz{Time: now, Valid: true},
+		UpdatedAt:    pgtype.Timestamptz{Time: now, Valid: true},
 	})
 	if err != nil {
 		return nil, err
@@ -63,6 +75,7 @@ func (h *Handler) StatusOpsUpdate(ctx context.Context, req *api.UpdateStatusRequ
 		UserID:       userID,
 		Name:         req.Name,
 		DisplayOrder: req.DisplayOrder,
+		UpdatedAt:    pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	})
 	if err != nil {
 		return nil, errNotFound("status not found")

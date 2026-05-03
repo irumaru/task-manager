@@ -2,11 +2,14 @@ package repository_test
 
 import (
 	"testing"
+	"time"
 
 	"task-manager/api/internal/repository"
 	"task-manager/api/internal/testfactory"
 	"task-manager/api/internal/testutils"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -16,9 +19,16 @@ func TestCreateWishLabel(t *testing.T) {
 	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
 	q := repository.New(pool)
 
+	id, err := uuid.NewV7()
+	require.NoError(t, err)
+	now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
+
 	label, err := q.CreateWishLabel(t.Context(), repository.CreateWishLabelParams{
-		UserID: user.ID,
-		Name:   "travel",
+		ID:        id,
+		UserID:    user.ID,
+		Name:      "travel",
+		CreatedAt: now,
+		UpdatedAt: now,
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "travel", label.Name)
@@ -75,9 +85,10 @@ func TestUpdateWishLabel(t *testing.T) {
 
 	q := repository.New(pool)
 	updated, err := q.UpdateWishLabel(t.Context(), repository.UpdateWishLabelParams{
-		ID:     created.ID,
-		UserID: user.ID,
-		Name:   "new-name",
+		ID:        created.ID,
+		UserID:    user.ID,
+		Name:      "new-name",
+		UpdatedAt: pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "new-name", updated.Name)
@@ -102,9 +113,16 @@ func TestCreateWishLabel_DuplicateName(t *testing.T) {
 	testfactory.CreateWishLabel(t, pool, testfactory.WishLabelParams{UserID: user.ID, Name: "music"})
 
 	q := repository.New(pool)
-	_, err := q.CreateWishLabel(t.Context(), repository.CreateWishLabelParams{
-		UserID: user.ID,
-		Name:   "music",
+	dupID, err := uuid.NewV7()
+	require.NoError(t, err)
+	now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
+
+	_, err = q.CreateWishLabel(t.Context(), repository.CreateWishLabelParams{
+		ID:        dupID,
+		UserID:    user.ID,
+		Name:      "music",
+		CreatedAt: now,
+		UpdatedAt: now,
 	})
 	require.Error(t, err)
 }
@@ -116,9 +134,16 @@ func TestCreateWishLabel_SameNameDifferentUser(t *testing.T) {
 	testfactory.CreateWishLabel(t, pool, testfactory.WishLabelParams{UserID: user1.ID, Name: "music"})
 
 	q := repository.New(pool)
+	id, err := uuid.NewV7()
+	require.NoError(t, err)
+	now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
+
 	label, err := q.CreateWishLabel(t.Context(), repository.CreateWishLabelParams{
-		UserID: user2.ID,
-		Name:   "music",
+		ID:        id,
+		UserID:    user2.ID,
+		Name:      "music",
+		CreatedAt: now,
+		UpdatedAt: now,
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "music", label.Name)

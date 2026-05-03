@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"time"
 
 	"task-manager/api/internal/api"
 	"task-manager/api/internal/auth"
@@ -9,6 +10,7 @@ import (
 	"task-manager/api/internal/websocket"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (h *Handler) WishLabelOpsList(ctx context.Context) (*api.WishLabelList, error) {
@@ -35,9 +37,19 @@ func (h *Handler) WishLabelOpsCreate(ctx context.Context, req *api.CreateWishLab
 		return nil, errUnauthorized("unauthenticated")
 	}
 
+	labelID, err := uuid.NewV7()
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now()
+
 	row, err := h.q.CreateWishLabel(ctx, repository.CreateWishLabelParams{
-		UserID: userID,
-		Name:   req.Name,
+		ID:        labelID,
+		UserID:    userID,
+		Name:      req.Name,
+		CreatedAt: pgtype.Timestamptz{Time: now, Valid: true},
+		UpdatedAt: pgtype.Timestamptz{Time: now, Valid: true},
 	})
 	if err != nil {
 		if isUniqueViolation(err) {
@@ -63,9 +75,10 @@ func (h *Handler) WishLabelOpsUpdate(ctx context.Context, req *api.UpdateWishLab
 	}
 
 	row, err := h.q.UpdateWishLabel(ctx, repository.UpdateWishLabelParams{
-		ID:     id,
-		UserID: userID,
-		Name:   req.Name,
+		ID:        id,
+		UserID:    userID,
+		Name:      req.Name,
+		UpdatedAt: pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	})
 	if err != nil {
 		if isUniqueViolation(err) {

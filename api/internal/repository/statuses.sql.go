@@ -9,22 +9,33 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createStatus = `-- name: CreateStatus :one
-INSERT INTO statuses (user_id, name, display_order)
-VALUES ($1, $2, $3)
+INSERT INTO statuses (id, user_id, name, display_order, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING id, user_id, name, display_order, created_at, updated_at
 `
 
 type CreateStatusParams struct {
-	UserID       uuid.UUID `json:"user_id"`
-	Name         string    `json:"name"`
-	DisplayOrder int32     `json:"display_order"`
+	ID           uuid.UUID          `json:"id"`
+	UserID       uuid.UUID          `json:"user_id"`
+	Name         string             `json:"name"`
+	DisplayOrder int32              `json:"display_order"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
 
 func (q *Queries) CreateStatus(ctx context.Context, arg CreateStatusParams) (Status, error) {
-	row := q.db.QueryRow(ctx, createStatus, arg.UserID, arg.Name, arg.DisplayOrder)
+	row := q.db.QueryRow(ctx, createStatus,
+		arg.ID,
+		arg.UserID,
+		arg.Name,
+		arg.DisplayOrder,
+		arg.CreatedAt,
+		arg.UpdatedAt,
+	)
 	var i Status
 	err := row.Scan(
 		&i.ID,
@@ -109,16 +120,17 @@ const updateStatus = `-- name: UpdateStatus :one
 UPDATE statuses SET
     name          = $3,
     display_order = $4,
-    updated_at    = NOW()
+    updated_at    = $5
 WHERE id = $1 AND user_id = $2
 RETURNING id, user_id, name, display_order, created_at, updated_at
 `
 
 type UpdateStatusParams struct {
-	ID           uuid.UUID `json:"id"`
-	UserID       uuid.UUID `json:"user_id"`
-	Name         string    `json:"name"`
-	DisplayOrder int32     `json:"display_order"`
+	ID           uuid.UUID          `json:"id"`
+	UserID       uuid.UUID          `json:"user_id"`
+	Name         string             `json:"name"`
+	DisplayOrder int32              `json:"display_order"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
 
 func (q *Queries) UpdateStatus(ctx context.Context, arg UpdateStatusParams) (Status, error) {
@@ -127,6 +139,7 @@ func (q *Queries) UpdateStatus(ctx context.Context, arg UpdateStatusParams) (Sta
 		arg.UserID,
 		arg.Name,
 		arg.DisplayOrder,
+		arg.UpdatedAt,
 	)
 	var i Status
 	err := row.Scan(
