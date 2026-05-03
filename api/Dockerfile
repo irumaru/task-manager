@@ -8,7 +8,7 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o /server ./cmd/server
 
-FROM alpine:3.23.3
+FROM alpine:3.23.4
 
 COPY --from=builder /server /server
 
