@@ -5,7 +5,7 @@ on:
     paths:
       - 'api/**'
       - '.mise.toml'
-      - '.github/workflows/lint-go.yml'
+      - '.github/workflows/check-lint-go.yml'
 
 jobs:
   lint:
