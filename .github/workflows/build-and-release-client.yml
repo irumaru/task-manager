@@ -248,7 +248,7 @@ jobs:
             console.log(`Release ${tagName} created`);
 
       - name: Attach assets to Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.calc_tag.outputs.tagName }}
           files: |
