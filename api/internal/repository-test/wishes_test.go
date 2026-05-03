@@ -2,12 +2,14 @@ package repository_test
 
 import (
 	"testing"
+	"time"
 
 	"task-manager/api/internal/repository"
 	"task-manager/api/internal/testfactory"
 	"task-manager/api/internal/testutils"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -17,10 +19,17 @@ func TestCreateWish(t *testing.T) {
 	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
 	q := repository.New(pool)
 
+	id, err := uuid.NewV7()
+	require.NoError(t, err)
+	now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
+
 	wish, err := q.CreateWish(t.Context(), repository.CreateWishParams{
-		UserID: user.ID,
-		Title:  "learn Go",
-		Detail: nil,
+		ID:        id,
+		UserID:    user.ID,
+		Title:     "learn Go",
+		Detail:    nil,
+		CreatedAt: now,
+		UpdatedAt: now,
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "learn Go", wish.Title)
@@ -32,10 +41,17 @@ func TestCreateWish_DetailCanBeNull(t *testing.T) {
 	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
 	q := repository.New(pool)
 
+	id, err := uuid.NewV7()
+	require.NoError(t, err)
+	now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
+
 	wish, err := q.CreateWish(t.Context(), repository.CreateWishParams{
-		UserID: user.ID,
-		Title:  "no detail",
-		Detail: nil,
+		ID:        id,
+		UserID:    user.ID,
+		Title:     "no detail",
+		Detail:    nil,
+		CreatedAt: now,
+		UpdatedAt: now,
 	})
 	require.NoError(t, err)
 	assert.Nil(t, wish.Detail)
@@ -109,10 +125,11 @@ func TestUpdateWish_ReplacesDetail(t *testing.T) {
 	newDetail := "new detail"
 	q := repository.New(pool)
 	updated, err := q.UpdateWish(t.Context(), repository.UpdateWishParams{
-		ID:     created.ID,
-		UserID: user.ID,
-		Title:  created.Title,
-		Detail: &newDetail,
+		ID:        created.ID,
+		UserID:    user.ID,
+		Title:     created.Title,
+		Detail:    &newDetail,
+		UpdatedAt: pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	})
 	require.NoError(t, err)
 	require.NotNil(t, updated.Detail)
@@ -127,10 +144,11 @@ func TestUpdateWish_ClearsDetailWhenNullGiven(t *testing.T) {
 
 	q := repository.New(pool)
 	updated, err := q.UpdateWish(t.Context(), repository.UpdateWishParams{
-		ID:     created.ID,
-		UserID: user.ID,
-		Title:  created.Title,
-		Detail: nil,
+		ID:        created.ID,
+		UserID:    user.ID,
+		Title:     created.Title,
+		Detail:    nil,
+		UpdatedAt: pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	})
 	require.NoError(t, err)
 	assert.Nil(t, updated.Detail)

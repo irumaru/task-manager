@@ -2,10 +2,13 @@ package repository_test
 
 import (
 	"testing"
+	"time"
 
 	"task-manager/api/internal/repository"
 	"task-manager/api/internal/testutils"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -14,9 +17,16 @@ func TestUpsertUser_Insert(t *testing.T) {
 	pool := testutils.SetupTestDB(t)
 	q := repository.New(pool)
 
+	id, err := uuid.NewV7()
+	require.NoError(t, err)
+	now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
+
 	user, err := q.UpsertUser(t.Context(), repository.UpsertUserParams{
+		ID:          id,
 		Email:       "alice@example.com",
 		DisplayName: "Alice",
+		CreatedAt:   now,
+		UpdatedAt:   now,
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "alice@example.com", user.Email)
@@ -28,17 +38,27 @@ func TestUpsertUser_Update(t *testing.T) {
 	pool := testutils.SetupTestDB(t)
 	q := repository.New(pool)
 
-	_, err := q.UpsertUser(t.Context(), repository.UpsertUserParams{
+	id, err := uuid.NewV7()
+	require.NoError(t, err)
+	now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
+
+	_, err = q.UpsertUser(t.Context(), repository.UpsertUserParams{
+		ID:          id,
 		Email:       "alice@example.com",
 		DisplayName: "Alice",
+		CreatedAt:   now,
+		UpdatedAt:   now,
 	})
 	require.NoError(t, err)
 
 	avatar := "https://example.com/avatar.png"
 	updated, err := q.UpsertUser(t.Context(), repository.UpsertUserParams{
+		ID:          id,
 		Email:       "alice@example.com",
 		DisplayName: "Alice Updated",
 		AvatarUrl:   &avatar,
+		CreatedAt:   now,
+		UpdatedAt:   pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "Alice Updated", updated.DisplayName)
@@ -49,9 +69,16 @@ func TestGetUserByID(t *testing.T) {
 	pool := testutils.SetupTestDB(t)
 	q := repository.New(pool)
 
+	id, err := uuid.NewV7()
+	require.NoError(t, err)
+	now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
+
 	created, err := q.UpsertUser(t.Context(), repository.UpsertUserParams{
+		ID:          id,
 		Email:       "bob@example.com",
 		DisplayName: "Bob",
+		CreatedAt:   now,
+		UpdatedAt:   now,
 	})
 	require.NoError(t, err)
 
@@ -73,9 +100,16 @@ func TestGetUserByEmail(t *testing.T) {
 	pool := testutils.SetupTestDB(t)
 	q := repository.New(pool)
 
+	id, err := uuid.NewV7()
+	require.NoError(t, err)
+	now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
+
 	created, err := q.UpsertUser(t.Context(), repository.UpsertUserParams{
+		ID:          id,
 		Email:       "carol@example.com",
 		DisplayName: "Carol",
+		CreatedAt:   now,
+		UpdatedAt:   now,
 	})
 	require.NoError(t, err)
 

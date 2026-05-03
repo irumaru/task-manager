@@ -2,11 +2,14 @@ package repository_test
 
 import (
 	"testing"
+	"time"
 
 	"task-manager/api/internal/repository"
 	"task-manager/api/internal/testfactory"
 	"task-manager/api/internal/testutils"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -16,10 +19,17 @@ func TestCreateStatus(t *testing.T) {
 	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
 	q := repository.New(pool)
 
+	id, err := uuid.NewV7()
+	require.NoError(t, err)
+	now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
+
 	status, err := q.CreateStatus(t.Context(), repository.CreateStatusParams{
+		ID:           id,
 		UserID:       user.ID,
 		Name:         "In Progress",
 		DisplayOrder: 1,
+		CreatedAt:    now,
+		UpdatedAt:    now,
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "In Progress", status.Name)
@@ -92,6 +102,7 @@ func TestUpdateStatus(t *testing.T) {
 		UserID:       user.ID,
 		Name:         "New Name",
 		DisplayOrder: int32(5),
+		UpdatedAt:    pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "New Name", updated.Name)
