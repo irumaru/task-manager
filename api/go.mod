@@ -9,6 +9,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/jackc/pgx/v5 v5.8.0
+	github.com/k1LoW/runn v1.6.0
 	github.com/ogen-go/ogen v1.20.1
 	github.com/stretchr/testify v1.11.1
 	go.opentelemetry.io/otel v1.40.0
@@ -119,7 +120,6 @@ require (
 	github.com/k1LoW/grpcurlreq v0.2.6 // indirect
 	github.com/k1LoW/maskedio v0.4.4 // indirect
 	github.com/k1LoW/protoresolv v0.1.8 // indirect
-	github.com/k1LoW/runn v1.6.0 // indirect
 	github.com/k1LoW/sshc/v4 v4.3.2 // indirect
 	github.com/k1LoW/stopw v0.9.2 // indirect
 	github.com/k1LoW/urlfilepath v0.1.0 // indirect
