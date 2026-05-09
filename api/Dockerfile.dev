@@ -2,6 +2,8 @@ FROM golang:1.26.2
 
 WORKDIR /app/api
 
+ENV TZ=UTC
+
 RUN go install github.com/air-verse/air@v1.64.5
 
 CMD ["air", "-c", ".air.toml"]

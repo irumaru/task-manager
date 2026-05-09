@@ -12,7 +12,7 @@ class TaskRepositoryImpl implements TaskRepository {
       id: json['id'] as String,
       title: json['title'] as String,
       memo: json['memo'] as String?,
-      dueDate: json['dueDate'] != null ? DateTime.parse(json['dueDate'] as String) : null,
+      dueDate: json['dueDate'] != null ? DateTime.parse(json['dueDate'] as String).toLocal() : null,
       priorityId: json['priorityId'] as String?,
       statusId: json['statusId'] as String,
       tagIds: (json['tagIds'] as List<dynamic>?)?.cast<String>() ?? const [],
@@ -20,8 +20,8 @@ class TaskRepositoryImpl implements TaskRepository {
       priority: null,
       status: null,
       tags: const [],
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      createdAt: DateTime.parse(json['createdAt'] as String).toLocal(),
+      updatedAt: DateTime.parse(json['updatedAt'] as String).toLocal(),
     );
   }
 
