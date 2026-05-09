@@ -208,12 +208,10 @@ API の詳細な仕様は TypeSpec で記述された [spec/main.tsp](spec/main.
 | POST | `/auth/google` | Google IDトークンでログイン |
 | POST | `/auth/google/code` | Google 認可コードでログイン |
 | GET | `/auth/me` | 認証ユーザー情報を取得(JWT Bearer 認証が必要) |
-| GET / POST | `/tasks` | タスクの一覧取得・作成 |
+| GET / POST | `/tasks` | タスクの一覧取得・作成（`importance` / `urgency` は 1〜3 の整数） |
 | GET / PATCH / DELETE | `/tasks/{id}` | タスクの取得・更新・削除 |
 | GET / POST | `/statuses` | ステータスの一覧取得・作成 |
 | PATCH / DELETE | `/statuses/{id}` | ステータスの更新・削除 |
-| GET / POST | `/priorities` | 優先度の一覧取得・作成 |
-| PATCH / DELETE | `/priorities/{id}` | 優先度の更新・削除 |
 | GET / POST | `/tags` | タグの一覧取得・作成 |
 | PATCH / DELETE | `/tags/{id}` | タグの更新・削除 |
 | GET | `/ws?token=<JWT>` | WebSocket接続（リアルタイムイベント配信） |
