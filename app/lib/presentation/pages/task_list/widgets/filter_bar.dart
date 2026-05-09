@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../domain/repositories/task_repository.dart';
 import '../../../providers/filter_provider.dart';
-import '../../../providers/priority_provider.dart';
 import '../../../providers/status_provider.dart';
 import '../../../providers/tag_provider.dart';
 
@@ -12,12 +12,12 @@ class FilterBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final filterState = ref.watch(filterProvider);
-    final priorities = ref.watch(priorityNotifierProvider).value ?? [];
     final statuses = ref.watch(statusNotifierProvider).value ?? [];
     final tags = ref.watch(tagNotifierProvider).value ?? [];
 
     final hasFilter = filterState.filter.tagIds.isNotEmpty ||
-        filterState.filter.priorityIds.isNotEmpty ||
+        filterState.filter.importanceLevels.isNotEmpty ||
+        filterState.filter.urgencyLevels.isNotEmpty ||
         filterState.filter.statusIds.isNotEmpty ||
         filterState.filter.isOverdue == true ||
         filterState.showCompleted;
@@ -46,16 +46,29 @@ class FilterBar extends ConsumerWidget {
                 .setIsOverdue(v ? true : null),
           ),
           const SizedBox(width: 8),
-          // 優先度フィルタ
-          ...priorities.map((p) => Padding(
+          // 重要度フィルタ
+          ...AppConstants.importanceLabels.entries.map((e) => Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: FilterChip(
-                  label: Text(p.name),
-                  selected: filterState.filter.priorityIds.contains(p.id),
+                  label: Text('重要: ${e.value}'),
+                  selected: filterState.filter.importanceLevels.contains(e.key),
                   onSelected: (v) {
-                    final ids = List<String>.from(filterState.filter.priorityIds);
-                    v ? ids.add(p.id) : ids.remove(p.id);
-                    ref.read(filterProvider.notifier).setPriorityIds(ids);
+                    final levels = Set<int>.from(filterState.filter.importanceLevels);
+                    v ? levels.add(e.key) : levels.remove(e.key);
+                    ref.read(filterProvider.notifier).setImportanceLevels(levels);
+                  },
+                ),
+              )),
+          // 緊急度フィルタ
+          ...AppConstants.urgencyLabels.entries.map((e) => Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: FilterChip(
+                  label: Text('緊急: ${e.value}'),
+                  selected: filterState.filter.urgencyLevels.contains(e.key),
+                  onSelected: (v) {
+                    final levels = Set<int>.from(filterState.filter.urgencyLevels);
+                    v ? levels.add(e.key) : levels.remove(e.key);
+                    ref.read(filterProvider.notifier).setUrgencyLevels(levels);
                   },
                 ),
               )),
@@ -152,8 +165,10 @@ class _SortButton extends ConsumerWidget {
         return '更新日時';
       case SortField.dueDate:
         return '期限日';
-      case SortField.priority:
-        return '優先度';
+      case SortField.importance:
+        return '重要度';
+      case SortField.urgency:
+        return '緊急度';
       case SortField.title:
         return 'タイトル';
     }

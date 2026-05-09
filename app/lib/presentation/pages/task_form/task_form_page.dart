@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../domain/models/task.dart';
 import '../../../domain/models/tag.dart';
 import '../../providers/task_provider.dart';
-import '../../providers/priority_provider.dart';
 import '../../providers/status_provider.dart';
 import '../../providers/tag_provider.dart';
 import '../../widgets/confirm_dialog.dart';
@@ -26,7 +26,8 @@ class _TaskFormPageState extends ConsumerState<TaskFormPage> {
   late final FocusNode _tagInputFocusNode;
 
   DateTime? _dueDate;
-  String? _priorityId;
+  int _importance = 1;
+  int _urgency = 1;
   String? _statusId;
   final List<Tag> _selectedTags = [];
   bool _isSaving = false;
@@ -42,7 +43,8 @@ class _TaskFormPageState extends ConsumerState<TaskFormPage> {
     _tagInputController = TextEditingController();
     _tagInputFocusNode = FocusNode();
     _dueDate = task?.dueDate;
-    _priorityId = task?.priority?.id ?? task?.priorityId;
+    _importance = task?.importance ?? 1;
+    _urgency = task?.urgency ?? 1;
     _statusId = task?.status?.id ?? task?.statusId;
     if (task != null) {
       _selectedTags.addAll(task.tags);
@@ -78,7 +80,8 @@ class _TaskFormPageState extends ConsumerState<TaskFormPage> {
         title: _titleController.text.trim(),
         memo: memo.isEmpty ? null : memo,
         dueDate: _dueDate,
-        priorityId: _priorityId,
+        importance: _importance,
+        urgency: _urgency,
         statusId: _statusId!,
         tagIds: tagIds,
       );
@@ -88,7 +91,8 @@ class _TaskFormPageState extends ConsumerState<TaskFormPage> {
         memo: memo.isEmpty ? null : memo,
         dueDate: _dueDate,
         statusId: _statusId!,
-        priorityId: _priorityId,
+        importance: _importance,
+        urgency: _urgency,
         tagIds: tagIds,
       );
     }
@@ -139,7 +143,6 @@ class _TaskFormPageState extends ConsumerState<TaskFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final priorities = ref.watch(priorityNotifierProvider).value ?? [];
     final statuses = ref.watch(statusNotifierProvider).value ?? [];
     final allTags = ref.watch(tagNotifierProvider).value ?? [];
     final lastUsedTagId = ref.watch(lastUsedTagIdProvider);
@@ -211,19 +214,21 @@ class _TaskFormPageState extends ConsumerState<TaskFormPage> {
             const Divider(),
             const SizedBox(height: 8),
 
-            // 優先度
-            DropdownButtonFormField<String?>(
-              initialValue: _priorityId,
-              decoration: const InputDecoration(
-                labelText: '優先度',
-                border: OutlineInputBorder(),
-              ),
-              items: [
-                const DropdownMenuItem(value: null, child: Text('なし')),
-                ...priorities.map((p) =>
-                    DropdownMenuItem(value: p.id, child: Text(p.name))),
-              ],
-              onChanged: (v) => setState(() => _priorityId = v),
+            // 重要度
+            Text('重要度', style: Theme.of(context).textTheme.labelLarge),
+            const SizedBox(height: 8),
+            _LevelSelector(
+              value: _importance,
+              onChanged: (v) => setState(() => _importance = v),
+            ),
+            const SizedBox(height: 16),
+
+            // 緊急度
+            Text('緊急度', style: Theme.of(context).textTheme.labelLarge),
+            const SizedBox(height: 8),
+            _LevelSelector(
+              value: _urgency,
+              onChanged: (v) => setState(() => _urgency = v),
             ),
             const SizedBox(height: 16),
 
@@ -340,6 +345,24 @@ class _TaskFormPageState extends ConsumerState<TaskFormPage> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _LevelSelector extends StatelessWidget {
+  final int value;
+  final ValueChanged<int> onChanged;
+
+  const _LevelSelector({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return SegmentedButton<int>(
+      segments: AppConstants.levelLabels.entries
+          .map((e) => ButtonSegment(value: e.key, label: Text(e.value)))
+          .toList(),
+      selected: {value},
+      onSelectionChanged: (s) => onChanged(s.first),
     );
   }
 }

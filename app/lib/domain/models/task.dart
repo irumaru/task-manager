@@ -1,4 +1,3 @@
-import 'priority.dart';
 import 'status.dart';
 import 'tag.dart';
 
@@ -7,12 +6,11 @@ class Task {
   final String title;
   final String? memo;
   final DateTime? dueDate;
-  // API レスポンスから取得する ID（Provider 層でオブジェクトに解決される）
-  final String? priorityId;
+  final int importance;
+  final int urgency;
   final String? statusId;
   final List<String> tagIds;
   // Provider 層で解決されたオブジェクト
-  final Priority? priority;
   final Status? status;
   final List<Tag> tags;
   final DateTime createdAt;
@@ -23,10 +21,10 @@ class Task {
     required this.title,
     this.memo,
     this.dueDate,
-    this.priorityId,
+    this.importance = 1,
+    this.urgency = 1,
     this.statusId,
     this.tagIds = const [],
-    this.priority,
     this.status,
     required this.tags,
     required this.createdAt,
@@ -40,13 +38,11 @@ class Task {
     bool clearMemo = false,
     DateTime? dueDate,
     bool clearDueDate = false,
-    String? priorityId,
-    bool clearPriorityId = false,
+    int? importance,
+    int? urgency,
     String? statusId,
     bool clearStatusId = false,
     List<String>? tagIds,
-    Priority? priority,
-    bool clearPriority = false,
     Status? status,
     bool clearStatus = false,
     List<Tag>? tags,
@@ -58,10 +54,10 @@ class Task {
       title: title ?? this.title,
       memo: clearMemo ? null : (memo ?? this.memo),
       dueDate: clearDueDate ? null : (dueDate ?? this.dueDate),
-      priorityId: clearPriorityId ? null : (priorityId ?? this.priorityId),
+      importance: importance ?? this.importance,
+      urgency: urgency ?? this.urgency,
       statusId: clearStatusId ? null : (statusId ?? this.statusId),
       tagIds: tagIds ?? this.tagIds,
-      priority: clearPriority ? null : (priority ?? this.priority),
       status: clearStatus ? null : (status ?? this.status),
       tags: tags ?? this.tags,
       createdAt: createdAt ?? this.createdAt,

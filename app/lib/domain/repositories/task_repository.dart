@@ -1,12 +1,13 @@
 import '../models/task.dart';
 
-enum SortField { createdAt, updatedAt, dueDate, priority, title }
+enum SortField { createdAt, updatedAt, dueDate, importance, urgency, title }
 
 enum SortOrder { asc, desc }
 
 class TaskFilter {
   final List<String> tagIds;
-  final List<String> priorityIds;
+  final Set<int> importanceLevels;
+  final Set<int> urgencyLevels;
   final List<String> statusIds;
   final List<String> excludeStatusIds;
   final bool? isOverdue;
@@ -14,7 +15,8 @@ class TaskFilter {
 
   const TaskFilter({
     this.tagIds = const [],
-    this.priorityIds = const [],
+    this.importanceLevels = const {},
+    this.urgencyLevels = const {},
     this.statusIds = const [],
     this.excludeStatusIds = const [],
     this.isOverdue,
@@ -23,7 +25,8 @@ class TaskFilter {
 
   TaskFilter copyWith({
     List<String>? tagIds,
-    List<String>? priorityIds,
+    Set<int>? importanceLevels,
+    Set<int>? urgencyLevels,
     List<String>? statusIds,
     List<String>? excludeStatusIds,
     bool? isOverdue,
@@ -31,7 +34,8 @@ class TaskFilter {
   }) {
     return TaskFilter(
       tagIds: tagIds ?? this.tagIds,
-      priorityIds: priorityIds ?? this.priorityIds,
+      importanceLevels: importanceLevels ?? this.importanceLevels,
+      urgencyLevels: urgencyLevels ?? this.urgencyLevels,
       statusIds: statusIds ?? this.statusIds,
       excludeStatusIds: excludeStatusIds ?? this.excludeStatusIds,
       isOverdue: isOverdue ?? this.isOverdue,
@@ -54,7 +58,8 @@ abstract class TaskRepository {
     String? memo,
     DateTime? dueDate,
     required String statusId,
-    String? priorityId,
+    int importance,
+    int urgency,
     List<String> tagIds,
   });
 
@@ -64,7 +69,8 @@ abstract class TaskRepository {
     required String? memo,
     required DateTime? dueDate,
     required String statusId,
-    required String? priorityId,
+    required int importance,
+    required int urgency,
     required List<String> tagIds,
   });
 

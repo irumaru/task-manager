@@ -3,14 +3,12 @@ import '../../domain/models/tag.dart';
 import '../../domain/models/task.dart';
 import 'api_provider.dart';
 import 'filter_provider.dart';
-import 'priority_provider.dart';
 import 'status_provider.dart';
 import 'tag_provider.dart';
 
 final tasksProvider = FutureProvider<List<Task>>((ref) async {
   final repo = ref.watch(taskRepositoryProvider);
   final filterState = ref.watch(filterProvider);
-  final priorities = await ref.watch(priorityNotifierProvider.future);
   final statuses = await ref.watch(statusNotifierProvider.future);
   final tags = await ref.watch(tagNotifierProvider.future);
 
@@ -34,14 +32,11 @@ final tasksProvider = FutureProvider<List<Task>>((ref) async {
   );
 
   // Provider 層でリレーション解決
-  final priorityMap = {for (final p in priorities) p.id: p};
   final statusMap = {for (final s in statuses) s.id: s};
   final tagMap = {for (final t in tags) t.id: t};
 
   return rawTasks.map((task) {
     return task.copyWith(
-      priority: task.priorityId != null ? priorityMap[task.priorityId] : null,
-      clearPriority: task.priorityId == null,
       status: task.statusId != null ? statusMap[task.statusId] : null,
       clearStatus: task.statusId == null,
       tags: task.tagIds
@@ -61,7 +56,8 @@ class TaskNotifier extends AsyncNotifier<void> {
     String? memo,
     DateTime? dueDate,
     required String statusId,
-    String? priorityId,
+    int importance = 1,
+    int urgency = 1,
     List<String> tagIds = const [],
   }) async {
     await ref.read(taskRepositoryProvider).addTask(
@@ -69,7 +65,8 @@ class TaskNotifier extends AsyncNotifier<void> {
           memo: memo,
           dueDate: dueDate,
           statusId: statusId,
-          priorityId: priorityId,
+          importance: importance,
+          urgency: urgency,
           tagIds: tagIds,
         );
     ref.invalidate(tasksProvider);
@@ -81,7 +78,8 @@ class TaskNotifier extends AsyncNotifier<void> {
     required String? memo,
     required DateTime? dueDate,
     required String statusId,
-    required String? priorityId,
+    required int importance,
+    required int urgency,
     required List<String> tagIds,
   }) async {
     await ref.read(taskRepositoryProvider).updateTask(
@@ -90,7 +88,8 @@ class TaskNotifier extends AsyncNotifier<void> {
           memo: memo,
           dueDate: dueDate,
           statusId: statusId,
-          priorityId: priorityId,
+          importance: importance,
+          urgency: urgency,
           tagIds: tagIds,
         );
     ref.invalidate(tasksProvider);
