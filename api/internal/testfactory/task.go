@@ -17,7 +17,8 @@ type TaskParams struct {
 	UserID     uuid.UUID
 	Title      string
 	StatusID   uuid.UUID
-	PriorityID uuid.NullUUID
+	Importance int32
+	Urgency    int32
 	Memo       *string
 	DueDate    pgtype.Timestamptz
 	CreatedAt  pgtype.Timestamptz
@@ -36,6 +37,12 @@ func CreateTask(t *testing.T, pool *pgxpool.Pool, p TaskParams) repository.Task 
 	if p.Title == "" {
 		p.Title = "Test Task"
 	}
+	if p.Importance == 0 {
+		p.Importance = 1
+	}
+	if p.Urgency == 0 {
+		p.Urgency = 1
+	}
 	if !p.CreatedAt.Valid {
 		p.CreatedAt = pgtype.Timestamptz{Time: time.Now(), Valid: true}
 	}
@@ -48,7 +55,8 @@ func CreateTask(t *testing.T, pool *pgxpool.Pool, p TaskParams) repository.Task 
 		UserID:     p.UserID,
 		Title:      p.Title,
 		StatusID:   p.StatusID,
-		PriorityID: p.PriorityID,
+		Importance: p.Importance,
+		Urgency:    p.Urgency,
 		Memo:       p.Memo,
 		DueDate:    p.DueDate,
 		CreatedAt:  p.CreatedAt,

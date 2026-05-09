@@ -49,34 +49,6 @@ func (UnimplementedHandler) HealthOpsPing(ctx context.Context) (r *PingResponse,
 	return r, ht.ErrNotImplemented
 }
 
-// PriorityOpsCreate implements PriorityOps_create operation.
-//
-// POST /priorities
-func (UnimplementedHandler) PriorityOpsCreate(ctx context.Context, req *CreatePriorityRequest) (r *Priority, _ error) {
-	return r, ht.ErrNotImplemented
-}
-
-// PriorityOpsDelete implements PriorityOps_delete operation.
-//
-// DELETE /priorities/{id}
-func (UnimplementedHandler) PriorityOpsDelete(ctx context.Context, params PriorityOpsDeleteParams) error {
-	return ht.ErrNotImplemented
-}
-
-// PriorityOpsList implements PriorityOps_list operation.
-//
-// GET /priorities
-func (UnimplementedHandler) PriorityOpsList(ctx context.Context) (r *PriorityList, _ error) {
-	return r, ht.ErrNotImplemented
-}
-
-// PriorityOpsUpdate implements PriorityOps_update operation.
-//
-// PUT /priorities/{id}
-func (UnimplementedHandler) PriorityOpsUpdate(ctx context.Context, req *UpdatePriorityRequest, params PriorityOpsUpdateParams) (r *Priority, _ error) {
-	return r, ht.ErrNotImplemented
-}
-
 // StatusOpsCreate implements StatusOps_create operation.
 //
 // POST /statuses

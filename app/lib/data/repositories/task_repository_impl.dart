@@ -13,11 +13,11 @@ class TaskRepositoryImpl implements TaskRepository {
       title: json['title'] as String,
       memo: json['memo'] as String?,
       dueDate: json['dueDate'] != null ? DateTime.parse(json['dueDate'] as String).toLocal() : null,
-      priorityId: json['priorityId'] as String?,
+      importance: (json['importance'] as num?)?.toInt() ?? 1,
+      urgency: (json['urgency'] as num?)?.toInt() ?? 1,
       statusId: json['statusId'] as String,
       tagIds: (json['tagIds'] as List<dynamic>?)?.cast<String>() ?? const [],
-      // priority/status/tags は Provider 層で解決
-      priority: null,
+      // status/tags は Provider 層で解決
       status: null,
       tags: const [],
       createdAt: DateTime.parse(json['createdAt'] as String).toLocal(),
@@ -40,10 +40,11 @@ class TaskRepositoryImpl implements TaskRepository {
           .where((t) => t.title.toLowerCase().contains(filter.searchQuery.toLowerCase()))
           .toList();
     }
-    if (filter.priorityIds.isNotEmpty) {
-      tasks = tasks
-          .where((t) => t.priorityId != null && filter.priorityIds.contains(t.priorityId))
-          .toList();
+    if (filter.importanceLevels.isNotEmpty) {
+      tasks = tasks.where((t) => filter.importanceLevels.contains(t.importance)).toList();
+    }
+    if (filter.urgencyLevels.isNotEmpty) {
+      tasks = tasks.where((t) => filter.urgencyLevels.contains(t.urgency)).toList();
     }
     if (filter.statusIds.isNotEmpty) {
       tasks = tasks
@@ -65,7 +66,6 @@ class TaskRepositoryImpl implements TaskRepository {
       tasks = tasks.where((t) => t.dueDate != null && t.dueDate!.isBefore(now)).toList();
     }
 
-    // クライアントサイドソート（priority ソートは Provider 層で解決後に行う）
     tasks.sort((a, b) {
       int compare;
       switch (sortField) {
@@ -83,11 +83,12 @@ class TaskRepositoryImpl implements TaskRepository {
           } else {
             compare = a.dueDate!.compareTo(b.dueDate!);
           }
+        case SortField.importance:
+          compare = a.importance.compareTo(b.importance);
+        case SortField.urgency:
+          compare = a.urgency.compareTo(b.urgency);
         case SortField.title:
           compare = a.title.compareTo(b.title);
-        case SortField.priority:
-          // priority オブジェクト未解決のため ID で代替ソート
-          compare = (a.priorityId ?? '').compareTo(b.priorityId ?? '');
       }
       return sortOrder == SortOrder.asc ? compare : -compare;
     });
@@ -107,7 +108,8 @@ class TaskRepositoryImpl implements TaskRepository {
     String? memo,
     DateTime? dueDate,
     required String statusId,
-    String? priorityId,
+    int importance = 1,
+    int urgency = 1,
     List<String> tagIds = const [],
   }) async {
     final json = await _api.createTask({
@@ -115,7 +117,8 @@ class TaskRepositoryImpl implements TaskRepository {
       'memo': ?memo,
       'dueDate': ?dueDate?.toUtc().toIso8601String(),
       'statusId': statusId,
-      'priorityId': ?priorityId,
+      'importance': importance,
+      'urgency': urgency,
       if (tagIds.isNotEmpty) 'tagIds': tagIds,
     });
     return _toTask(json);
@@ -128,7 +131,8 @@ class TaskRepositoryImpl implements TaskRepository {
     required String? memo,
     required DateTime? dueDate,
     required String statusId,
-    required String? priorityId,
+    required int importance,
+    required int urgency,
     required List<String> tagIds,
   }) async {
     final json = await _api.updateTask(id, {
@@ -136,7 +140,8 @@ class TaskRepositoryImpl implements TaskRepository {
       'memo': memo,
       'dueDate': dueDate?.toUtc().toIso8601String(),
       'statusId': statusId,
-      'priorityId': priorityId,
+      'importance': importance,
+      'urgency': urgency,
       'tagIds': tagIds,
     });
     return _toTask(json);

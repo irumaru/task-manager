@@ -43,13 +43,14 @@ func (h *Handler) TaskOpsCreate(ctx context.Context, req *api.CreateTaskRequest)
 		return nil, errBadRequest("invalid status_id")
 	}
 
-	var priorityID uuid.NullUUID
-	if v, ok := req.PriorityId.Get(); ok {
-		id, err := uuid.Parse(v)
-		if err != nil {
-			return nil, errBadRequest("invalid priority_id")
-		}
-		priorityID = uuid.NullUUID{UUID: id, Valid: true}
+	importance := int32(1)
+	if v, ok := req.Importance.Get(); ok {
+		importance = v
+	}
+
+	urgency := int32(1)
+	if v, ok := req.Urgency.Get(); ok {
+		urgency = v
 	}
 
 	var dueDate pgtype.Timestamptz
@@ -76,7 +77,8 @@ func (h *Handler) TaskOpsCreate(ctx context.Context, req *api.CreateTaskRequest)
 		Memo:       memo,
 		DueDate:    dueDate,
 		StatusID:   statusID,
-		PriorityID: priorityID,
+		Importance: importance,
+		Urgency:    urgency,
 		CreatedAt:  pgtype.Timestamptz{Time: now, Valid: true},
 		UpdatedAt:  pgtype.Timestamptz{Time: now, Valid: true},
 	})
@@ -150,15 +152,6 @@ func (h *Handler) TaskOpsUpdate(ctx context.Context, req *api.UpdateTaskRequest,
 		return nil, errBadRequest("invalid status_id")
 	}
 
-	var priorityID uuid.NullUUID
-	if !req.PriorityId.Null {
-		pid, err := uuid.Parse(req.PriorityId.Value)
-		if err != nil {
-			return nil, errBadRequest("invalid priority_id")
-		}
-		priorityID = uuid.NullUUID{UUID: pid, Valid: true}
-	}
-
 	task, err := h.q.UpdateTask(ctx, repository.UpdateTaskParams{
 		ID:         id,
 		UserID:     userID,
@@ -166,7 +159,8 @@ func (h *Handler) TaskOpsUpdate(ctx context.Context, req *api.UpdateTaskRequest,
 		Memo:       memo,
 		DueDate:    dueDate,
 		StatusID:   statusID,
-		PriorityID: priorityID,
+		Importance: req.Importance,
+		Urgency:    req.Urgency,
 		UpdatedAt:  pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	})
 	if err != nil {

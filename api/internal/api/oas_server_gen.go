@@ -32,22 +32,6 @@ type Handler interface {
 	//
 	// GET /ping
 	HealthOpsPing(ctx context.Context) (*PingResponse, error)
-	// PriorityOpsCreate implements PriorityOps_create operation.
-	//
-	// POST /priorities
-	PriorityOpsCreate(ctx context.Context, req *CreatePriorityRequest) (*Priority, error)
-	// PriorityOpsDelete implements PriorityOps_delete operation.
-	//
-	// DELETE /priorities/{id}
-	PriorityOpsDelete(ctx context.Context, params PriorityOpsDeleteParams) error
-	// PriorityOpsList implements PriorityOps_list operation.
-	//
-	// GET /priorities
-	PriorityOpsList(ctx context.Context) (*PriorityList, error)
-	// PriorityOpsUpdate implements PriorityOps_update operation.
-	//
-	// PUT /priorities/{id}
-	PriorityOpsUpdate(ctx context.Context, req *UpdatePriorityRequest, params PriorityOpsUpdateParams) (*Priority, error)
 	// StatusOpsCreate implements StatusOps_create operation.
 	//
 	// POST /statuses

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../domain/models/task.dart';
 import '../../../../core/utils/date_utils.dart';
 
@@ -32,8 +33,9 @@ class TaskCard extends StatelessWidget {
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                   ),
-                  if (task.priority != null)
-                    _PriorityChip(name: task.priority!.name),
+                  _ImportanceChip(level: task.importance),
+                  const SizedBox(width: 4),
+                  _UrgencyChip(level: task.urgency),
                 ],
               ),
               if (task.dueDate != null || task.status != null) ...[
@@ -91,12 +93,13 @@ class TaskCard extends StatelessWidget {
   }
 }
 
-class _PriorityChip extends StatelessWidget {
-  final String name;
-  const _PriorityChip({required this.name});
+class _ImportanceChip extends StatelessWidget {
+  final int level;
+  const _ImportanceChip({required this.level});
 
   @override
   Widget build(BuildContext context) {
+    final label = AppConstants.importanceLabels[level] ?? '$level';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
@@ -104,9 +107,32 @@ class _PriorityChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
-        name,
+        '重要: $label',
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: Theme.of(context).colorScheme.onPrimaryContainer,
+            ),
+      ),
+    );
+  }
+}
+
+class _UrgencyChip extends StatelessWidget {
+  final int level;
+  const _UrgencyChip({required this.level});
+
+  @override
+  Widget build(BuildContext context) {
+    final label = AppConstants.urgencyLabels[level] ?? '$level';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.tertiaryContainer,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        '緊急: $label',
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: Theme.of(context).colorScheme.onTertiaryContainer,
             ),
       ),
     );

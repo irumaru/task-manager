@@ -105,7 +105,15 @@ model Task {
   memo: string | null;
   dueDate: utcDateTime | null;
   statusId: string;
-  priorityId: string | null;
+
+  @minValue(1)
+  @maxValue(3)
+  importance: int32;
+
+  @minValue(1)
+  @maxValue(3)
+  urgency: int32;
+
   tagIds: string[];
   createdAt: utcDateTime;
   updatedAt: utcDateTime;
@@ -116,7 +124,15 @@ model CreateTaskRequest {
   memo?: string;
   dueDate?: utcDateTime;
   statusId: string;
-  priorityId?: string;
+
+  @minValue(1)
+  @maxValue(3)
+  importance?: int32;
+
+  @minValue(1)
+  @maxValue(3)
+  urgency?: int32;
+
   tagIds?: string[];
 }
 
@@ -126,7 +142,15 @@ model UpdateTaskRequest {
   memo: string | null;
   dueDate: utcDateTime | null;
   statusId: string;
-  priorityId: string | null;
+
+  @minValue(1)
+  @maxValue(3)
+  importance: int32;
+
+  @minValue(1)
+  @maxValue(3)
+  urgency: int32;
+
   tagIds: string[];
 }
 
@@ -197,47 +221,6 @@ interface StatusOps {
   @put
   @route("{id}")
   update(@path id: string, @body body: UpdateStatusRequest): Status | ApiError;
-
-  @delete
-  @route("{id}")
-  delete(@path id: string): void | ApiError;
-}
-
-// ---------------------------------------------------------------------------
-// Priorities
-// ---------------------------------------------------------------------------
-
-model Priority {
-  id: string;
-  name: string;
-  displayOrder: int32;
-}
-
-model PriorityList {
-  items: Priority[];
-}
-
-model CreatePriorityRequest {
-  name: string;
-  displayOrder: int32;
-}
-
-// PUT semantics: full replacement. All fields required.
-model UpdatePriorityRequest {
-  name: string;
-  displayOrder: int32;
-}
-
-@route("/priorities")
-@tag("Priorities")
-@useAuth(BearerAuth)
-interface PriorityOps {
-  @get list(): PriorityList | ApiError;
-  @post create(@body body: CreatePriorityRequest): Priority | ApiError;
-
-  @put
-  @route("{id}")
-  update(@path id: string, @body body: UpdatePriorityRequest): Priority | ApiError;
 
   @delete
   @route("{id}")

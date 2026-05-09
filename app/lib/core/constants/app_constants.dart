@@ -13,11 +13,10 @@ class AppConstants {
     defaultValue: '',
   );
 
-  // デフォルト優先度
-  static const List<Map<String, dynamic>> defaultPriorities = [
-    {'name': '絶対やる', 'sortOrder': 0},
-    {'name': '余裕があったらやる', 'sortOrder': 1},
-  ];
+  // 重要度・緊急度の表示ラベル（1=低 / 2=中 / 3=高）
+  static const Map<int, String> importanceLabels = {1: '低', 2: '中', 3: '高'};
+  static const Map<int, String> urgencyLabels = {1: '低', 2: '中', 3: '高'};
+  static const Map<int, String> levelLabels = {1: '低', 2: '中', 3: '高'};
 
   // デフォルトステータス
   static const List<Map<String, dynamic>> defaultStatuses = [
