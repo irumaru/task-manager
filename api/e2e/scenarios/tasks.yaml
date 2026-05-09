@@ -40,9 +40,41 @@ steps:
             application/json:
               title: "e2e-task"
               statusId: "{{ steps.setup_status.res.body.id }}"
+              importance: 2
+              urgency: 3
               tagIds:
                 - "{{ steps.setup_tag.res.body.id }}"
-    test: current.res.status == 200 && current.res.body.title == "e2e-task" && len(current.res.body.tagIds) == 1
+    test: current.res.status == 200 && current.res.body.title == "e2e-task" && current.res.body.importance == 2 && current.res.body.urgency == 3 && len(current.res.body.tagIds) == 1
+
+  create_task_default_importance_urgency:
+    desc: POST /tasks - importance/urgency 省略時はデフォルト 1
+    req:
+      /tasks:
+        post:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+          body:
+            application/json:
+              title: "e2e-task-default"
+              statusId: "{{ steps.setup_status.res.body.id }}"
+              tagIds: []
+    test: current.res.status == 200 && current.res.body.importance == 1 && current.res.body.urgency == 1
+
+  create_task_invalid_importance:
+    desc: POST /tasks - importance 範囲外 (4) は 400
+    req:
+      /tasks:
+        post:
+          headers:
+            Authorization: "Bearer {{ vars.token }}"
+          body:
+            application/json:
+              title: "e2e-task-bad"
+              statusId: "{{ steps.setup_status.res.body.id }}"
+              importance: 4
+              urgency: 1
+              tagIds: []
+    test: current.res.status == 400
 
   list_tasks:
     desc: GET /tasks - タスク一覧取得
@@ -75,7 +107,8 @@ steps:
               memo: null
               dueDate: null
               statusId: "{{ steps.setup_status.res.body.id }}"
-              priorityId: null
+              importance: 1
+              urgency: 1
               tagIds:
                 - "{{ steps.setup_tag.res.body.id }}"
     test: current.res.status == 200 && current.res.body.title == "e2e-task-updated"
@@ -93,7 +126,8 @@ steps:
               memo: null
               dueDate: null
               statusId: "{{ steps.setup_status.res.body.id }}"
-              priorityId: null
+              importance: 1
+              urgency: 1
               tagIds: []
     test: current.res.status == 200 && len(current.res.body.tagIds) == 0
 

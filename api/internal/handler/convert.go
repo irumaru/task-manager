@@ -29,14 +29,6 @@ func toAPIStatus(s repository.Status) *api.Status {
 	}
 }
 
-func toAPIPriority(p repository.Priority) *api.Priority {
-	return &api.Priority{
-		ID:           p.ID.String(),
-		Name:         p.Name,
-		DisplayOrder: p.DisplayOrder,
-	}
-}
-
 func toAPITag(t repository.Tag) *api.Tag {
 	return &api.Tag{
 		ID:   t.ID.String(),
@@ -51,7 +43,8 @@ func toAPITaskFromRow(row repository.ListTasksRow) api.Task {
 		Memo:       nilStringFromPtr(row.Memo),
 		DueDate:    nilDateTimeFromPgtz(row.DueDate),
 		StatusId:   row.StatusID.String(),
-		PriorityId: nilStringFromNullUUID(row.PriorityID),
+		Importance: row.Importance,
+		Urgency:    row.Urgency,
 		TagIds:     uuidSliceToStrings(row.TagIds),
 		CreatedAt:  row.CreatedAt.Time,
 		UpdatedAt:  row.UpdatedAt.Time,
@@ -65,7 +58,8 @@ func toAPITaskFromGetRow(row repository.GetTaskRow) api.Task {
 		Memo:       nilStringFromPtr(row.Memo),
 		DueDate:    nilDateTimeFromPgtz(row.DueDate),
 		StatusId:   row.StatusID.String(),
-		PriorityId: nilStringFromNullUUID(row.PriorityID),
+		Importance: row.Importance,
+		Urgency:    row.Urgency,
 		TagIds:     uuidSliceToStrings(row.TagIds),
 		CreatedAt:  row.CreatedAt.Time,
 		UpdatedAt:  row.UpdatedAt.Time,
@@ -79,7 +73,8 @@ func toAPITaskFromTask(t repository.Task) api.Task {
 		Memo:       nilStringFromPtr(t.Memo),
 		DueDate:    nilDateTimeFromPgtz(t.DueDate),
 		StatusId:   t.StatusID.String(),
-		PriorityId: nilStringFromNullUUID(t.PriorityID),
+		Importance: t.Importance,
+		Urgency:    t.Urgency,
 		TagIds:     []string{},
 		CreatedAt:  t.CreatedAt.Time,
 		UpdatedAt:  t.UpdatedAt.Time,
@@ -91,13 +86,6 @@ func nilStringFromPtr(s *string) api.NilString {
 		return api.NilString{Null: true}
 	}
 	return api.NewNilString(*s)
-}
-
-func nilStringFromNullUUID(u uuid.NullUUID) api.NilString {
-	if !u.Valid {
-		return api.NilString{Null: true}
-	}
-	return api.NewNilString(u.UUID.String())
 }
 
 func nilDateTimeFromPgtz(t pgtype.Timestamptz) api.NilDateTime {

@@ -13,9 +13,9 @@ import (
 )
 
 const createTask = `-- name: CreateTask :one
-INSERT INTO tasks (id, user_id, title, memo, due_date, status_id, priority_id, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-RETURNING id, user_id, title, memo, due_date, status_id, priority_id, created_at, updated_at
+INSERT INTO tasks (id, user_id, title, memo, due_date, status_id, importance, urgency, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+RETURNING id, user_id, title, memo, due_date, status_id, importance, urgency, created_at, updated_at
 `
 
 type CreateTaskParams struct {
@@ -25,7 +25,8 @@ type CreateTaskParams struct {
 	Memo       *string            `json:"memo"`
 	DueDate    pgtype.Timestamptz `json:"due_date"`
 	StatusID   uuid.UUID          `json:"status_id"`
-	PriorityID uuid.NullUUID      `json:"priority_id"`
+	Importance int32              `json:"importance"`
+	Urgency    int32              `json:"urgency"`
 	CreatedAt  pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
 }
@@ -38,7 +39,8 @@ func (q *Queries) CreateTask(ctx context.Context, arg CreateTaskParams) (Task, e
 		arg.Memo,
 		arg.DueDate,
 		arg.StatusID,
-		arg.PriorityID,
+		arg.Importance,
+		arg.Urgency,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
@@ -50,7 +52,8 @@ func (q *Queries) CreateTask(ctx context.Context, arg CreateTaskParams) (Task, e
 		&i.Memo,
 		&i.DueDate,
 		&i.StatusID,
-		&i.PriorityID,
+		&i.Importance,
+		&i.Urgency,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -73,7 +76,7 @@ func (q *Queries) DeleteTask(ctx context.Context, arg DeleteTaskParams) error {
 
 const getTask = `-- name: GetTask :one
 SELECT
-    t.id, t.user_id, t.title, t.memo, t.due_date, t.status_id, t.priority_id, t.created_at, t.updated_at,
+    t.id, t.user_id, t.title, t.memo, t.due_date, t.status_id, t.importance, t.urgency, t.created_at, t.updated_at,
     COALESCE(
         ARRAY_AGG(tt.tag_id) FILTER (WHERE tt.tag_id IS NOT NULL),
         '{}'
@@ -96,7 +99,8 @@ type GetTaskRow struct {
 	Memo       *string            `json:"memo"`
 	DueDate    pgtype.Timestamptz `json:"due_date"`
 	StatusID   uuid.UUID          `json:"status_id"`
-	PriorityID uuid.NullUUID      `json:"priority_id"`
+	Importance int32              `json:"importance"`
+	Urgency    int32              `json:"urgency"`
 	CreatedAt  pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
 	TagIds     []uuid.UUID        `json:"tag_ids"`
@@ -112,7 +116,8 @@ func (q *Queries) GetTask(ctx context.Context, arg GetTaskParams) (GetTaskRow, e
 		&i.Memo,
 		&i.DueDate,
 		&i.StatusID,
-		&i.PriorityID,
+		&i.Importance,
+		&i.Urgency,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.TagIds,
@@ -137,7 +142,7 @@ func (q *Queries) InsertTaskTag(ctx context.Context, arg InsertTaskTagParams) er
 
 const listTasks = `-- name: ListTasks :many
 SELECT
-    t.id, t.user_id, t.title, t.memo, t.due_date, t.status_id, t.priority_id, t.created_at, t.updated_at,
+    t.id, t.user_id, t.title, t.memo, t.due_date, t.status_id, t.importance, t.urgency, t.created_at, t.updated_at,
     COALESCE(
         ARRAY_AGG(tt.tag_id) FILTER (WHERE tt.tag_id IS NOT NULL),
         '{}'
@@ -156,7 +161,8 @@ type ListTasksRow struct {
 	Memo       *string            `json:"memo"`
 	DueDate    pgtype.Timestamptz `json:"due_date"`
 	StatusID   uuid.UUID          `json:"status_id"`
-	PriorityID uuid.NullUUID      `json:"priority_id"`
+	Importance int32              `json:"importance"`
+	Urgency    int32              `json:"urgency"`
 	CreatedAt  pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
 	TagIds     []uuid.UUID        `json:"tag_ids"`
@@ -178,7 +184,8 @@ func (q *Queries) ListTasks(ctx context.Context, userID uuid.UUID) ([]ListTasksR
 			&i.Memo,
 			&i.DueDate,
 			&i.StatusID,
-			&i.PriorityID,
+			&i.Importance,
+			&i.Urgency,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.TagIds,
@@ -208,10 +215,11 @@ UPDATE tasks SET
     memo        = $4,
     due_date    = $5,
     status_id   = $6,
-    priority_id = $7,
-    updated_at  = $8
+    importance  = $7,
+    urgency     = $8,
+    updated_at  = $9
 WHERE id = $1 AND user_id = $2
-RETURNING id, user_id, title, memo, due_date, status_id, priority_id, created_at, updated_at
+RETURNING id, user_id, title, memo, due_date, status_id, importance, urgency, created_at, updated_at
 `
 
 type UpdateTaskParams struct {
@@ -221,7 +229,8 @@ type UpdateTaskParams struct {
 	Memo       *string            `json:"memo"`
 	DueDate    pgtype.Timestamptz `json:"due_date"`
 	StatusID   uuid.UUID          `json:"status_id"`
-	PriorityID uuid.NullUUID      `json:"priority_id"`
+	Importance int32              `json:"importance"`
+	Urgency    int32              `json:"urgency"`
 	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
 }
 
@@ -233,7 +242,8 @@ func (q *Queries) UpdateTask(ctx context.Context, arg UpdateTaskParams) (Task, e
 		arg.Memo,
 		arg.DueDate,
 		arg.StatusID,
-		arg.PriorityID,
+		arg.Importance,
+		arg.Urgency,
 		arg.UpdatedAt,
 	)
 	var i Task
@@ -244,7 +254,8 @@ func (q *Queries) UpdateTask(ctx context.Context, arg UpdateTaskParams) (Task, e
 		&i.Memo,
 		&i.DueDate,
 		&i.StatusID,
-		&i.PriorityID,
+		&i.Importance,
+		&i.Urgency,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

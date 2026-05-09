@@ -116,32 +116,6 @@ func (s *BearerAuth) SetRoles(val []string) {
 	s.Roles = val
 }
 
-// Ref: #/components/schemas/CreatePriorityRequest
-type CreatePriorityRequest struct {
-	Name         string `json:"name"`
-	DisplayOrder int32  `json:"displayOrder"`
-}
-
-// GetName returns the value of Name.
-func (s *CreatePriorityRequest) GetName() string {
-	return s.Name
-}
-
-// GetDisplayOrder returns the value of DisplayOrder.
-func (s *CreatePriorityRequest) GetDisplayOrder() int32 {
-	return s.DisplayOrder
-}
-
-// SetName sets the value of Name.
-func (s *CreatePriorityRequest) SetName(val string) {
-	s.Name = val
-}
-
-// SetDisplayOrder sets the value of DisplayOrder.
-func (s *CreatePriorityRequest) SetDisplayOrder(val int32) {
-	s.DisplayOrder = val
-}
-
 // Ref: #/components/schemas/CreateStatusRequest
 type CreateStatusRequest struct {
 	Name         string `json:"name"`
@@ -189,7 +163,8 @@ type CreateTaskRequest struct {
 	Memo       OptString   `json:"memo"`
 	DueDate    OptDateTime `json:"dueDate"`
 	StatusId   string      `json:"statusId"`
-	PriorityId OptString   `json:"priorityId"`
+	Importance OptInt32    `json:"importance"`
+	Urgency    OptInt32    `json:"urgency"`
 	TagIds     []string    `json:"tagIds"`
 }
 
@@ -213,9 +188,14 @@ func (s *CreateTaskRequest) GetStatusId() string {
 	return s.StatusId
 }
 
-// GetPriorityId returns the value of PriorityId.
-func (s *CreateTaskRequest) GetPriorityId() OptString {
-	return s.PriorityId
+// GetImportance returns the value of Importance.
+func (s *CreateTaskRequest) GetImportance() OptInt32 {
+	return s.Importance
+}
+
+// GetUrgency returns the value of Urgency.
+func (s *CreateTaskRequest) GetUrgency() OptInt32 {
+	return s.Urgency
 }
 
 // GetTagIds returns the value of TagIds.
@@ -243,9 +223,14 @@ func (s *CreateTaskRequest) SetStatusId(val string) {
 	s.StatusId = val
 }
 
-// SetPriorityId sets the value of PriorityId.
-func (s *CreateTaskRequest) SetPriorityId(val OptString) {
-	s.PriorityId = val
+// SetImportance sets the value of Importance.
+func (s *CreateTaskRequest) SetImportance(val OptInt32) {
+	s.Importance = val
+}
+
+// SetUrgency sets the value of Urgency.
+func (s *CreateTaskRequest) SetUrgency(val OptInt32) {
+	s.Urgency = val
 }
 
 // SetTagIds sets the value of TagIds.
@@ -531,6 +516,52 @@ func (o OptDateTime) Or(d time.Time) time.Time {
 	return d
 }
 
+// NewOptInt32 returns new OptInt32 with value set to v.
+func NewOptInt32(v int32) OptInt32 {
+	return OptInt32{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptInt32 is optional int32.
+type OptInt32 struct {
+	Value int32
+	Set   bool
+}
+
+// IsSet returns true if OptInt32 was set.
+func (o OptInt32) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptInt32) Reset() {
+	var v int32
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptInt32) SetTo(v int32) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptInt32) Get() (v int32, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptInt32) Or(d int32) int32 {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // NewOptString returns new OptString with value set to v.
 func NewOptString(v string) OptString {
 	return OptString{
@@ -591,61 +622,6 @@ func (s *PingResponse) GetMessage() string {
 func (s *PingResponse) SetMessage(val string) {
 	s.Message = val
 }
-
-// Ref: #/components/schemas/Priority
-type Priority struct {
-	ID           string `json:"id"`
-	Name         string `json:"name"`
-	DisplayOrder int32  `json:"displayOrder"`
-}
-
-// GetID returns the value of ID.
-func (s *Priority) GetID() string {
-	return s.ID
-}
-
-// GetName returns the value of Name.
-func (s *Priority) GetName() string {
-	return s.Name
-}
-
-// GetDisplayOrder returns the value of DisplayOrder.
-func (s *Priority) GetDisplayOrder() int32 {
-	return s.DisplayOrder
-}
-
-// SetID sets the value of ID.
-func (s *Priority) SetID(val string) {
-	s.ID = val
-}
-
-// SetName sets the value of Name.
-func (s *Priority) SetName(val string) {
-	s.Name = val
-}
-
-// SetDisplayOrder sets the value of DisplayOrder.
-func (s *Priority) SetDisplayOrder(val int32) {
-	s.DisplayOrder = val
-}
-
-// Ref: #/components/schemas/PriorityList
-type PriorityList struct {
-	Items []Priority `json:"items"`
-}
-
-// GetItems returns the value of Items.
-func (s *PriorityList) GetItems() []Priority {
-	return s.Items
-}
-
-// SetItems sets the value of Items.
-func (s *PriorityList) SetItems(val []Priority) {
-	s.Items = val
-}
-
-// PriorityOpsDeleteNoContent is response for PriorityOpsDelete operation.
-type PriorityOpsDeleteNoContent struct{}
 
 // Ref: #/components/schemas/Status
 type Status struct {
@@ -753,7 +729,8 @@ type Task struct {
 	Memo       NilString   `json:"memo"`
 	DueDate    NilDateTime `json:"dueDate"`
 	StatusId   string      `json:"statusId"`
-	PriorityId NilString   `json:"priorityId"`
+	Importance int32       `json:"importance"`
+	Urgency    int32       `json:"urgency"`
 	TagIds     []string    `json:"tagIds"`
 	CreatedAt  time.Time   `json:"createdAt"`
 	UpdatedAt  time.Time   `json:"updatedAt"`
@@ -784,9 +761,14 @@ func (s *Task) GetStatusId() string {
 	return s.StatusId
 }
 
-// GetPriorityId returns the value of PriorityId.
-func (s *Task) GetPriorityId() NilString {
-	return s.PriorityId
+// GetImportance returns the value of Importance.
+func (s *Task) GetImportance() int32 {
+	return s.Importance
+}
+
+// GetUrgency returns the value of Urgency.
+func (s *Task) GetUrgency() int32 {
+	return s.Urgency
 }
 
 // GetTagIds returns the value of TagIds.
@@ -829,9 +811,14 @@ func (s *Task) SetStatusId(val string) {
 	s.StatusId = val
 }
 
-// SetPriorityId sets the value of PriorityId.
-func (s *Task) SetPriorityId(val NilString) {
-	s.PriorityId = val
+// SetImportance sets the value of Importance.
+func (s *Task) SetImportance(val int32) {
+	s.Importance = val
+}
+
+// SetUrgency sets the value of Urgency.
+func (s *Task) SetUrgency(val int32) {
+	s.Urgency = val
 }
 
 // SetTagIds sets the value of TagIds.
@@ -866,32 +853,6 @@ func (s *TaskList) SetItems(val []Task) {
 
 // TaskOpsDeleteNoContent is response for TaskOpsDelete operation.
 type TaskOpsDeleteNoContent struct{}
-
-// Ref: #/components/schemas/UpdatePriorityRequest
-type UpdatePriorityRequest struct {
-	Name         string `json:"name"`
-	DisplayOrder int32  `json:"displayOrder"`
-}
-
-// GetName returns the value of Name.
-func (s *UpdatePriorityRequest) GetName() string {
-	return s.Name
-}
-
-// GetDisplayOrder returns the value of DisplayOrder.
-func (s *UpdatePriorityRequest) GetDisplayOrder() int32 {
-	return s.DisplayOrder
-}
-
-// SetName sets the value of Name.
-func (s *UpdatePriorityRequest) SetName(val string) {
-	s.Name = val
-}
-
-// SetDisplayOrder sets the value of DisplayOrder.
-func (s *UpdatePriorityRequest) SetDisplayOrder(val int32) {
-	s.DisplayOrder = val
-}
 
 // Ref: #/components/schemas/UpdateStatusRequest
 type UpdateStatusRequest struct {
@@ -940,7 +901,8 @@ type UpdateTaskRequest struct {
 	Memo       NilString   `json:"memo"`
 	DueDate    NilDateTime `json:"dueDate"`
 	StatusId   string      `json:"statusId"`
-	PriorityId NilString   `json:"priorityId"`
+	Importance int32       `json:"importance"`
+	Urgency    int32       `json:"urgency"`
 	TagIds     []string    `json:"tagIds"`
 }
 
@@ -964,9 +926,14 @@ func (s *UpdateTaskRequest) GetStatusId() string {
 	return s.StatusId
 }
 
-// GetPriorityId returns the value of PriorityId.
-func (s *UpdateTaskRequest) GetPriorityId() NilString {
-	return s.PriorityId
+// GetImportance returns the value of Importance.
+func (s *UpdateTaskRequest) GetImportance() int32 {
+	return s.Importance
+}
+
+// GetUrgency returns the value of Urgency.
+func (s *UpdateTaskRequest) GetUrgency() int32 {
+	return s.Urgency
 }
 
 // GetTagIds returns the value of TagIds.
@@ -994,9 +961,14 @@ func (s *UpdateTaskRequest) SetStatusId(val string) {
 	s.StatusId = val
 }
 
-// SetPriorityId sets the value of PriorityId.
-func (s *UpdateTaskRequest) SetPriorityId(val NilString) {
-	s.PriorityId = val
+// SetImportance sets the value of Importance.
+func (s *UpdateTaskRequest) SetImportance(val int32) {
+	s.Importance = val
+}
+
+// SetUrgency sets the value of Urgency.
+func (s *UpdateTaskRequest) SetUrgency(val int32) {
+	s.Urgency = val
 }
 
 // SetTagIds sets the value of TagIds.

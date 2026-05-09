@@ -9,15 +9,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type Priority struct {
-	ID           uuid.UUID          `json:"id"`
-	UserID       uuid.UUID          `json:"user_id"`
-	Name         string             `json:"name"`
-	DisplayOrder int32              `json:"display_order"`
-	CreatedAt    pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
-}
-
 type Status struct {
 	ID           uuid.UUID          `json:"id"`
 	UserID       uuid.UUID          `json:"user_id"`
@@ -42,7 +33,8 @@ type Task struct {
 	Memo       *string            `json:"memo"`
 	DueDate    pgtype.Timestamptz `json:"due_date"`
 	StatusID   uuid.UUID          `json:"status_id"`
-	PriorityID uuid.NullUUID      `json:"priority_id"`
+	Importance int32              `json:"importance"`
+	Urgency    int32              `json:"urgency"`
 	CreatedAt  pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
 }

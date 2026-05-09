@@ -24,8 +24,8 @@ WHERE t.id = $1 AND t.user_id = $2
 GROUP BY t.id;
 
 -- name: CreateTask :one
-INSERT INTO tasks (id, user_id, title, memo, due_date, status_id, priority_id, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+INSERT INTO tasks (id, user_id, title, memo, due_date, status_id, importance, urgency, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 RETURNING *;
 
 -- name: UpdateTask :one
@@ -34,8 +34,9 @@ UPDATE tasks SET
     memo        = $4,
     due_date    = $5,
     status_id   = $6,
-    priority_id = $7,
-    updated_at  = $8
+    importance  = $7,
+    urgency     = $8,
+    updated_at  = $9
 WHERE id = $1 AND user_id = $2
 RETURNING *;
 

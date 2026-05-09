@@ -23,16 +23,6 @@ CREATE TABLE statuses (
     UNIQUE (user_id, name)
 );
 
-CREATE TABLE priorities (
-    id            UUID        PRIMARY KEY,
-    user_id       UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    name          TEXT        NOT NULL,
-    display_order INT         NOT NULL DEFAULT 0,
-    created_at    TIMESTAMPTZ NOT NULL,
-    updated_at    TIMESTAMPTZ NOT NULL,
-    UNIQUE (user_id, name)
-);
-
 CREATE TABLE tags (
     id         UUID        PRIMARY KEY,
     user_id    UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -49,7 +39,8 @@ CREATE TABLE tasks (
     memo        TEXT,
     due_date    TIMESTAMPTZ,
     status_id   UUID        NOT NULL REFERENCES statuses(id),
-    priority_id UUID        REFERENCES priorities(id),
+    importance  INT         NOT NULL DEFAULT 1 CHECK (importance BETWEEN 1 AND 3),
+    urgency     INT         NOT NULL DEFAULT 1 CHECK (urgency BETWEEN 1 AND 3),
     created_at  TIMESTAMPTZ NOT NULL,
     updated_at  TIMESTAMPTZ NOT NULL
 );

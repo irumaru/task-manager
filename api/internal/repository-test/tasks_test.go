@@ -37,14 +37,15 @@ func TestCreateTask(t *testing.T) {
 	assert.Equal(t, status.ID, task.StatusID)
 	assert.Equal(t, user.ID, task.UserID)
 	assert.Nil(t, task.Memo)
-	assert.False(t, task.PriorityID.Valid)
+	// Default values for importance/urgency are 1.
+	assert.Equal(t, int32(1), task.Importance)
+	assert.Equal(t, int32(1), task.Urgency)
 }
 
 func TestCreateTask_WithOptionals(t *testing.T) {
 	pool := testutils.SetupTestDB(t)
 	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
 	status := testfactory.CreateStatus(t, pool, testfactory.StatusParams{UserID: user.ID})
-	priority := testfactory.CreatePriority(t, pool, testfactory.PriorityParams{UserID: user.ID})
 
 	memo := "some notes"
 	dueDate := pgtype.Timestamptz{Time: time.Now().Add(24 * time.Hour), Valid: true}
@@ -53,15 +54,62 @@ func TestCreateTask_WithOptionals(t *testing.T) {
 		UserID:     user.ID,
 		Title:      "Task with optionals",
 		StatusID:   status.ID,
-		PriorityID: uuid.NullUUID{UUID: priority.ID, Valid: true},
+		Importance: 3,
+		Urgency:    2,
 		Memo:       &memo,
 		DueDate:    dueDate,
 	})
 
 	assert.Equal(t, &memo, task.Memo)
-	assert.True(t, task.PriorityID.Valid)
-	assert.Equal(t, priority.ID, task.PriorityID.UUID)
+	assert.Equal(t, int32(3), task.Importance)
+	assert.Equal(t, int32(2), task.Urgency)
 	assert.True(t, task.DueDate.Valid)
+}
+
+func TestCreateTask_ImportanceOutOfRangeRejectedByCheckConstraint(t *testing.T) {
+	pool := testutils.SetupTestDB(t)
+	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
+	status := testfactory.CreateStatus(t, pool, testfactory.StatusParams{UserID: user.ID})
+
+	id, err := uuid.NewV7()
+	require.NoError(t, err)
+	now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
+
+	q := repository.New(pool)
+	_, err = q.CreateTask(t.Context(), repository.CreateTaskParams{
+		ID:         id,
+		UserID:     user.ID,
+		Title:      "bad importance",
+		StatusID:   status.ID,
+		Importance: 4,
+		Urgency:    1,
+		CreatedAt:  now,
+		UpdatedAt:  now,
+	})
+	require.Error(t, err)
+}
+
+func TestCreateTask_UrgencyOutOfRangeRejectedByCheckConstraint(t *testing.T) {
+	pool := testutils.SetupTestDB(t)
+	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
+	status := testfactory.CreateStatus(t, pool, testfactory.StatusParams{UserID: user.ID})
+
+	id, err := uuid.NewV7()
+	require.NoError(t, err)
+	now := pgtype.Timestamptz{Time: time.Now(), Valid: true}
+
+	q := repository.New(pool)
+	_, err = q.CreateTask(t.Context(), repository.CreateTaskParams{
+		ID:         id,
+		UserID:     user.ID,
+		Title:      "bad urgency",
+		StatusID:   status.ID,
+		Importance: 1,
+		Urgency:    0,
+		CreatedAt:  now,
+		UpdatedAt:  now,
+	})
+	require.Error(t, err)
 }
 
 func TestListTasks(t *testing.T) {
@@ -138,15 +186,19 @@ func TestUpdateTask(t *testing.T) {
 
 	q := repository.New(pool)
 	updated, err := q.UpdateTask(t.Context(), repository.UpdateTaskParams{
-		ID:        task.ID,
-		UserID:    user.ID,
-		Title:     "New Title",
-		StatusID:  status.ID,
-		UpdatedAt: pgtype.Timestamptz{Time: time.Now(), Valid: true},
+		ID:         task.ID,
+		UserID:     user.ID,
+		Title:      "New Title",
+		StatusID:   status.ID,
+		Importance: 2,
+		Urgency:    3,
+		UpdatedAt:  pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "New Title", updated.Title)
 	assert.Equal(t, status.ID, updated.StatusID)
+	assert.Equal(t, int32(2), updated.Importance)
+	assert.Equal(t, int32(3), updated.Urgency)
 }
 
 func TestUpdateTask_ClearMemo(t *testing.T) {
@@ -158,35 +210,17 @@ func TestUpdateTask_ClearMemo(t *testing.T) {
 
 	q := repository.New(pool)
 	updated, err := q.UpdateTask(t.Context(), repository.UpdateTaskParams{
-		ID:        task.ID,
-		UserID:    user.ID,
-		Title:     task.Title,
-		Memo:      nil,
-		StatusID:  status.ID,
-		UpdatedAt: pgtype.Timestamptz{Time: time.Now(), Valid: true},
-	})
-	require.NoError(t, err)
-	assert.Nil(t, updated.Memo)
-}
-
-func TestUpdateTask_ClearPriorityId(t *testing.T) {
-	pool := testutils.SetupTestDB(t)
-	user := testfactory.CreateUser(t, pool, testfactory.UserParams{})
-	status := testfactory.CreateStatus(t, pool, testfactory.StatusParams{UserID: user.ID})
-	priority := testfactory.CreatePriority(t, pool, testfactory.PriorityParams{UserID: user.ID})
-	task := testfactory.CreateTask(t, pool, testfactory.TaskParams{UserID: user.ID, StatusID: status.ID, PriorityID: uuid.NullUUID{UUID: priority.ID, Valid: true}})
-
-	q := repository.New(pool)
-	updated, err := q.UpdateTask(t.Context(), repository.UpdateTaskParams{
 		ID:         task.ID,
 		UserID:     user.ID,
 		Title:      task.Title,
+		Memo:       nil,
 		StatusID:   status.ID,
-		PriorityID: uuid.NullUUID{Valid: false},
+		Importance: 1,
+		Urgency:    1,
 		UpdatedAt:  pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	})
 	require.NoError(t, err)
-	assert.False(t, updated.PriorityID.Valid)
+	assert.Nil(t, updated.Memo)
 }
 
 func TestUpdateTask_ClearDueDate(t *testing.T) {
@@ -201,12 +235,14 @@ func TestUpdateTask_ClearDueDate(t *testing.T) {
 
 	q := repository.New(pool)
 	updated, err := q.UpdateTask(t.Context(), repository.UpdateTaskParams{
-		ID:        task.ID,
-		UserID:    user.ID,
-		Title:     task.Title,
-		StatusID:  status.ID,
-		DueDate:   pgtype.Timestamptz{Valid: false},
-		UpdatedAt: pgtype.Timestamptz{Time: time.Now(), Valid: true},
+		ID:         task.ID,
+		UserID:     user.ID,
+		Title:      task.Title,
+		StatusID:   status.ID,
+		Importance: 1,
+		Urgency:    1,
+		DueDate:    pgtype.Timestamptz{Valid: false},
+		UpdatedAt:  pgtype.Timestamptz{Time: time.Now(), Valid: true},
 	})
 	require.NoError(t, err)
 	assert.False(t, updated.DueDate.Valid)
@@ -221,10 +257,12 @@ func TestUpdateTask_NotFound(t *testing.T) {
 
 	q := repository.New(pool)
 	_, err := q.UpdateTask(t.Context(), repository.UpdateTaskParams{
-		ID:       task.ID,
-		UserID:   user2.ID,
-		Title:    "Hacked",
-		StatusID: status.ID,
+		ID:         task.ID,
+		UserID:     user2.ID,
+		Title:      "Hacked",
+		StatusID:   status.ID,
+		Importance: 1,
+		Urgency:    1,
 	})
 	require.Error(t, err)
 }
