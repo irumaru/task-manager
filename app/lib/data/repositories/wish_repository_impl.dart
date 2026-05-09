@@ -15,10 +15,10 @@ class WishRepositoryImpl implements WishRepository {
             .map((e) => e as String)
             .toList(),
         archivedAt: json['archivedAt'] != null
-            ? DateTime.parse(json['archivedAt'] as String)
+            ? DateTime.parse(json['archivedAt'] as String).toLocal()
             : null,
-        createdAt: DateTime.parse(json['createdAt'] as String),
-        updatedAt: DateTime.parse(json['updatedAt'] as String),
+        createdAt: DateTime.parse(json['createdAt'] as String).toLocal(),
+        updatedAt: DateTime.parse(json['updatedAt'] as String).toLocal(),
       );
 
   @override
