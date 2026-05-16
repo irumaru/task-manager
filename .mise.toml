@@ -3,7 +3,7 @@ go   = '1.26.2'
 sqlc = '1.31.1'
 atlas = '1.2.0'
 node = '24.15.0'
-pnpm = '11.0.7'
+pnpm = '11.0.9'
 
 "go:github.com/ogen-go/ogen/cmd/ogen"  = '1.20.3'
 "aqua:golangci/golangci-lint"          = '2.12.2'
